@@ -5,6 +5,8 @@ Regras (ver docs/decisoes/0002-politica-de-conteudo.md):
   1. Nenhum livro (PDF, EPUB...) versionado, exceto fixtures de licença aberta.
   2. Nada dentro de pastas `privado/`.
   3. Dados publicados em `dados/publicos/<sistema>/` só para sistemas com conteudo_publico=true.
+  4. `dados/publicos/modelos/` aceita só os modelos listados em MODELOS_PUBLICOS, que são
+     treinados exclusivamente com obras de licença aberta e não contêm texto (só coeficientes).
 """
 
 from __future__ import annotations
@@ -18,6 +20,10 @@ from oraculo.nucleo.sistema import SISTEMAS_DISPONIVEIS, obter_regras
 EXTENSOES_LIVRO = {".pdf", ".epub", ".mobi", ".cbz", ".cbr", ".djvu"}
 PASTA_FIXTURES_ABERTAS = "tests/fixtures/abertos/"
 PASTA_DADOS_PUBLICOS = "dados/publicos/"
+PASTA_MODELOS = "dados/publicos/modelos/"
+# Cada modelo novo entra aqui de propósito, depois de conferir que o treino só usou obras
+# abertas (corpus em oraculo.leitor.corpus.FONTES).
+MODELOS_PUBLICOS = {"detector_rpg.json"}
 
 
 def sistemas_publicos() -> set[str]:
@@ -35,7 +41,10 @@ def verificar(arquivos: list[str], publicos: set[str] | None = None) -> list[str
             violacoes.append(f"{texto}: arquivos de livro não podem ser versionados")
         if "privado" in p.parts:
             violacoes.append(f"{texto}: conteúdo de pasta privada")
-        if texto.startswith(PASTA_DADOS_PUBLICOS):
+        if texto.startswith(PASTA_MODELOS):
+            if p.name not in MODELOS_PUBLICOS:
+                violacoes.append(f"{texto}: modelo não liberado em MODELOS_PUBLICOS")
+        elif texto.startswith(PASTA_DADOS_PUBLICOS):
             partes = p.parts
             sistema = partes[2] if len(partes) > 3 else None
             if sistema not in publicos:

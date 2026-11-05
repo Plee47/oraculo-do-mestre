@@ -21,6 +21,7 @@ if recarregar_se_mudou([RAIZ / "src", RAIZ / "dados"]):
     st.cache_resource.clear()
     st.cache_data.clear()
 
+from oraculo.leitor.detector import MINIMO_CARACTERES, ModeloDetector, avaliar_documento
 from oraculo.nucleo import Ficha, obter_regras
 from oraculo.nucleo.analise import Achado
 from oraculo.sistemas.dnd5e import ATRIBUTOS, custo_compra_pontos, modificador
@@ -31,10 +32,12 @@ from oraculo.sistemas.dnd5e.gerador import PAPEIS, calcular_ca, gerar_ficha
 st.set_page_config(page_title="Oráculo do Mestre", page_icon="🔮", layout="wide")
 
 CATALOGO_DND5E = Path(__file__).parents[1] / "dados" / "publicos" / "dnd5e" / "catalogo.json"
+MODELO_DETECTOR = Path(__file__).parents[1] / "dados" / "publicos" / "modelos" / "detector_rpg.json"
 PAGINAS = (
     "Início",
     "Gerador de fichas (D&D 5e)",
     "Análise de grupo e encontro (D&D 5e)",
+    "Detector de livros de RPG",
     "Ficha rápida (D&D 5e)",
     "Roteiro",
     "Conteúdo e licenças",
@@ -44,6 +47,11 @@ PAGINAS = (
 @st.cache_resource
 def catalogo_dnd5e() -> Catalogo:
     return Catalogo.carregar(CATALOGO_DND5E)
+
+
+@st.cache_resource
+def modelo_detector() -> ModeloDetector:
+    return ModeloDetector.carregar(MODELO_DETECTOR)
 
 
 pagina = st.sidebar.radio("Navegação", PAGINAS)
@@ -265,6 +273,80 @@ def pagina_analise() -> None:
     mostrar_achados(achados)
 
 
+# --------------------------------------------------------------------------- detector
+NOMES_SISTEMAS = {"dnd5e": "D&D 5e", "fm": "Feiticeiros & Maldições", "tagmar": "Tagmar"}
+LIMITE_PAGINAS = 200
+
+
+def pagina_detector() -> None:
+    modelo = modelo_detector()
+    st.title("Detector de livros de RPG")
+    st.caption(
+        "Envie um PDF ou cole um trecho. O arquivo é lido só na memória deste servidor e não "
+        "é salvo em lugar nenhum."
+    )
+    aba_pdf, aba_texto = st.tabs(["📄 Enviar PDF", "📝 Colar texto"])
+    paginas: list[str] = []
+    with aba_pdf:
+        arquivo = st.file_uploader("PDF", type=["pdf"], label_visibility="collapsed")
+        if arquivo is not None:
+            from pypdf import PdfReader
+
+            leitor = PdfReader(arquivo)
+            total = len(leitor.pages)
+            with st.spinner("Lendo o PDF…"):
+                paginas = [(p.extract_text() or "") for p in leitor.pages[:LIMITE_PAGINAS]]
+            if total > LIMITE_PAGINAS:
+                st.caption(f"Analisando as primeiras {LIMITE_PAGINAS} de {total} páginas.")
+    with aba_texto:
+        texto = st.text_area(
+            "Texto",
+            height=180,
+            label_visibility="collapsed",
+            placeholder=f"Cole pelo menos {MINIMO_CARACTERES} caracteres de um livro…",
+        )
+        if not paginas and texto.strip():
+            paginas = [texto]
+
+    if not paginas:
+        with st.expander("Como funciona", expanded=True):
+            st.markdown(
+                """
+O detector dá uma nota a cada página com base em **6 sinais que um mestre reconheceria**:
+notação de dados (`1d20`), modificadores (`+2`), siglas de atributos, vocabulário de regras,
+blocos de estatísticas e texto que fala com o leitor. A nota do livro é a média das páginas.
+
+Foi treinado no Databricks com 12 obras de licença aberta e avaliado com *leave-one-book-out*,
+em que cada livro é julgado por um modelo que nunca viu nenhuma página dele: **12 de 12 livros
+certos**, incluindo romances de fantasia e um livro de regras de xadrez.
+"""
+            )
+        return
+
+    v = avaliar_documento(modelo, paginas)
+    if v.paginas_analisadas == 0:
+        st.warning(
+            f"Texto insuficiente: cole ao menos {MINIMO_CARACTERES} caracteres, ou envie um PDF "
+            "com texto selecionável (PDFs escaneados não têm texto)."
+        )
+        return
+    if v.e_rpg:
+        st.success(f"**Parece um livro de RPG** (nota {v.nota:.0%})", icon="🎲")
+    else:
+        st.info(f"**Não parece um livro de RPG** (nota {v.nota:.0%})", icon="📚")
+    m = st.columns(3)
+    m[0].metric("Páginas analisadas", v.paginas_analisadas)
+    m[1].metric("Páginas com cara de RPG", f"{v.fracao_paginas_rpg:.0%}")
+    m[2].metric("Sistema provável", NOMES_SISTEMAS.get(v.sistema, "—") if v.sistema else "—")
+    st.markdown("**Por quê:**")
+    for motivo in v.motivos:
+        st.write(f"- {motivo.capitalize()}")
+    uteis = [p for p in paginas if len(p.strip()) >= MINIMO_CARACTERES]
+    if len(uteis) > 1:
+        st.caption("Nota de cada página")
+        st.bar_chart([modelo.prob_pagina(p) for p in uteis], height=180)
+
+
 # --------------------------------------------------------------------------- ficha
 def pagina_ficha() -> None:
     regras = obter_regras("dnd5e")
@@ -340,7 +422,8 @@ def pagina_roteiro() -> None:
 | 0 · Fundação | Motor genérico de fichas, D&D 5e, site no ar, CI/CD | ✅ |
 | 1 · D&D SRD | Pipeline no Databricks com o SRD → tabelas gold → gerador de fichas | ✅ |
 | 2 · Análises | Fraquezas do grupo, desequilíbrio de encontros, dicas explicáveis | ✅ |
-| 3 · Leitor de livros | Detector "é livro de RPG?" + extração com LLM avaliada no MLflow | ⏳ |
+| 3a · Detector de livros | "É livro de RPG?" com modelo explicável, avaliado no MLflow | ✅ |
+| 3b · Leitor de livros | Extração com LLM avaliada contra o gabarito do SRD | ⏳ |
 | 4 · Feiticeiros & Maldições | Segundo sistema, extraído pelo leitor | ⏳ |
 | 5 · Polimento | Resultados, vídeo de demonstração | ⏳ |
 """
@@ -366,6 +449,7 @@ licenciado sob [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/legalcode
     "Início": pagina_inicio,
     "Gerador de fichas (D&D 5e)": pagina_gerador,
     "Análise de grupo e encontro (D&D 5e)": pagina_analise,
+    "Detector de livros de RPG": pagina_detector,
     "Ficha rápida (D&D 5e)": pagina_ficha,
     "Roteiro": pagina_roteiro,
     "Conteúdo e licenças": pagina_conteudo,

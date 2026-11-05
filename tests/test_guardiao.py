@@ -31,3 +31,8 @@ def test_bloqueia_dados_publicos_de_sistema_sem_licenca():
 
 def test_caminho_windows():
     assert verificar(["livros\\phb.pdf"], PUBLICOS)
+
+
+def test_modelos_publicos_so_os_liberados():
+    assert verificar(["dados/publicos/modelos/detector_rpg.json"], PUBLICOS) == []
+    assert verificar(["dados/publicos/modelos/modelo_misterioso.json"], PUBLICOS)

@@ -56,7 +56,8 @@ Por que essa divisão: [ADR 0001](docs/decisoes/0001-databricks-fabrica-streamli
 - [x] **Fase 0 · Fundação:** ficha genérica, D&D 5e, site no ar, CI/CD e guardião de conteúdo
 - [x] **Fase 1 · D&D SRD:** pipeline medalhão no Databricks com o SRD e gerador de fichas
 - [x] **Fase 2 · Análises:** fraquezas do grupo, desequilíbrio de encontros, dicas explicáveis
-- [ ] **Fase 3 · Leitor de livros:** detector "é livro de RPG?" e extração com LLM avaliada contra o SRD
+- [x] **Fase 3a · Detector de livros:** "é livro de RPG?" com modelo explicável avaliado no MLflow
+- [ ] **Fase 3b · Leitor de livros:** extração com LLM (modelos do Databricks) avaliada contra o SRD
 - [ ] **Fase 4 · Feiticeiros & Maldições:** segundo sistema, extraído pelo leitor
 - [ ] **Fase 5 · Polimento:** resultados, vídeo de demonstração
 
@@ -138,12 +139,63 @@ ataca à distância" vira alerta contra monstros de CR alto.
 **Limitações:** as estimativas usam dano médio esperado, sem posicionamento, terreno ou
 magias de controle; magias de monstros conjuradores (ex.: lich) não entram no dano por turno.
 
+## Detector de livros de RPG (Fase 3a)
+
+Antes de gastar chamadas de LLM lendo um PDF, o Oráculo verifica: **isto é um livro de RPG?
+De qual sistema?**
+
+**Modelo:** regressão logística sobre 6 sinais que um mestre reconheceria, calculados por
+página: notação de dados (`1d20`), modificadores (`+2`), siglas de atributos, vocabulário de
+regras, blocos de estatísticas e texto que fala com o leitor. A nota do livro é a média das
+páginas. O modelo é exportado como **JSON com 6 coeficientes** (sem pickle), então roda no
+site em Python puro.
+
+**Corpus:** 12 obras de licença aberta, com 2.326 páginas úteis (`oraculo/leitor/corpus.py`).
+
+| Tipo | Obras |
+|---|---|
+| RPG | D&D SRD 5.1 e 5.2 (inglês), Tagmar — Regras e Magias (português) |
+| Literatura | Dom Casmurro, Brás Cubas, Os Lusíadas |
+| Fantasia (caso difícil) | The Well at the World's End, Phantastes, The Gods of Pegana, Alice |
+| Regras de jogo (caso difícil) | Chess Fundamentals |
+
+**Avaliação leave-one-book-out:** cada livro é previsto por um modelo que nunca viu nenhuma
+página dele. Separar páginas do mesmo livro entre treino e teste vazaria estilo e vocabulário.
+
+| Modelo | F1 por página | Livros certos | Nota do xadrez |
+|---|---:|---:|---:|
+| TF-IDF + regressão logística (referência) | 0,966 | 12/12 | 0,39 |
+| 1ª versão das features (com "narrativa" e "densidade de números") | 0,924 | 11/12 | **0,78 ❌** |
+| **Final: 6 features de evidência positiva** | **0,957** | **12/12** | **0,16** |
+
+**O que deu errado no caminho (e por que isso importa):**
+
+1. **Atalho "não é romance, então é RPG".** A 1ª versão usava sinais de narrativa e aprendeu
+   que ausência de narrativa significa RPG. Resultado: o livro de xadrez virou RPG. A correção
+   foi usar só sinais de *presença* de RPG.
+2. **Palavras genéricas.** "player", "jogador", "teste", "nível" e "resistência" estavam no
+   vocabulário. A métrica no corpus era ótima (F1 0,972), mas um teste com contraexemplos que
+   escrevi mostrou que **um trecho de futebol em português recebia 1,00**. Sem nenhum texto de
+   esporte em português no corpus, a métrica não tinha como enxergar isso. Troquei por termos
+   específicos ("teste de resistência", "mestre do jogo"…): o F1 caiu um pouco (0,957), mas o
+   futebol caiu para 0,04 e o xadrez em português para 0,04. Esses contraexemplos agora são
+   testes automatizados.
+
+O modelo treinado no Databricks e registrado no Unity Catalog (`detector_livro_rpg`, alias
+`champion`) é idêntico ao treinado localmente (diferença de 10⁻¹³ nos coeficientes). O portão
+de qualidade só promove versões que acertam **todos** os livros.
+
+**Limitações:** PDFs escaneados (sem texto) não são lidos; o corpus tem só 4 livros de RPG
+(2 sistemas). O sistema provável (D&D 5e, Tagmar, Feiticeiros & Maldições) vem de palavras
+assinatura, não de um modelo treinado.
+
 ## Estrutura
 
 ```
 ├── src/oraculo/
 │   ├── nucleo/             # ficha genérica, achados de análise, contrato de sistema
 │   ├── sistemas/dnd5e/     # regras, catálogo, parser do SRD, gerador, análises
+│   ├── leitor/             # corpus, detector de livros de RPG e treino
 │   └── guardiao.py         # bloqueia livros/dados protegidos no repo (ADR 0002)
 ├── dados/publicos/         # dados exportados pelo Databricks (só licença aberta)
 ├── scripts/
@@ -197,3 +249,8 @@ processados no seu próprio ambiente, mas o resultado nunca é versionado.
 Este trabalho inclui material do *System Reference Document 5.1* da Wizards of the Coast LLC,
 disponível em <https://dnd.wizards.com/resources/systems-reference-document> e licenciado sob
 [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/legalcode).
+
+O detector de livros foi treinado também com o *Tagmar* (Projeto Tagmar, licença
+[CC BY-NC-SA 3.0 BR](https://creativecommons.org/licenses/by-nc-sa/3.0/br/)), com o *SRD 5.2*
+(CC BY 4.0) e com obras em domínio público do [Projeto Gutenberg](https://www.gutenberg.org).
+Nenhum desses textos é publicado aqui: só os 6 coeficientes do modelo.

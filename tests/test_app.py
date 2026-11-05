@@ -10,6 +10,7 @@ PAGINAS = (
     "Início",
     "Gerador de fichas (D&D 5e)",
     "Análise de grupo e encontro (D&D 5e)",
+    "Detector de livros de RPG",
     "Ficha rápida (D&D 5e)",
     "Roteiro",
     "Conteúdo e licenças",
@@ -54,3 +55,16 @@ def test_analise_de_grupo_e_encontro():
     at.multiselect[0].set_value(["Adult Red Dragon (CR 17)"]).run()
     assert not at.exception
     assert any("num único turno" in e.value for e in at.error)
+
+
+def test_detector_com_texto_colado():
+    at = AppTest.from_file(APP, default_timeout=30).run()
+    at.sidebar.radio[0].set_value("Detector de livros de RPG").run()
+    assert not at.exception
+    trecho = (
+        "Armor Class 14, Hit Points 27 (5d8 + 5). STR 15 (+2) DEX 14 (+2). The target must "
+        "succeed on a DC 12 saving throw. Your character adds the proficiency bonus. "
+    ) * 4
+    at.text_area[0].set_value(trecho).run()
+    assert not at.exception
+    assert any("Parece um livro de RPG" in s.value for s in at.success)

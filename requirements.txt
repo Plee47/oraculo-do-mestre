@@ -4,3 +4,4 @@
 streamlit>=1.38
 pydantic>=2.6
 pyyaml>=6.0
+pypdf>=4  # leitura de PDFs no detector de livros

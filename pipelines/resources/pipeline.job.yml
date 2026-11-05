@@ -1,4 +1,6 @@
-# Pipeline do Oráculo do Mestre: setup -> bronze -> silver -> gold/exportação.
+# Pipeline do Oráculo do Mestre:
+#   setup -> bronze -> silver -> gold/exportação (catálogo SRD)
+#   setup -> corpus do detector -> treino do detector (MLflow)
 # Sem definição de cluster: as tarefas rodam em compute serverless.
 resources:
   jobs:
@@ -31,3 +33,14 @@ resources:
           depends_on: [{ task_key: silver_srd }]
           notebook_task:
             notebook_path: ../notebooks/03_gold_exportacao.py
+
+        - task_key: detector_corpus
+          depends_on: [{ task_key: setup }]
+          max_retries: 1
+          notebook_task:
+            notebook_path: ../notebooks/10_detector_corpus.py
+
+        - task_key: detector_treino
+          depends_on: [{ task_key: detector_corpus }]
+          notebook_task:
+            notebook_path: ../notebooks/11_detector_treino.py
