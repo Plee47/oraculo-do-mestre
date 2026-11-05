@@ -3,7 +3,11 @@
 **Lê livros de RPG, monta fichas válidas e aponta o que está desequilibrado na sua mesa.**
 Projeto de portfólio de ciência de dados com **Python + Databricks + GitHub**, 100% gratuito.
 
-> 🌐 **Demo online:** _link do Streamlit aqui depois do primeiro deploy_
+[![CI/CD](https://github.com/Plee47/oraculo-do-mestre/actions/workflows/ci.yml/badge.svg)](https://github.com/Plee47/oraculo-do-mestre/actions/workflows/ci.yml)
+[![Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://oraculo-do-mestre.streamlit.app/)
+
+> 🌐 **Demo online:** <https://oraculo-do-mestre.streamlit.app/>
+> (se o site estiver "dormindo", clique em *Yes, get this app back up!* e aguarde uns segundos)
 
 ## O que faz
 
