@@ -55,7 +55,7 @@ Por que essa divisão: [ADR 0001](docs/decisoes/0001-databricks-fabrica-streamli
 
 - [x] **Fase 0 · Fundação:** ficha genérica, D&D 5e, site no ar, CI/CD e guardião de conteúdo
 - [x] **Fase 1 · D&D SRD:** pipeline medalhão no Databricks com o SRD e gerador de fichas
-- [ ] **Fase 2 · Análises:** fraquezas do grupo, desequilíbrio de encontros, dicas explicáveis
+- [x] **Fase 2 · Análises:** fraquezas do grupo, desequilíbrio de encontros, dicas explicáveis
 - [ ] **Fase 3 · Leitor de livros:** detector "é livro de RPG?" e extração com LLM avaliada contra o SRD
 - [ ] **Fase 4 · Feiticeiros & Maldições:** segundo sistema, extraído pelo leitor
 - [ ] **Fase 5 · Polimento:** resultados, vídeo de demonstração
@@ -66,8 +66,9 @@ Por que essa divisão: [ADR 0001](docs/decisoes/0001-databricks-fabrica-streamli
 flowchart LR
     API[(dnd5eapi.co<br/>SRD 5.1)] -->|download| V[/volume livros_abertos/]
     V -->|Auto Loader| B[bronze_srd<br/>~600 JSONs]
-    B -->|parse + expectativas| S[silver_dnd5e_*<br/>racas · classes · magias<br/>armas · armaduras · pericias]
+    B -->|parse + expectativas| S[silver_dnd5e_*<br/>racas · classes · magias<br/>armas · armaduras · pericias · monstros]
     S --> G1[gold_dnd5e_magias_por_classe]
+    S --> G2[gold_dnd5e_monstros_defesas]
     S -->|só se licença aberta| E[/exportacao/dnd5e/catalogo.json/]
     E -->|scripts/sincronizar_dados.py| R[dados/publicos/ no repo]
     R --> SITE[Gerador de fichas no site]
@@ -78,6 +79,7 @@ flowchart LR
 | Bronze | `bronze_srd` | JSON exatamente como veio da API, ingestão incremental (Auto Loader) |
 | Silver | `silver_dnd5e_*` | Uma tabela por entidade, colunas planas para SQL + `dados_json` completo |
 | Gold | `gold_dnd5e_magias_por_classe` | Funções das magias (dano, controle, cura, utilidade) por classe e círculo |
+| Gold | `gold_dnd5e_monstros_defesas` | Defesas dos monstros por faixa de CR (base numérica das dicas) |
 | Exportação | `catalogo.json` | Só sai se o sistema estiver marcado como público (ADR 0002) |
 
 O job **falha** se o catálogo não passar nas expectativas de qualidade: 12 classes com os 20
@@ -103,12 +105,45 @@ explica cada escolha:
 sair de armadura completa), não há subclasses nem talentos, e os nomes de magias e itens ficam
 em inglês, como no SRD.
 
+## Análises e dicas (Fase 2)
+
+Monte o grupo, escolha os monstros, e o Oráculo aponta o que está desequilibrado. **Cada dica
+diz qual regra a gerou**, então não há caixa-preta.
+
+| Análise | Exemplo real (grupo de nível 5: guerreiro, clérigo, ladino, mago) |
+|---|---|
+| Papéis e cura | Grupo só de combatentes: "Ninguém do grupo cura" |
+| Testes de resistência | "Resistência de SAB fraca (média +1.2), ninguém proficiente" |
+| Tipos de dano | "Todo o dano do grupo é físico e não mágico" |
+| Defesas dos monstros | "Gargoyle reduz à metade o dano do guerreiro e do ladino" |
+| Vulnerabilidades | "O guerreiro (martelo) causa dano dobrado em Skeleton" |
+| Efeitos que exploram fraquezas | "Frightful Presence (Adult Red Dragon): o grupo falha 74% das vezes" |
+| Risco de queda | "Adult Red Dragon pode derrubar todo o grupo num único turno (sopro, 63 de dano)" |
+| Economia de ações | "Ogre sozinho age 1 vez para cada 4 do grupo" |
+| Balanço | Rodadas para vencer × rodadas até o grupo cair, por dano esperado |
+
+**O que os dados mostram** (`gold_dnd5e_monstros_defesas`, calculada no Databricks):
+
+| Faixa de CR | Monstros | Resistem a físico não mágico | Voam | Ações lendárias |
+|---|---:|---:|---:|---:|
+| 0 a 1/2 | 113 | 2% | 22% | 0% |
+| 1 a 4 | 105 | 23% | 24% | 0% |
+| 5 a 10 | 67 | 34% | 30% | 3% |
+| 11 a 16 | 29 | 48% | 62% | 45% |
+| 17+ | 20 | 35% | 80% | 85% |
+
+Por isso a dica "todo o dano é físico" pesa mais conforme o grupo sobe de nível, e "ninguém
+ataca à distância" vira alerta contra monstros de CR alto.
+
+**Limitações:** as estimativas usam dano médio esperado, sem posicionamento, terreno ou
+magias de controle; magias de monstros conjuradores (ex.: lich) não entram no dano por turno.
+
 ## Estrutura
 
 ```
 ├── src/oraculo/
-│   ├── nucleo/             # ficha genérica + contrato de sistema (ADR 0003)
-│   ├── sistemas/dnd5e/     # regras, catálogo, parser do SRD, gerador de fichas
+│   ├── nucleo/             # ficha genérica, achados de análise, contrato de sistema
+│   ├── sistemas/dnd5e/     # regras, catálogo, parser do SRD, gerador, análises
 │   └── guardiao.py         # bloqueia livros/dados protegidos no repo (ADR 0002)
 ├── dados/publicos/         # dados exportados pelo Databricks (só licença aberta)
 ├── scripts/

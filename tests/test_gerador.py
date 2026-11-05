@@ -35,7 +35,15 @@ def test_catalogo_publico_passa_nas_expectativas(cat):
 
 def test_tabelas_ida_e_volta(cat):
     linhas = catalogo_para_linhas(cat)
-    assert set(linhas) == {"racas", "classes", "magias", "armas", "armaduras", "pericias"}
+    assert set(linhas) == {
+        "racas",
+        "classes",
+        "magias",
+        "armas",
+        "armaduras",
+        "pericias",
+        "monstros",
+    }
     jsons = {t: [linha["dados_json"] for linha in ls] for t, ls in linhas.items()}
     assert linhas_para_catalogo(jsons) == cat
 
