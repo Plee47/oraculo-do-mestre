@@ -22,6 +22,11 @@ class Ficha(BaseModel):
     classe: str | None = None
     atributos: dict[str, int] = Field(default_factory=dict)
     metodo_atributos: MetodoAtributos = "livre"
+    origem: str | None = None  # raça, ancestralidade, clã... (depende do sistema)
+    pericias: list[str] = Field(default_factory=list)
+    equipamento: list[str] = Field(default_factory=list)
+    poderes: list[str] = Field(default_factory=list)  # magias, técnicas, habilidades
+    explicacoes: list[str] = Field(default_factory=list)  # por que cada escolha foi feita
     tags: list[str] = Field(default_factory=list)
     notas: str = ""
 

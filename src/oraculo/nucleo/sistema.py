@@ -28,10 +28,13 @@ class Atributo(BaseModel):
 class Classe(BaseModel):
     id: str
     nome: str
+    srd: str | None = None  # id da classe na fonte de dados do sistema
+    papel: str | None = None
     dado_vida: int | None = None
     atributos_principais: list[str] = []
     resistencias: list[str] = []
     conjuracao: str | None = None
+    prioridade: list[str] = []
 
 
 class DefinicaoSistema(BaseModel):
