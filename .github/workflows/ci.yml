@@ -37,9 +37,21 @@ jobs:
       - name: Pytest (inclui smoke test do site)
         run: pytest -q
 
+  site-streamlit:
+    name: Site com só o requirements.txt (como no Streamlit Cloud)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt pytest
+      # pythonpath vazio: o site precisa achar o código sozinho, sem o pacote instalado.
+      - run: pytest -q -o pythonpath= tests/test_app.py
+
   deploy-databricks:
     name: Deploy do bundle (prod)
-    needs: [guardiao, qualidade]
+    needs: [guardiao, qualidade, site-streamlit]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.DATABRICKS_HOST != ''
     runs-on: ubuntu-latest
     environment: prod
