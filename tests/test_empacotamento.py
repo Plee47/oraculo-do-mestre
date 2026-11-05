@@ -23,4 +23,5 @@ def test_requirements_contem_as_dependencias_do_pacote():
 
 def test_site_importa_o_codigo_de_src():
     app = (RAIZ / "app" / "streamlit_app.py").read_text(encoding="utf-8")
-    assert 'sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))' in app
+    assert 'sys.path.insert(0, str(RAIZ / "src"))' in app
+    assert "recarregar_se_mudou(" in app  # recarrega o pacote quando src/ muda no servidor

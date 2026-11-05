@@ -8,9 +8,18 @@ from pathlib import Path
 # Usa sempre o código do repositório (src/), nunca um pacote `oraculo` instalado antes.
 # O Streamlit Cloud reaproveita o ambiente entre deploys; sem isto, o site rodaria uma
 # versão antiga do pacote depois de cada atualização.
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+RAIZ = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(RAIZ / "src"))
+sys.path.insert(0, str(RAIZ / "app"))
 
 import streamlit as st
+from recarga import recarregar_se_mudou
+
+# O processo do Streamlit não reinicia a cada push: se src/ ou dados/ mudaram, descarta os
+# módulos antigos da memória e os caches (ver app/recarga.py).
+if recarregar_se_mudou([RAIZ / "src", RAIZ / "dados"]):
+    st.cache_resource.clear()
+    st.cache_data.clear()
 
 from oraculo.nucleo import Ficha, obter_regras
 from oraculo.nucleo.analise import Achado
