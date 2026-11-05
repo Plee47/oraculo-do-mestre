@@ -34,3 +34,5 @@ select = ["E", "F", "I", "UP", "B"]
 [tool.ruff.lint.per-file-ignores]
 # Notebooks do Databricks: `spark`, `dbutils` e `display` são globais injetados.
 "pipelines/notebooks/*" = ["F821", "E402", "E501", "I001"]
+# O site ajusta o sys.path antes de importar o pacote (ver comentário no arquivo).
+"app/streamlit_app.py" = ["E402"]

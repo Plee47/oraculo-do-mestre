@@ -23,6 +23,7 @@ def test_resumo(cat):
         "armas": 2,
         "armaduras": 2,
         "pericias": 2,
+        "monstros": 7,
     }
 
 
@@ -106,3 +107,41 @@ def test_equipamento_que_nao_e_arma_nem_armadura_e_ignorado():
         Arma,
     )
     assert not isinstance(parse_equipamento({"index": "y", "equipment_category": {}}), Armadura)
+
+
+def test_monstro_dragao(cat):
+    d = cat.monstro("adult-red-dragon")
+    assert (d.cr, d.ca, d.pv, d.voa, d.acoes_lendarias, d.resistencia_lendaria) == (
+        17.0,
+        19,
+        256,
+        True,
+        3,
+        True,
+    )
+    assert d.imunidades_dano == ["fire"]
+    assert d.rotina == ["Bite", "Claw", "Claw"]
+    assert d.resistencias_bonus["con"] == 13  # proficiente
+    assert d.resistencias_bonus["for"] == 8  # só o modificador de FOR 27
+    sopro = d.ataque("Fire Breath")
+    assert (sopro.cd, sopro.resistencia, sopro.area, sopro.limitado, sopro.dano_medio) == (
+        21,
+        "des",
+        True,
+        True,
+        63.0,
+    )
+    medo = d.ataque("Frightful Presence")
+    assert (medo.resistencia, medo.dano_medio) == ("sab", 0.0)
+
+
+def test_defesas_contra_fisico_nao_magico(cat):
+    assert cat.monstro("gargoyle").fisico_nao_magico == "resiste"
+    assert cat.monstro("lich").fisico_nao_magico == "imune"
+    assert cat.monstro("goblin").fisico_nao_magico is None
+    assert cat.monstro("skeleton").vulnerabilidades_dano == ["bludgeoning"]
+
+
+def test_multiataque_com_opcoes_e_hidra(cat):
+    assert cat.monstro("chimera").rotina == ["Bite", "Horns", "Claws"]
+    assert cat.monstro("hydra").rotina == ["Bite"] * 5

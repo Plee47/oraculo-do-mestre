@@ -9,6 +9,7 @@ APP = str(Path(__file__).parents[1] / "app" / "streamlit_app.py")
 PAGINAS = (
     "Início",
     "Gerador de fichas (D&D 5e)",
+    "Análise de grupo e encontro (D&D 5e)",
     "Ficha rápida (D&D 5e)",
     "Roteiro",
     "Conteúdo e licenças",
@@ -42,3 +43,14 @@ def test_gerador_de_fichas_gera_e_regera():
     at.button[0].click().run()  # "Gerar outra"
     assert not at.exception
     assert at.subheader[0].value != titulo or at.session_state.semente == 2
+
+
+def test_analise_de_grupo_e_encontro():
+    at = AppTest.from_file(APP, default_timeout=30).run()
+    at.sidebar.radio[0].set_value("Análise de grupo e encontro (D&D 5e)").run()
+    assert not at.exception
+    assert at.dataframe  # tabela do grupo
+    assert any(m.label == "Dificuldade oficial (XP)" for m in at.metric)
+    at.multiselect[0].set_value(["Adult Red Dragon (CR 17)"]).run()
+    assert not at.exception
+    assert any("num único turno" in e.value for e in at.error)
