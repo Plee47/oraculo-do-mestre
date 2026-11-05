@@ -1,0 +1,28 @@
+{
+ "coeficientes": {
+  "dados_por_mil": 1.6063847767618356,
+  "modificadores_por_mil": 2.423635067321615,
+  "atributos_por_mil": 0.3126563470680558,
+  "termos_regras_por_mil": 3.657460664441354,
+  "termos_estatistica_por_mil": 2.131306938476913,
+  "segunda_pessoa_por_mil": 0.4806301030661625
+ },
+ "intercepto": 4.244767100688369,
+ "medias": {
+  "dados_por_mil": 0.5874321341737103,
+  "modificadores_por_mil": 0.7934988011675195,
+  "atributos_por_mil": 0.2954290930723736,
+  "termos_regras_por_mil": 1.5110006044458677,
+  "termos_estatistica_por_mil": 0.6675065908506748,
+  "segunda_pessoa_por_mil": 1.0728712034386134
+ },
+ "desvios": {
+  "dados_por_mil": 1.0770978631616641,
+  "modificadores_por_mil": 1.504289642233115,
+  "atributos_por_mil": 0.9039102963491207,
+  "termos_regras_por_mil": 1.5592490519783162,
+  "termos_estatistica_por_mil": 1.1019357643310095,
+  "segunda_pessoa_por_mil": 1.5355861119995784
+ },
+ "limiar_documento": 0.5
+}

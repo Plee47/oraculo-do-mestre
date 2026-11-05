@@ -11,8 +11,19 @@ requires-python = ">=3.10"
 dependencies = ["pydantic>=2.6", "pyyaml>=6.0"]
 
 [project.optional-dependencies]
-app = ["streamlit>=1.38"]
-dev = ["pytest>=8", "ruff>=0.6", "pre-commit>=3", "streamlit>=1.38"]
+app = ["streamlit>=1.38", "pypdf>=4"]
+leitor = ["pypdf>=4", "scikit-learn>=1.3", "pandas>=2.0", "numpy>=1.24"]
+dev = [
+    "pytest>=8",
+    "ruff>=0.6",
+    "pre-commit>=3",
+    "streamlit>=1.38",
+    "pypdf>=4",
+    "scikit-learn>=1.3",
+    "pandas>=2.0",
+    "numpy>=1.24",
+    "pyarrow>=14",
+]
 
 [tool.setuptools.packages.find]
 where = ["src"]
