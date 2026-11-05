@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import sys
 from pathlib import Path
 
@@ -22,6 +23,8 @@ if recarregar_se_mudou([RAIZ / "src", RAIZ / "dados"]):
     st.cache_data.clear()
 
 from oraculo.leitor.detector import MINIMO_CARACTERES, ModeloDetector, avaliar_documento
+from oraculo.leitor.extracao import parece_ter_entradas
+from oraculo.leitor.porteiro import decidir
 from oraculo.nucleo import Ficha, obter_regras
 from oraculo.nucleo.analise import Achado
 from oraculo.sistemas.dnd5e import ATRIBUTOS, custo_compra_pontos, modificador
@@ -33,11 +36,14 @@ st.set_page_config(page_title="Oráculo do Mestre", page_icon="🔮", layout="wi
 
 CATALOGO_DND5E = Path(__file__).parents[1] / "dados" / "publicos" / "dnd5e" / "catalogo.json"
 MODELO_DETECTOR = Path(__file__).parents[1] / "dados" / "publicos" / "modelos" / "detector_rpg.json"
+AVALIACAO_LEITOR = (
+    Path(__file__).parents[1] / "dados" / "publicos" / "avaliacoes" / "leitor_srd51.json"
+)
 PAGINAS = (
     "Início",
     "Gerador de fichas (D&D 5e)",
     "Análise de grupo e encontro (D&D 5e)",
-    "Detector de livros de RPG",
+    "Leitor de livros de RPG",
     "Ficha rápida (D&D 5e)",
     "Roteiro",
     "Conteúdo e licenças",
@@ -280,11 +286,18 @@ LIMITE_PAGINAS = 200
 
 def pagina_detector() -> None:
     modelo = modelo_detector()
-    st.title("Detector de livros de RPG")
-    st.caption(
-        "Envie um PDF ou cole um trecho. O arquivo é lido só na memória deste servidor e não "
-        "é salvo em lugar nenhum."
+    st.title("Leitor de livros de RPG")
+    st.markdown(
+        "Antes de qualquer LLM ler um livro, o **porteiro** confere se é mesmo um livro de RPG "
+        "de um sistema suportado. Assim um romance ou um manual não viram fichas, e a cota de "
+        "LLM não é gasta à toa."
     )
+    st.caption(
+        "Envie um PDF ou cole um trecho. O arquivo é lido só na memória deste servidor, não é "
+        "salvo e não é enviado a nenhum LLM: a extração roda no Databricks, sobre os livros que "
+        "você coloca no seu próprio workspace."
+    )
+    mostrar_avaliacao_leitor()
     aba_pdf, aba_texto = st.tabs(["📄 Enviar PDF", "📝 Colar texto"])
     paginas: list[str] = []
     with aba_pdf:
@@ -341,10 +354,52 @@ certos**, incluindo romances de fantasia e um livro de regras de xadrez.
     st.markdown("**Por quê:**")
     for motivo in v.motivos:
         st.write(f"- {motivo.capitalize()}")
+
+    decisao = decidir(modelo, paginas)
+    st.markdown("**Porteiro do leitor:**")
+    if decisao.aceito:
+        st.success(
+            f"Seguiria para a extração com LLM: {decisao.motivo}. "
+            f"{sum(parece_ter_entradas(p) for p in paginas)} página(s) passariam no pré-filtro.",
+            icon="✅",
+        )
+    else:
+        st.warning(f"Barrado antes do LLM: {decisao.motivo}.", icon="⛔")
+
     uteis = [p for p in paginas if len(p.strip()) >= MINIMO_CARACTERES]
     if len(uteis) > 1:
         st.caption("Nota de cada página")
         st.bar_chart([modelo.prob_pagina(p) for p in uteis], height=180)
+
+
+def mostrar_avaliacao_leitor() -> None:
+    if not AVALIACAO_LEITOR.exists():
+        return
+    dados = json.loads(AVALIACAO_LEITOR.read_text(encoding="utf-8"))
+    st.subheader("Qual LLM lê melhor um livro de RPG?")
+    st.caption(
+        f"{dados['livro']}: {dados['paginas_avaliadas']} páginas sorteadas, com "
+        f"{dados['magias_esperadas']} magias e {dados['monstros_esperados']} monstros. Cada campo "
+        "extraído foi comparado com o catálogo oficial do SRD (gabarito). Rodado no Databricks "
+        "com ai_query; métricas no MLflow."
+    )
+    linhas = []
+    for m in dados["modelos"]:
+        linhas.append(
+            {
+                "Modelo": m["modelo"].removeprefix("databricks-"),
+                "Nota geral": round(m["nota_geral"], 3),
+                "Magias: F1": round(m.get("magias_f1", 0), 3),
+                "Magias: campos certos": f"{m.get('magias_campos_media', 0):.0%}",
+                "Monstros: F1": round(m.get("monstros_f1", 0), 3),
+                "Monstros: campos certos": f"{m.get('monstros_campos_media', 0):.0%}",
+                "Tempo (s)": round(m["segundos"]),
+            }
+        )
+    st.dataframe(linhas, hide_index=True, use_container_width=True)
+    st.caption(
+        f"Escolhido para o leitor: **{dados['modelo_escolhido'].removeprefix('databricks-')}**"
+    )
 
 
 # --------------------------------------------------------------------------- ficha
@@ -423,7 +478,7 @@ def pagina_roteiro() -> None:
 | 1 · D&D SRD | Pipeline no Databricks com o SRD → tabelas gold → gerador de fichas | ✅ |
 | 2 · Análises | Fraquezas do grupo, desequilíbrio de encontros, dicas explicáveis | ✅ |
 | 3a · Detector de livros | "É livro de RPG?" com modelo explicável, avaliado no MLflow | ✅ |
-| 3b · Leitor de livros | Extração com LLM avaliada contra o gabarito do SRD | ⏳ |
+| 3b · Leitor de livros | Porteiro + extração com LLM avaliada contra o gabarito do SRD | ✅ |
 | 4 · Feiticeiros & Maldições | Segundo sistema, extraído pelo leitor | ⏳ |
 | 5 · Polimento | Resultados, vídeo de demonstração | ⏳ |
 """
@@ -449,7 +504,7 @@ licenciado sob [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/legalcode
     "Início": pagina_inicio,
     "Gerador de fichas (D&D 5e)": pagina_gerador,
     "Análise de grupo e encontro (D&D 5e)": pagina_analise,
-    "Detector de livros de RPG": pagina_detector,
+    "Leitor de livros de RPG": pagina_detector,
     "Ficha rápida (D&D 5e)": pagina_ficha,
     "Roteiro": pagina_roteiro,
     "Conteúdo e licenças": pagina_conteudo,

@@ -44,3 +44,19 @@ resources:
           depends_on: [{ task_key: detector_corpus }]
           notebook_task:
             notebook_path: ../notebooks/11_detector_treino.py
+
+        # Leitor de livros: porteiro -> avaliação dos LLMs (SRD) -> extração dos livros aceitos
+        - task_key: leitor_porteiro
+          depends_on: [{ task_key: detector_treino }]
+          notebook_task:
+            notebook_path: ../notebooks/20_leitor_porteiro.py
+
+        - task_key: leitor_avaliacao
+          depends_on: [{ task_key: leitor_porteiro }, { task_key: silver_srd }]
+          notebook_task:
+            notebook_path: ../notebooks/21_leitor_avaliacao.py
+
+        - task_key: leitor_extracao
+          depends_on: [{ task_key: leitor_avaliacao }]
+          notebook_task:
+            notebook_path: ../notebooks/22_leitor_extracao.py

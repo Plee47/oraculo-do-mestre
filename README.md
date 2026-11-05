@@ -57,7 +57,7 @@ Por que essa divisão: [ADR 0001](docs/decisoes/0001-databricks-fabrica-streamli
 - [x] **Fase 1 · D&D SRD:** pipeline medalhão no Databricks com o SRD e gerador de fichas
 - [x] **Fase 2 · Análises:** fraquezas do grupo, desequilíbrio de encontros, dicas explicáveis
 - [x] **Fase 3a · Detector de livros:** "é livro de RPG?" com modelo explicável avaliado no MLflow
-- [ ] **Fase 3b · Leitor de livros:** extração com LLM (modelos do Databricks) avaliada contra o SRD
+- [x] **Fase 3b · Leitor de livros:** porteiro + extração com LLM (modelos do Databricks) avaliada contra o SRD
 - [ ] **Fase 4 · Feiticeiros & Maldições:** segundo sistema, extraído pelo leitor
 - [ ] **Fase 5 · Polimento:** resultados, vídeo de demonstração
 
@@ -189,13 +189,64 @@ de qualidade só promove versões que acertam **todos** os livros.
 (2 sistemas). O sistema provável (D&D 5e, Tagmar, Feiticeiros & Maldições) vem de palavras
 assinatura, não de um modelo treinado.
 
+## Leitor de livros com LLM (Fase 3b)
+
+```mermaid
+flowchart LR
+    PDF[/PDF em livros_abertos<br/>ou livros_privados/] --> P{Porteiro<br/>detector champion}
+    P -->|não é RPG ou sistema<br/>não suportado| X[barrado, com motivo<br/>zero chamadas de LLM]
+    P -->|D&D 5e| F[pré-filtro de páginas<br/>indício de magia/monstro]
+    F --> Q[ai_query no Spark<br/>LLM do Databricks]
+    Q --> V[JSON validado com os<br/>modelos do catálogo]
+    V --> S[(silver_leitor_magias<br/>silver_leitor_monstros)]
+```
+
+**Avaliação por gabarito:** o SRD 5.1 existe em PDF (entrada) e em dados estruturados
+(catálogo da API), então dá para medir a extração campo a campo. As entradas esperadas em cada
+página são achadas por regra, sem LLM. Três LLMs do Databricks rodaram sobre as mesmas 24
+páginas sorteadas (49 magias, 27 monstros), com um run do MLflow para cada um:
+
+| Modelo | Nota geral | Magias: precisão / recall | Monstros: precisão / recall | Campos certos (magias / monstros) | Tempo |
+|---|---:|---:|---:|---:|---:|
+| **gpt-oss-120b** (escolhido) | **0,90** | **0,93** / 0,84 | **0,90** / **1,00** | **98% / 99%** | 86 s |
+| qwen3-next-80b | 0,73 | 0,59 / 0,84 | 0,70 / 0,96 | 95% / 98% | 38 s |
+| llama-3.3-70b | 0,69 | 0,58 / 0,86 | 0,59 / 0,96 | 96% / 97% | 82 s |
+
+Os três acertam quase todos os campos do que encontram. A diferença está na **precisão**: Llama e
+Qwen também "extraem" magias só *citadas* no texto e entradas da página seguinte, contrariando a
+instrução. Sem gabarito, isso passaria despercebido.
+
+**Livro inteiro com o modelo escolhido** (313 páginas, zero erros de API):
+
+| | Extraídos | Batem com o gabarito | Recall sobre as entradas do PDF |
+|---|---:|---:|---:|
+| Magias | 319 | 319 | **100%** (315/315) |
+| Monstros | 326 | 306 | **98,7%** (306/310) |
+
+Os 20 monstros "sem par" não são invenções: são blocos que existem no PDF mas não na API
+(ex.: os *Animated Objects* da magia de mesmo nome e o *Avatar of Death*).
+
+**Problemas reais que a avaliação revelou e que foram corrigidos:**
+
+- **Texto sujo:** o PDF escreve "4th-level" com três hífens Unicode diferentes. Sem tratar
+  isso, só 12 das 319 magias eram reconhecidas na página; depois, 315.
+- **Uma palavra por linha:** algumas páginas saem do PDF assim ("Acid / Splash /
+  Conjuration / cantrip"). A detecção das entradas passou a ignorar quebras de linha.
+- **Condições como tipo de dano:** os LLMs punham "charmed" nas imunidades a dano. A saída
+  agora é validada contra a lista de tipos de dano.
+
+**Seus livros:** coloque um PDF no volume `livros_privados` (Catalog → workspace →
+oraculo_dev → livros_privados → *Upload*) e rode o job. O porteiro decide, e o que for
+extraído fica nas tabelas com `privado = true`, que **nunca são exportadas**
+([ADR 0005](docs/decisoes/0005-leitor-de-livros-com-llm.md)).
+
 ## Estrutura
 
 ```
 ├── src/oraculo/
 │   ├── nucleo/             # ficha genérica, achados de análise, contrato de sistema
 │   ├── sistemas/dnd5e/     # regras, catálogo, parser do SRD, gerador, análises
-│   ├── leitor/             # corpus, detector de livros de RPG e treino
+│   ├── leitor/             # corpus, detector, porteiro, extração com LLM, avaliação
 │   └── guardiao.py         # bloqueia livros/dados protegidos no repo (ADR 0002)
 ├── dados/publicos/         # dados exportados pelo Databricks (só licença aberta)
 ├── scripts/
