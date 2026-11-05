@@ -1,0 +1,36 @@
+# D&D 5ª edição — apenas conteúdo do SRD 5.1 (CC-BY-4.0).
+id: dnd5e
+nome: "Dungeons & Dragons 5ª edição (SRD)"
+versao: "5.1"
+fonte: "System Reference Document 5.1 — Wizards of the Coast LLC"
+licenca: "CC-BY-4.0"
+conteudo_publico: true
+nivel_maximo: 20
+
+atributos:
+  - { id: for, nome: Força, abrev: FOR, minimo: 1, maximo: 30 }
+  - { id: des, nome: Destreza, abrev: DES, minimo: 1, maximo: 30 }
+  - { id: con, nome: Constituição, abrev: CON, minimo: 1, maximo: 30 }
+  - { id: int, nome: Inteligência, abrev: INT, minimo: 1, maximo: 30 }
+  - { id: sab, nome: Sabedoria, abrev: SAB, minimo: 1, maximo: 30 }
+  - { id: car, nome: Carisma, abrev: CAR, minimo: 1, maximo: 30 }
+
+classes:
+  - { id: barbaro, nome: Bárbaro, dado_vida: 12, atributos_principais: [for], resistencias: [for, con] }
+  - { id: bardo, nome: Bardo, dado_vida: 8, atributos_principais: [car], resistencias: [des, car], conjuracao: car }
+  - { id: bruxo, nome: Bruxo, dado_vida: 8, atributos_principais: [car], resistencias: [sab, car], conjuracao: car }
+  - { id: clerigo, nome: Clérigo, dado_vida: 8, atributos_principais: [sab], resistencias: [sab, car], conjuracao: sab }
+  - { id: druida, nome: Druida, dado_vida: 8, atributos_principais: [sab], resistencias: [int, sab], conjuracao: sab }
+  - { id: feiticeiro, nome: Feiticeiro, dado_vida: 6, atributos_principais: [car], resistencias: [con, car], conjuracao: car }
+  - { id: guerreiro, nome: Guerreiro, dado_vida: 10, atributos_principais: [for, des], resistencias: [for, con] }
+  - { id: ladino, nome: Ladino, dado_vida: 8, atributos_principais: [des], resistencias: [des, int] }
+  - { id: mago, nome: Mago, dado_vida: 6, atributos_principais: [int], resistencias: [int, sab], conjuracao: int }
+  - { id: monge, nome: Monge, dado_vida: 8, atributos_principais: [des, sab], resistencias: [for, des] }
+  - { id: paladino, nome: Paladino, dado_vida: 10, atributos_principais: [for, car], resistencias: [sab, car], conjuracao: car }
+  - { id: patrulheiro, nome: Patrulheiro, dado_vida: 10, atributos_principais: [des, sab], resistencias: [for, des], conjuracao: sab }
+
+extras:
+  compra_pontos:
+    orcamento: 27
+    custo: { 8: 0, 9: 1, 10: 2, 11: 3, 12: 4, 13: 5, 14: 7, 15: 9 }
+  conjunto_padrao: [15, 14, 13, 12, 10, 8]

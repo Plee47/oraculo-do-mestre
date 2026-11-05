@@ -1,0 +1,3 @@
+# Usado pelo Streamlit Community Cloud para instalar o site.
+streamlit>=1.38
+.

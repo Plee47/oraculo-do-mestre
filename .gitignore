@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# Livros e dados privados: NUNCA versionar (o guardião também bloqueia no CI)
+livros/
+privado/
+*.pdf
+*.epub
+!tests/fixtures/abertos/*.pdf
+
+# Databricks / Streamlit
+.databricks/
+.streamlit/secrets.toml
+
+# Editores / SO
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

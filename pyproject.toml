@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "oraculo"
+version = "0.1.0"
+description = "Oráculo do Mestre: lê livros de RPG, gera fichas e analisa grupos e encontros"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = ["pydantic>=2.6", "pyyaml>=6.0"]
+
+[project.optional-dependencies]
+app = ["streamlit>=1.38"]
+dev = ["pytest>=8", "ruff>=0.6", "pre-commit>=3", "streamlit>=1.38"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"*" = ["*.yaml"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.ruff.lint.per-file-ignores]
+# Notebooks do Databricks: `spark`, `dbutils` e `display` são globais injetados.
+"pipelines/notebooks/*" = ["F821", "E402", "E501", "I001"]

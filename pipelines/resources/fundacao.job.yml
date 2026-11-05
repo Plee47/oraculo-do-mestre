@@ -1,0 +1,15 @@
+# Fase 0: prepara o Unity Catalog. As próximas fases acrescentam tarefas a este pipeline.
+resources:
+  jobs:
+    oraculo_pipeline:
+      name: oraculo-do-mestre
+      parameters:
+        - name: catalogo
+          default: ${var.catalogo}
+        - name: schema
+          default: ${var.schema}
+      max_concurrent_runs: 1
+      tasks:
+        - task_key: setup
+          notebook_task:
+            notebook_path: ../notebooks/00_setup.py
