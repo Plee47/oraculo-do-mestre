@@ -10,21 +10,19 @@
 
 # COMMAND ----------
 
-# MAGIC %pip install -q ../../
-
-# COMMAND ----------
-
-dbutils.library.restartPython()
-
-# COMMAND ----------
-
-from oraculo.nucleo import SISTEMAS_DISPONIVEIS, obter_regras
+import sys
 
 dbutils.widgets.text("catalogo", "workspace")
 dbutils.widgets.text("schema", "oraculo_dev")
 CATALOGO = dbutils.widgets.get("catalogo")
 SCHEMA = dbutils.widgets.get("schema")
 ALVO = f"`{CATALOGO}`.`{SCHEMA}`"
+
+# O pacote `oraculo` é lido do volume `codigo` (enviado pelo deploy). pydantic e pyyaml já
+# vêm no ambiente serverless.
+sys.path.insert(0, f"/Volumes/{CATALOGO}/{SCHEMA}/codigo/src")
+
+from oraculo.nucleo import SISTEMAS_DISPONIVEIS, obter_regras
 
 # COMMAND ----------
 

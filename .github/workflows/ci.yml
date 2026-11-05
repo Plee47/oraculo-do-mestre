@@ -48,6 +48,9 @@ jobs:
       DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
     steps:
       - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
       - uses: databricks/setup-cli@main
-      - run: databricks bundle validate -t prod
-      - run: databricks bundle deploy -t prod
+      - name: Código no volume + bundle deploy (ADR 0004)
+        run: python scripts/deploy.py -t prod

@@ -67,6 +67,7 @@ Por que essa divisão: [ADR 0001](docs/decisoes/0001-databricks-fabrica-streamli
 │   ├── nucleo/             # ficha genérica + contrato de sistema (ADR 0003)
 │   ├── sistemas/dnd5e/     # sistema.yaml (dados SRD) + regras em Python
 │   └── guardiao.py         # bloqueia livros/dados protegidos no repo (ADR 0002)
+├── scripts/deploy.py       # deploy no Databricks: código no volume + bundle (ADR 0004)
 ├── app/                    # site Streamlit
 ├── pipelines/              # notebooks e jobs do Databricks
 ├── databricks.yml          # Asset Bundle (targets dev/prod)
@@ -87,8 +88,11 @@ streamlit run app/streamlit_app.py       # site local em http://localhost:8501
 
 ```bash
 databricks auth login --host https://<seu-workspace>.cloud.databricks.com
-databricks bundle deploy && databricks bundle run oraculo_pipeline
+python scripts/deploy.py --run      # envia o código ao volume, faz o deploy e roda o pipeline
 ```
+
+O código vai para um volume do Unity Catalog em vez da pasta do workspace. O motivo está no
+[ADR 0004](docs/decisoes/0004-codigo-em-volume.md).
 
 **Site público:** em [share.streamlit.io](https://share.streamlit.io), faça login com o GitHub
 e escolha este repositório e o arquivo `app/streamlit_app.py`.
