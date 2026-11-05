@@ -45,6 +45,46 @@ display(
 
 # COMMAND ----------
 
+# MAGIC %md
+# MAGIC ### Defesas dos monstros por faixa de CR
+# MAGIC Base numérica das dicas de análise (ex.: "dano só físico" pesa mais em CR alto).
+
+# COMMAND ----------
+
+monstros = spark.table(f"{ALVO}.silver_dnd5e_monstros")
+faixa = (
+    F.when(F.col("cr") < 1, "0-1/2")
+    .when(F.col("cr") <= 4, "01-04")
+    .when(F.col("cr") <= 10, "05-10")
+    .when(F.col("cr") <= 16, "11-16")
+    .otherwise("17+")
+)
+(
+    monstros.withColumn("faixa_cr", faixa)
+    .groupBy("faixa_cr")
+    .agg(
+        F.count("*").alias("monstros"),
+        F.round(F.avg((F.col("fisico_nao_magico") != "").cast("int")), 3).alias(
+            "pct_defesa_fisico_nao_magico"
+        ),
+        F.round(F.avg(F.col("voa").cast("int")), 3).alias("pct_voam"),
+        F.round(F.avg((F.col("acoes_lendarias") > 0).cast("int")), 3).alias("pct_lendarios"),
+        F.round(F.avg((F.col("ataques_em_area") > 0).cast("int")), 3).alias("pct_com_area"),
+        F.round(F.avg(F.col("imunidades_dano").contains("poison").cast("int")), 3).alias(
+            "pct_imune_veneno"
+        ),
+        F.round(F.avg("ca"), 1).alias("ca_media"),
+        F.round(F.avg("pv"), 0).alias("pv_medio"),
+    )
+    .orderBy("faixa_cr")
+    .write.mode("overwrite")
+    .option("overwriteSchema", "true")
+    .saveAsTable(f"{ALVO}.gold_dnd5e_monstros_defesas")
+)
+display(spark.table(f"{ALVO}.gold_dnd5e_monstros_defesas"))
+
+# COMMAND ----------
+
 publico = spark.table(f"{ALVO}.sistemas").filter("sistema_id = 'dnd5e'").first()["conteudo_publico"]
 assert publico, "dnd5e não está marcado como conteúdo público — exportação bloqueada (ADR 0002)"
 

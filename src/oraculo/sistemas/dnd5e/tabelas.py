@@ -14,11 +14,12 @@ from oraculo.sistemas.dnd5e.catalogo import (
     Catalogo,
     ClasseSRD,
     Magia,
+    Monstro,
     Pericia,
     Raca,
 )
 
-TABELAS = ("racas", "classes", "magias", "armas", "armaduras", "pericias")
+TABELAS = ("racas", "classes", "magias", "armas", "armaduras", "pericias", "monstros")
 _MODELOS = {
     "racas": Raca,
     "classes": ClasseSRD,
@@ -26,6 +27,7 @@ _MODELOS = {
     "armas": Arma,
     "armaduras": Armadura,
     "pericias": Pericia,
+    "monstros": Monstro,
 }
 
 
@@ -74,6 +76,21 @@ def _planas(tabela: str, item) -> dict:
             "soma_des": item.soma_des,
             "for_minima": item.for_minima,
         }
+    if tabela == "monstros":
+        return {
+            "nome": item.nome,
+            "tipo": item.tipo,
+            "cr": item.cr,
+            "xp": item.xp,
+            "ca": item.ca,
+            "pv": item.pv,
+            "voa": item.voa,
+            "fisico_nao_magico": item.fisico_nao_magico or "",
+            "imunidades_dano": ",".join(item.imunidades_dano),
+            "resistencias_dano": ",".join(item.resistencias_dano),
+            "acoes_lendarias": item.acoes_lendarias,
+            "ataques_em_area": sum(a.area for a in item.ataques),
+        }
     return {"nome": item.nome, "atributo": item.atributo}
 
 
@@ -109,6 +126,7 @@ def validar_catalogo(cat: Catalogo) -> list[str]:
         "armas": 30,
         "armaduras": 12,
         "pericias": 18,
+        "monstros": 300,
     }
     for tabela, minimo in minimos.items():
         n = len(getattr(cat, tabela))
@@ -121,4 +139,9 @@ def validar_catalogo(cat: Catalogo) -> list[str]:
     for m in cat.magias:
         if not set(m.classes) <= ids_classes:
             problemas.append(f"magia {m.id}: classe desconhecida {set(m.classes) - ids_classes}")
+    for mo in cat.monstros:
+        if mo.pv <= 0 or mo.ca <= 0:
+            problemas.append(f"monstro {mo.id}: PV ou CA inválidos")
+        if any(n not in {a.nome for a in mo.ataques} for n in mo.rotina):
+            problemas.append(f"monstro {mo.id}: rotina cita ataque inexistente")
     return problemas

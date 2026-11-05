@@ -107,6 +107,43 @@ class Pericia(BaseModel):
     atributo: str
 
 
+class AtaqueMonstro(BaseModel):
+    nome: str
+    bonus_ataque: int | None = None  # jogada de ataque...
+    cd: int | None = None  # ...ou teste de resistência
+    resistencia: str | None = None  # atributo do teste
+    dano_medio: float = 0.0
+    tipos_dano: list[str] = Field(default_factory=list)
+    area: bool = False
+    limitado: bool = False  # recarga ou x/dia
+
+
+class Monstro(BaseModel):
+    id: str
+    nome: str
+    tipo: str
+    tamanho: str
+    cr: float
+    xp: int
+    ca: int
+    pv: int
+    atributos: dict[str, int]
+    resistencias_bonus: dict[str, int]  # bônus em cada teste de resistência
+    imunidades_dano: list[str] = Field(default_factory=list)
+    resistencias_dano: list[str] = Field(default_factory=list)
+    vulnerabilidades_dano: list[str] = Field(default_factory=list)
+    fisico_nao_magico: str | None = None  # "imune" ou "resiste" a físico não mágico
+    imunidades_condicao: list[str] = Field(default_factory=list)
+    voa: bool = False
+    acoes_lendarias: int = 0
+    resistencia_lendaria: bool = False
+    ataques: list[AtaqueMonstro] = Field(default_factory=list)
+    rotina: list[str] = Field(default_factory=list)  # ataques de um turno normal
+
+    def ataque(self, nome: str) -> AtaqueMonstro:
+        return next(a for a in self.ataques if a.nome == nome)
+
+
 class Catalogo(BaseModel):
     sistema: str = "dnd5e"
     fonte: str = "SRD 5.1 (CC-BY-4.0) via dnd5eapi.co"
@@ -116,6 +153,10 @@ class Catalogo(BaseModel):
     armas: list[Arma]
     armaduras: list[Armadura]
     pericias: list[Pericia]
+    monstros: list[Monstro] = Field(default_factory=list)
+
+    def monstro(self, id_: str) -> Monstro:
+        return next(m for m in self.monstros if m.id == id_)
 
     def raca(self, id_: str) -> Raca:
         return next(r for r in self.racas if r.id == id_)
@@ -130,7 +171,7 @@ class Catalogo(BaseModel):
         return [m for m in self.magias if classe_id in m.classes and m.circulo <= circulo_max]
 
     def resumo(self) -> dict[str, int]:
-        campos = ("racas", "classes", "magias", "armas", "armaduras", "pericias")
+        campos = ("racas", "classes", "magias", "armas", "armaduras", "pericias", "monstros")
         return {campo: len(getattr(self, campo)) for campo in campos}
 
     def salvar(self, caminho: str | Path) -> None:
