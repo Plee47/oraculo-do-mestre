@@ -2,7 +2,13 @@
 
 from __future__ import annotations
 
+import sys
 from pathlib import Path
+
+# Usa sempre o código do repositório (src/), nunca um pacote `oraculo` instalado antes.
+# O Streamlit Cloud reaproveita o ambiente entre deploys; sem isto, o site rodaria uma
+# versão antiga do pacote depois de cada atualização.
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 import streamlit as st
 
