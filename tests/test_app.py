@@ -6,7 +6,13 @@ import pytest
 from streamlit.testing.v1 import AppTest
 
 APP = str(Path(__file__).parents[1] / "app" / "streamlit_app.py")
-PAGINAS = ("Início", "Ficha rápida (D&D 5e)", "Roteiro", "Conteúdo e licenças")
+PAGINAS = (
+    "Início",
+    "Gerador de fichas (D&D 5e)",
+    "Ficha rápida (D&D 5e)",
+    "Roteiro",
+    "Conteúdo e licenças",
+)
 
 
 @pytest.mark.parametrize("pagina", PAGINAS)
@@ -25,3 +31,14 @@ def test_ficha_rapida_calcula_e_valida():
 
     at.number_input(key="attr_car").set_value(15).run()  # estoura o orçamento
     assert at.error
+
+
+def test_gerador_de_fichas_gera_e_regera():
+    at = AppTest.from_file(APP, default_timeout=30).run()
+    at.sidebar.radio[0].set_value("Gerador de fichas (D&D 5e)").run()
+    assert not at.exception
+    assert not at.error  # a ficha gerada é válida
+    titulo = at.subheader[0].value
+    at.button[0].click().run()  # "Gerar outra"
+    assert not at.exception
+    assert at.subheader[0].value != titulo or at.session_state.semente == 2

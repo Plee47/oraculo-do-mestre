@@ -1,0 +1,11368 @@
+{
+ "sistema": "dnd5e",
+ "fonte": "SRD 5.1 (CC-BY-4.0) via dnd5eapi.co",
+ "racas": [
+  {
+   "id": "dragonborn",
+   "nome": "Dragonborn",
+   "deslocamento": 30,
+   "tamanho": "Medium",
+   "bonus": {
+    "for": 2,
+    "car": 1
+   },
+   "bonus_escolha": 0,
+   "bonus_escolha_opcoes": []
+  },
+  {
+   "id": "dwarf",
+   "nome": "Dwarf",
+   "deslocamento": 25,
+   "tamanho": "Medium",
+   "bonus": {
+    "con": 2
+   },
+   "bonus_escolha": 0,
+   "bonus_escolha_opcoes": []
+  },
+  {
+   "id": "elf",
+   "nome": "Elf",
+   "deslocamento": 30,
+   "tamanho": "Medium",
+   "bonus": {
+    "des": 2
+   },
+   "bonus_escolha": 0,
+   "bonus_escolha_opcoes": []
+  },
+  {
+   "id": "gnome",
+   "nome": "Gnome",
+   "deslocamento": 25,
+   "tamanho": "Small",
+   "bonus": {
+    "int": 2
+   },
+   "bonus_escolha": 0,
+   "bonus_escolha_opcoes": []
+  },
+  {
+   "id": "half-elf",
+   "nome": "Half-Elf",
+   "deslocamento": 30,
+   "tamanho": "Medium",
+   "bonus": {
+    "car": 2
+   },
+   "bonus_escolha": 2,
+   "bonus_escolha_opcoes": [
+    "for",
+    "des",
+    "con",
+    "int",
+    "sab"
+   ]
+  },
+  {
+   "id": "half-orc",
+   "nome": "Half-Orc",
+   "deslocamento": 30,
+   "tamanho": "Medium",
+   "bonus": {
+    "for": 2,
+    "con": 1
+   },
+   "bonus_escolha": 0,
+   "bonus_escolha_opcoes": []
+  },
+  {
+   "id": "halfling",
+   "nome": "Halfling",
+   "deslocamento": 25,
+   "tamanho": "Small",
+   "bonus": {
+    "des": 2
+   },
+   "bonus_escolha": 0,
+   "bonus_escolha_opcoes": []
+  },
+  {
+   "id": "human",
+   "nome": "Human",
+   "deslocamento": 30,
+   "tamanho": "Medium",
+   "bonus": {
+    "for": 1,
+    "des": 1,
+    "con": 1,
+    "int": 1,
+    "sab": 1,
+    "car": 1
+   },
+   "bonus_escolha": 0,
+   "bonus_escolha_opcoes": []
+  },
+  {
+   "id": "tiefling",
+   "nome": "Tiefling",
+   "deslocamento": 30,
+   "tamanho": "Medium",
+   "bonus": {
+    "int": 1,
+    "car": 2
+   },
+   "bonus_escolha": 0,
+   "bonus_escolha_opcoes": []
+  }
+ ],
+ "classes": [
+  {
+   "id": "barbarian",
+   "nome": "Barbarian",
+   "dado_vida": 12,
+   "resistencias": [
+    "for",
+    "con"
+   ],
+   "armaduras": [
+    "escudo",
+    "leve",
+    "media"
+   ],
+   "armas": [
+    "simples",
+    "marcial"
+   ],
+   "pericias_escolha": 2,
+   "pericias_opcoes": [
+    "animal-handling",
+    "athletics",
+    "intimidation",
+    "nature",
+    "perception",
+    "survival"
+   ],
+   "conjuracao": null,
+   "niveis": [
+    {
+     "nivel": 1,
+     "proficiencia": 2,
+     "asi_acumulados": 0,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 2,
+     "proficiencia": 2,
+     "asi_acumulados": 0,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 3,
+     "proficiencia": 2,
+     "asi_acumulados": 0,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 4,
+     "proficiencia": 2,
+     "asi_acumulados": 1,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 5,
+     "proficiencia": 3,
+     "asi_acumulados": 1,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 6,
+     "proficiencia": 3,
+     "asi_acumulados": 1,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 7,
+     "proficiencia": 3,
+     "asi_acumulados": 1,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 8,
+     "proficiencia": 3,
+     "asi_acumulados": 2,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 9,
+     "proficiencia": 4,
+     "asi_acumulados": 2,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 10,
+     "proficiencia": 4,
+     "asi_acumulados": 2,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 11,
+     "proficiencia": 4,
+     "asi_acumulados": 2,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 12,
+     "proficiencia": 4,
+     "asi_acumulados": 3,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 13,
+     "proficiencia": 5,
+     "asi_acumulados": 3,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 14,
+     "proficiencia": 5,
+     "asi_acumulados": 3,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 15,
+     "proficiencia": 5,
+     "asi_acumulados": 3,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 16,
+     "proficiencia": 5,
+     "asi_acumulados": 4,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 17,
+     "proficiencia": 6,
+     "asi_acumulados": 4,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 18,
+     "proficiencia": 6,
+     "asi_acumulados": 4,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 19,
+     "proficiencia": 6,
+     "asi_acumulados": 5,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 20,
+     "proficiencia": 6,
+     "asi_acumulados": 5,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    }
+   ]
+  },
+  {
+   "id": "bard",
+   "nome": "Bard",
+   "dado_vida": 8,
+   "resistencias": [
+    "des",
+    "car"
+   ],
+   "armaduras": [
+    "leve"
+   ],
+   "armas": [
+    "simples",
+    "longswords",
+    "rapiers",
+    "shortswords",
+    "hand-crossbows"
+   ],
+   "pericias_escolha": 3,
+   "pericias_opcoes": [
+    "acrobatics",
+    "animal-handling",
+    "arcana",
+    "athletics",
+    "deception",
+    "history",
+    "insight",
+    "intimidation",
+    "investigation",
+    "medicine",
+    "nature",
+    "perception",
+    "performance",
+    "persuasion",
+    "religion",
+    "sleight-of-hand",
+    "stealth",
+    "survival"
+   ],
+   "conjuracao": "car",
+   "niveis": [
+    {
+     "nivel": 1,
+     "proficiencia": 2,
+     "asi_acumulados": 0,
+     "truques": 2,
+     "magias_conhecidas": 4,
+     "espacos": [
+      2,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 2,
+     "proficiencia": 2,
+     "asi_acumulados": 0,
+     "truques": 2,
+     "magias_conhecidas": 5,
+     "espacos": [
+      3,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 3,
+     "proficiencia": 2,
+     "asi_acumulados": 0,
+     "truques": 2,
+     "magias_conhecidas": 6,
+     "espacos": [
+      4,
+      2,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 4,
+     "proficiencia": 2,
+     "asi_acumulados": 1,
+     "truques": 3,
+     "magias_conhecidas": 7,
+     "espacos": [
+      4,
+      3,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 5,
+     "proficiencia": 3,
+     "asi_acumulados": 1,
+     "truques": 3,
+     "magias_conhecidas": 8,
+     "espacos": [
+      4,
+      3,
+      2,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 6,
+     "proficiencia": 3,
+     "asi_acumulados": 1,
+     "truques": 3,
+     "magias_conhecidas": 9,
+     "espacos": [
+      4,
+      3,
+      3,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 7,
+     "proficiencia": 3,
+     "asi_acumulados": 1,
+     "truques": 3,
+     "magias_conhecidas": 10,
+     "espacos": [
+      4,
+      3,
+      3,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 8,
+     "proficiencia": 3,
+     "asi_acumulados": 2,
+     "truques": 3,
+     "magias_conhecidas": 11,
+     "espacos": [
+      4,
+      3,
+      3,
+      2,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 9,
+     "proficiencia": 4,
+     "asi_acumulados": 2,
+     "truques": 3,
+     "magias_conhecidas": 12,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      1,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 10,
+     "proficiencia": 4,
+     "asi_acumulados": 2,
+     "truques": 4,
+     "magias_conhecidas": 14,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 11,
+     "proficiencia": 4,
+     "asi_acumulados": 2,
+     "truques": 4,
+     "magias_conhecidas": 15,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 12,
+     "proficiencia": 4,
+     "asi_acumulados": 3,
+     "truques": 4,
+     "magias_conhecidas": 15,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 13,
+     "proficiencia": 5,
+     "asi_acumulados": 3,
+     "truques": 4,
+     "magias_conhecidas": 16,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1,
+      1,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 14,
+     "proficiencia": 5,
+     "asi_acumulados": 3,
+     "truques": 4,
+     "magias_conhecidas": 18,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1,
+      1,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 15,
+     "proficiencia": 5,
+     "asi_acumulados": 3,
+     "truques": 4,
+     "magias_conhecidas": 19,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1,
+      1,
+      1,
+      0
+     ]
+    },
+    {
+     "nivel": 16,
+     "proficiencia": 5,
+     "asi_acumulados": 4,
+     "truques": 4,
+     "magias_conhecidas": 19,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1,
+      1,
+      1,
+      0
+     ]
+    },
+    {
+     "nivel": 17,
+     "proficiencia": 6,
+     "asi_acumulados": 4,
+     "truques": 4,
+     "magias_conhecidas": 20,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1,
+      1,
+      1,
+      1
+     ]
+    },
+    {
+     "nivel": 18,
+     "proficiencia": 6,
+     "asi_acumulados": 4,
+     "truques": 4,
+     "magias_conhecidas": 22,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      3,
+      1,
+      1,
+      1,
+      1
+     ]
+    },
+    {
+     "nivel": 19,
+     "proficiencia": 6,
+     "asi_acumulados": 5,
+     "truques": 4,
+     "magias_conhecidas": 22,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      3,
+      2,
+      1,
+      1,
+      1
+     ]
+    },
+    {
+     "nivel": 20,
+     "proficiencia": 6,
+     "asi_acumulados": 5,
+     "truques": 4,
+     "magias_conhecidas": 22,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      3,
+      2,
+      2,
+      1,
+      1
+     ]
+    }
+   ]
+  },
+  {
+   "id": "cleric",
+   "nome": "Cleric",
+   "dado_vida": 8,
+   "resistencias": [
+    "sab",
+    "car"
+   ],
+   "armaduras": [
+    "escudo",
+    "leve",
+    "media"
+   ],
+   "armas": [
+    "simples"
+   ],
+   "pericias_escolha": 2,
+   "pericias_opcoes": [
+    "history",
+    "insight",
+    "medicine",
+    "persuasion",
+    "religion"
+   ],
+   "conjuracao": "sab",
+   "niveis": [
+    {
+     "nivel": 1,
+     "proficiencia": 2,
+     "asi_acumulados": 0,
+     "truques": 3,
+     "magias_conhecidas": null,
+     "espacos": [
+      2,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 2,
+     "proficiencia": 2,
+     "asi_acumulados": 0,
+     "truques": 3,
+     "magias_conhecidas": null,
+     "espacos": [
+      3,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 3,
+     "proficiencia": 2,
+     "asi_acumulados": 0,
+     "truques": 3,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      2,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 4,
+     "proficiencia": 2,
+     "asi_acumulados": 1,
+     "truques": 4,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 5,
+     "proficiencia": 3,
+     "asi_acumulados": 1,
+     "truques": 4,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      2,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 6,
+     "proficiencia": 3,
+     "asi_acumulados": 1,
+     "truques": 4,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      3,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 7,
+     "proficiencia": 3,
+     "asi_acumulados": 1,
+     "truques": 4,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      3,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 8,
+     "proficiencia": 3,
+     "asi_acumulados": 2,
+     "truques": 4,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      3,
+      2,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 9,
+     "proficiencia": 4,
+     "asi_acumulados": 2,
+     "truques": 4,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      1,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 10,
+     "proficiencia": 4,
+     "asi_acumulados": 2,
+     "truques": 5,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 11,
+     "proficiencia": 4,
+     "asi_acumulados": 2,
+     "truques": 5,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 12,
+     "proficiencia": 4,
+     "asi_acumulados": 3,
+     "truques": 5,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 13,
+     "proficiencia": 5,
+     "asi_acumulados": 3,
+     "truques": 5,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1,
+      1,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 14,
+     "proficiencia": 5,
+     "asi_acumulados": 3,
+     "truques": 5,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1,
+      1,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 15,
+     "proficiencia": 5,
+     "asi_acumulados": 3,
+     "truques": 5,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1,
+      1,
+      1,
+      0
+     ]
+    },
+    {
+     "nivel": 16,
+     "proficiencia": 5,
+     "asi_acumulados": 4,
+     "truques": 5,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1,
+      1,
+      1,
+      0
+     ]
+    },
+    {
+     "nivel": 17,
+     "proficiencia": 6,
+     "asi_acumulados": 4,
+     "truques": 5,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1,
+      1,
+      1,
+      1
+     ]
+    },
+    {
+     "nivel": 18,
+     "proficiencia": 6,
+     "asi_acumulados": 4,
+     "truques": 5,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      3,
+      1,
+      1,
+      1,
+      1
+     ]
+    },
+    {
+     "nivel": 19,
+     "proficiencia": 6,
+     "asi_acumulados": 5,
+     "truques": 5,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      3,
+      2,
+      1,
+      1,
+      1
+     ]
+    },
+    {
+     "nivel": 20,
+     "proficiencia": 6,
+     "asi_acumulados": 5,
+     "truques": 5,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      3,
+      2,
+      2,
+      1,
+      1
+     ]
+    }
+   ]
+  },
+  {
+   "id": "druid",
+   "nome": "Druid",
+   "dado_vida": 8,
+   "resistencias": [
+    "int",
+    "sab"
+   ],
+   "armaduras": [
+    "escudo",
+    "leve",
+    "media"
+   ],
+   "armas": [
+    "clubs",
+    "daggers",
+    "javelins",
+    "maces",
+    "quarterstaffs",
+    "sickles",
+    "spears",
+    "darts",
+    "slings",
+    "scimitars",
+    "herbalism-kit"
+   ],
+   "pericias_escolha": 2,
+   "pericias_opcoes": [
+    "arcana",
+    "animal-handling",
+    "insight",
+    "medicine",
+    "nature",
+    "perception",
+    "religion",
+    "survival"
+   ],
+   "conjuracao": "sab",
+   "niveis": [
+    {
+     "nivel": 1,
+     "proficiencia": 2,
+     "asi_acumulados": 0,
+     "truques": 2,
+     "magias_conhecidas": null,
+     "espacos": [
+      2,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 2,
+     "proficiencia": 2,
+     "asi_acumulados": 0,
+     "truques": 2,
+     "magias_conhecidas": null,
+     "espacos": [
+      3,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 3,
+     "proficiencia": 2,
+     "asi_acumulados": 0,
+     "truques": 2,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      2,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 4,
+     "proficiencia": 2,
+     "asi_acumulados": 1,
+     "truques": 3,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 5,
+     "proficiencia": 3,
+     "asi_acumulados": 1,
+     "truques": 3,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      2,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 6,
+     "proficiencia": 3,
+     "asi_acumulados": 1,
+     "truques": 3,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      3,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 7,
+     "proficiencia": 3,
+     "asi_acumulados": 1,
+     "truques": 3,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      3,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 8,
+     "proficiencia": 3,
+     "asi_acumulados": 2,
+     "truques": 3,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      3,
+      2,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 9,
+     "proficiencia": 4,
+     "asi_acumulados": 2,
+     "truques": 3,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      1,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 10,
+     "proficiencia": 4,
+     "asi_acumulados": 2,
+     "truques": 4,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 11,
+     "proficiencia": 4,
+     "asi_acumulados": 2,
+     "truques": 4,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 12,
+     "proficiencia": 4,
+     "asi_acumulados": 3,
+     "truques": 4,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 13,
+     "proficiencia": 5,
+     "asi_acumulados": 3,
+     "truques": 4,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1,
+      1,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 14,
+     "proficiencia": 5,
+     "asi_acumulados": 3,
+     "truques": 4,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1,
+      1,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 15,
+     "proficiencia": 5,
+     "asi_acumulados": 3,
+     "truques": 4,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1,
+      1,
+      1,
+      0
+     ]
+    },
+    {
+     "nivel": 16,
+     "proficiencia": 5,
+     "asi_acumulados": 4,
+     "truques": 4,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1,
+      1,
+      1,
+      0
+     ]
+    },
+    {
+     "nivel": 17,
+     "proficiencia": 6,
+     "asi_acumulados": 4,
+     "truques": 4,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1,
+      1,
+      1,
+      1
+     ]
+    },
+    {
+     "nivel": 18,
+     "proficiencia": 6,
+     "asi_acumulados": 4,
+     "truques": 4,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      3,
+      1,
+      1,
+      1,
+      1
+     ]
+    },
+    {
+     "nivel": 19,
+     "proficiencia": 6,
+     "asi_acumulados": 5,
+     "truques": 4,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      3,
+      2,
+      1,
+      1,
+      1
+     ]
+    },
+    {
+     "nivel": 20,
+     "proficiencia": 6,
+     "asi_acumulados": 5,
+     "truques": 4,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      3,
+      2,
+      2,
+      1,
+      1
+     ]
+    }
+   ]
+  },
+  {
+   "id": "fighter",
+   "nome": "Fighter",
+   "dado_vida": 10,
+   "resistencias": [
+    "for",
+    "con"
+   ],
+   "armaduras": [
+    "escudo",
+    "leve",
+    "media",
+    "pesada"
+   ],
+   "armas": [
+    "simples",
+    "marcial"
+   ],
+   "pericias_escolha": 2,
+   "pericias_opcoes": [
+    "acrobatics",
+    "animal-handling",
+    "athletics",
+    "history",
+    "insight",
+    "intimidation",
+    "perception",
+    "survival"
+   ],
+   "conjuracao": null,
+   "niveis": [
+    {
+     "nivel": 1,
+     "proficiencia": 2,
+     "asi_acumulados": 0,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 2,
+     "proficiencia": 2,
+     "asi_acumulados": 0,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 3,
+     "proficiencia": 2,
+     "asi_acumulados": 0,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 4,
+     "proficiencia": 2,
+     "asi_acumulados": 1,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 5,
+     "proficiencia": 3,
+     "asi_acumulados": 1,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 6,
+     "proficiencia": 3,
+     "asi_acumulados": 2,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 7,
+     "proficiencia": 3,
+     "asi_acumulados": 2,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 8,
+     "proficiencia": 3,
+     "asi_acumulados": 3,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 9,
+     "proficiencia": 4,
+     "asi_acumulados": 3,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 10,
+     "proficiencia": 4,
+     "asi_acumulados": 3,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 11,
+     "proficiencia": 4,
+     "asi_acumulados": 3,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 12,
+     "proficiencia": 4,
+     "asi_acumulados": 4,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 13,
+     "proficiencia": 5,
+     "asi_acumulados": 4,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 14,
+     "proficiencia": 5,
+     "asi_acumulados": 5,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 15,
+     "proficiencia": 5,
+     "asi_acumulados": 5,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 16,
+     "proficiencia": 5,
+     "asi_acumulados": 6,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 17,
+     "proficiencia": 6,
+     "asi_acumulados": 6,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 18,
+     "proficiencia": 6,
+     "asi_acumulados": 6,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 19,
+     "proficiencia": 6,
+     "asi_acumulados": 7,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 20,
+     "proficiencia": 6,
+     "asi_acumulados": 7,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    }
+   ]
+  },
+  {
+   "id": "monk",
+   "nome": "Monk",
+   "dado_vida": 8,
+   "resistencias": [
+    "for",
+    "des"
+   ],
+   "armaduras": [],
+   "armas": [
+    "simples",
+    "shortswords"
+   ],
+   "pericias_escolha": 2,
+   "pericias_opcoes": [
+    "acrobatics",
+    "athletics",
+    "history",
+    "insight",
+    "religion",
+    "stealth"
+   ],
+   "conjuracao": null,
+   "niveis": [
+    {
+     "nivel": 1,
+     "proficiencia": 2,
+     "asi_acumulados": 0,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 2,
+     "proficiencia": 2,
+     "asi_acumulados": 0,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 3,
+     "proficiencia": 2,
+     "asi_acumulados": 0,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 4,
+     "proficiencia": 2,
+     "asi_acumulados": 1,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 5,
+     "proficiencia": 3,
+     "asi_acumulados": 1,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 6,
+     "proficiencia": 3,
+     "asi_acumulados": 1,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 7,
+     "proficiencia": 3,
+     "asi_acumulados": 1,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 8,
+     "proficiencia": 3,
+     "asi_acumulados": 2,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 9,
+     "proficiencia": 4,
+     "asi_acumulados": 2,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 10,
+     "proficiencia": 4,
+     "asi_acumulados": 2,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 11,
+     "proficiencia": 4,
+     "asi_acumulados": 2,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 12,
+     "proficiencia": 4,
+     "asi_acumulados": 3,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 13,
+     "proficiencia": 5,
+     "asi_acumulados": 3,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 14,
+     "proficiencia": 5,
+     "asi_acumulados": 3,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 15,
+     "proficiencia": 5,
+     "asi_acumulados": 3,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 16,
+     "proficiencia": 5,
+     "asi_acumulados": 4,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 17,
+     "proficiencia": 6,
+     "asi_acumulados": 4,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 18,
+     "proficiencia": 6,
+     "asi_acumulados": 4,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 19,
+     "proficiencia": 6,
+     "asi_acumulados": 5,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 20,
+     "proficiencia": 6,
+     "asi_acumulados": 5,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    }
+   ]
+  },
+  {
+   "id": "paladin",
+   "nome": "Paladin",
+   "dado_vida": 10,
+   "resistencias": [
+    "sab",
+    "car"
+   ],
+   "armaduras": [
+    "escudo",
+    "leve",
+    "media",
+    "pesada"
+   ],
+   "armas": [
+    "simples",
+    "marcial"
+   ],
+   "pericias_escolha": 2,
+   "pericias_opcoes": [
+    "athletics",
+    "insight",
+    "intimidation",
+    "medicine",
+    "persuasion",
+    "religion"
+   ],
+   "conjuracao": "car",
+   "niveis": [
+    {
+     "nivel": 1,
+     "proficiencia": 2,
+     "asi_acumulados": 0,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 2,
+     "proficiencia": 2,
+     "asi_acumulados": 0,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      2,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 3,
+     "proficiencia": 2,
+     "asi_acumulados": 0,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      3,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 4,
+     "proficiencia": 2,
+     "asi_acumulados": 1,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      3,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 5,
+     "proficiencia": 3,
+     "asi_acumulados": 1,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      2,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 6,
+     "proficiencia": 3,
+     "asi_acumulados": 1,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      2,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 7,
+     "proficiencia": 3,
+     "asi_acumulados": 1,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 8,
+     "proficiencia": 3,
+     "asi_acumulados": 2,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 9,
+     "proficiencia": 4,
+     "asi_acumulados": 2,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      2,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 10,
+     "proficiencia": 4,
+     "asi_acumulados": 2,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      2,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 11,
+     "proficiencia": 4,
+     "asi_acumulados": 2,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      3,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 12,
+     "proficiencia": 4,
+     "asi_acumulados": 3,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      3,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 13,
+     "proficiencia": 5,
+     "asi_acumulados": 3,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      3,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 14,
+     "proficiencia": 5,
+     "asi_acumulados": 3,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      3,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 15,
+     "proficiencia": 5,
+     "asi_acumulados": 3,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      3,
+      2,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 16,
+     "proficiencia": 5,
+     "asi_acumulados": 4,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      3,
+      2,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 17,
+     "proficiencia": 6,
+     "asi_acumulados": 4,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      1,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 18,
+     "proficiencia": 6,
+     "asi_acumulados": 4,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      1,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 19,
+     "proficiencia": 6,
+     "asi_acumulados": 5,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 20,
+     "proficiencia": 6,
+     "asi_acumulados": 5,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      0,
+      0,
+      0,
+      0
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ranger",
+   "nome": "Ranger",
+   "dado_vida": 10,
+   "resistencias": [
+    "for",
+    "des"
+   ],
+   "armaduras": [
+    "escudo",
+    "leve",
+    "media"
+   ],
+   "armas": [
+    "simples",
+    "marcial"
+   ],
+   "pericias_escolha": 3,
+   "pericias_opcoes": [
+    "animal-handling",
+    "athletics",
+    "insight",
+    "investigation",
+    "nature",
+    "perception",
+    "stealth",
+    "survival"
+   ],
+   "conjuracao": "sab",
+   "niveis": [
+    {
+     "nivel": 1,
+     "proficiencia": 2,
+     "asi_acumulados": 0,
+     "truques": 0,
+     "magias_conhecidas": 0,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 2,
+     "proficiencia": 2,
+     "asi_acumulados": 0,
+     "truques": 0,
+     "magias_conhecidas": 2,
+     "espacos": [
+      2,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 3,
+     "proficiencia": 2,
+     "asi_acumulados": 0,
+     "truques": 0,
+     "magias_conhecidas": 3,
+     "espacos": [
+      3,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 4,
+     "proficiencia": 2,
+     "asi_acumulados": 1,
+     "truques": 0,
+     "magias_conhecidas": 3,
+     "espacos": [
+      3,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 5,
+     "proficiencia": 3,
+     "asi_acumulados": 1,
+     "truques": 0,
+     "magias_conhecidas": 4,
+     "espacos": [
+      4,
+      2,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 6,
+     "proficiencia": 3,
+     "asi_acumulados": 1,
+     "truques": 0,
+     "magias_conhecidas": 4,
+     "espacos": [
+      4,
+      2,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 7,
+     "proficiencia": 3,
+     "asi_acumulados": 1,
+     "truques": 0,
+     "magias_conhecidas": 5,
+     "espacos": [
+      4,
+      3,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 8,
+     "proficiencia": 3,
+     "asi_acumulados": 2,
+     "truques": 0,
+     "magias_conhecidas": 5,
+     "espacos": [
+      4,
+      3,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 9,
+     "proficiencia": 4,
+     "asi_acumulados": 2,
+     "truques": 0,
+     "magias_conhecidas": 6,
+     "espacos": [
+      4,
+      3,
+      2,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 10,
+     "proficiencia": 4,
+     "asi_acumulados": 2,
+     "truques": 0,
+     "magias_conhecidas": 6,
+     "espacos": [
+      4,
+      3,
+      2,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 11,
+     "proficiencia": 4,
+     "asi_acumulados": 2,
+     "truques": 0,
+     "magias_conhecidas": 7,
+     "espacos": [
+      4,
+      3,
+      3,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 12,
+     "proficiencia": 4,
+     "asi_acumulados": 3,
+     "truques": 0,
+     "magias_conhecidas": 7,
+     "espacos": [
+      4,
+      3,
+      3,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 13,
+     "proficiencia": 5,
+     "asi_acumulados": 3,
+     "truques": 0,
+     "magias_conhecidas": 8,
+     "espacos": [
+      4,
+      3,
+      3,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 14,
+     "proficiencia": 5,
+     "asi_acumulados": 3,
+     "truques": 0,
+     "magias_conhecidas": 8,
+     "espacos": [
+      4,
+      3,
+      3,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 15,
+     "proficiencia": 5,
+     "asi_acumulados": 3,
+     "truques": 0,
+     "magias_conhecidas": 9,
+     "espacos": [
+      4,
+      3,
+      3,
+      2,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 16,
+     "proficiencia": 5,
+     "asi_acumulados": 4,
+     "truques": 0,
+     "magias_conhecidas": 9,
+     "espacos": [
+      4,
+      3,
+      3,
+      2,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 17,
+     "proficiencia": 6,
+     "asi_acumulados": 4,
+     "truques": 0,
+     "magias_conhecidas": 10,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      1,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 18,
+     "proficiencia": 6,
+     "asi_acumulados": 4,
+     "truques": 0,
+     "magias_conhecidas": 10,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      1,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 19,
+     "proficiencia": 6,
+     "asi_acumulados": 5,
+     "truques": 0,
+     "magias_conhecidas": 11,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 20,
+     "proficiencia": 6,
+     "asi_acumulados": 5,
+     "truques": 0,
+     "magias_conhecidas": 11,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      0,
+      0,
+      0,
+      0
+     ]
+    }
+   ]
+  },
+  {
+   "id": "rogue",
+   "nome": "Rogue",
+   "dado_vida": 8,
+   "resistencias": [
+    "des",
+    "int"
+   ],
+   "armaduras": [
+    "leve"
+   ],
+   "armas": [
+    "simples",
+    "longswords",
+    "rapiers",
+    "shortswords",
+    "hand-crossbows",
+    "thieves-tools"
+   ],
+   "pericias_escolha": 4,
+   "pericias_opcoes": [
+    "acrobatics",
+    "athletics",
+    "deception",
+    "insight",
+    "intimidation",
+    "investigation",
+    "perception",
+    "performance",
+    "persuasion",
+    "sleight-of-hand",
+    "stealth"
+   ],
+   "conjuracao": null,
+   "niveis": [
+    {
+     "nivel": 1,
+     "proficiencia": 2,
+     "asi_acumulados": 0,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 2,
+     "proficiencia": 2,
+     "asi_acumulados": 0,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 3,
+     "proficiencia": 2,
+     "asi_acumulados": 0,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 4,
+     "proficiencia": 2,
+     "asi_acumulados": 1,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 5,
+     "proficiencia": 3,
+     "asi_acumulados": 1,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 6,
+     "proficiencia": 3,
+     "asi_acumulados": 1,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 7,
+     "proficiencia": 3,
+     "asi_acumulados": 1,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 8,
+     "proficiencia": 3,
+     "asi_acumulados": 2,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 9,
+     "proficiencia": 4,
+     "asi_acumulados": 2,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 10,
+     "proficiencia": 4,
+     "asi_acumulados": 3,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 11,
+     "proficiencia": 4,
+     "asi_acumulados": 2,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 12,
+     "proficiencia": 4,
+     "asi_acumulados": 4,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 13,
+     "proficiencia": 5,
+     "asi_acumulados": 3,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 14,
+     "proficiencia": 5,
+     "asi_acumulados": 3,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 15,
+     "proficiencia": 5,
+     "asi_acumulados": 3,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 16,
+     "proficiencia": 5,
+     "asi_acumulados": 5,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 17,
+     "proficiencia": 6,
+     "asi_acumulados": 4,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 18,
+     "proficiencia": 6,
+     "asi_acumulados": 4,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 19,
+     "proficiencia": 6,
+     "asi_acumulados": 6,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 20,
+     "proficiencia": 6,
+     "asi_acumulados": 5,
+     "truques": 0,
+     "magias_conhecidas": null,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    }
+   ]
+  },
+  {
+   "id": "sorcerer",
+   "nome": "Sorcerer",
+   "dado_vida": 6,
+   "resistencias": [
+    "con",
+    "car"
+   ],
+   "armaduras": [],
+   "armas": [
+    "daggers",
+    "darts",
+    "slings",
+    "quarterstaffs",
+    "crossbows-light"
+   ],
+   "pericias_escolha": 2,
+   "pericias_opcoes": [
+    "arcana",
+    "deception",
+    "insight",
+    "intimidation",
+    "persuasion",
+    "religion"
+   ],
+   "conjuracao": "car",
+   "niveis": [
+    {
+     "nivel": 1,
+     "proficiencia": 2,
+     "asi_acumulados": 0,
+     "truques": 4,
+     "magias_conhecidas": 2,
+     "espacos": [
+      2,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 2,
+     "proficiencia": 2,
+     "asi_acumulados": 0,
+     "truques": 4,
+     "magias_conhecidas": 3,
+     "espacos": [
+      3,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 3,
+     "proficiencia": 2,
+     "asi_acumulados": 0,
+     "truques": 4,
+     "magias_conhecidas": 4,
+     "espacos": [
+      4,
+      2,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 4,
+     "proficiencia": 2,
+     "asi_acumulados": 1,
+     "truques": 5,
+     "magias_conhecidas": 5,
+     "espacos": [
+      4,
+      3,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 5,
+     "proficiencia": 3,
+     "asi_acumulados": 1,
+     "truques": 5,
+     "magias_conhecidas": 6,
+     "espacos": [
+      4,
+      3,
+      2,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 6,
+     "proficiencia": 3,
+     "asi_acumulados": 1,
+     "truques": 5,
+     "magias_conhecidas": 7,
+     "espacos": [
+      4,
+      3,
+      3,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 7,
+     "proficiencia": 3,
+     "asi_acumulados": 1,
+     "truques": 5,
+     "magias_conhecidas": 8,
+     "espacos": [
+      4,
+      3,
+      3,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 8,
+     "proficiencia": 3,
+     "asi_acumulados": 2,
+     "truques": 5,
+     "magias_conhecidas": 9,
+     "espacos": [
+      4,
+      3,
+      3,
+      2,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 9,
+     "proficiencia": 4,
+     "asi_acumulados": 2,
+     "truques": 5,
+     "magias_conhecidas": 10,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      1,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 10,
+     "proficiencia": 4,
+     "asi_acumulados": 2,
+     "truques": 6,
+     "magias_conhecidas": 11,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 11,
+     "proficiencia": 4,
+     "asi_acumulados": 2,
+     "truques": 6,
+     "magias_conhecidas": 12,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 12,
+     "proficiencia": 4,
+     "asi_acumulados": 3,
+     "truques": 6,
+     "magias_conhecidas": 12,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 13,
+     "proficiencia": 5,
+     "asi_acumulados": 3,
+     "truques": 6,
+     "magias_conhecidas": 13,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1,
+      1,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 14,
+     "proficiencia": 5,
+     "asi_acumulados": 3,
+     "truques": 6,
+     "magias_conhecidas": 13,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1,
+      1,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 15,
+     "proficiencia": 5,
+     "asi_acumulados": 3,
+     "truques": 6,
+     "magias_conhecidas": 14,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1,
+      1,
+      1,
+      0
+     ]
+    },
+    {
+     "nivel": 16,
+     "proficiencia": 5,
+     "asi_acumulados": 4,
+     "truques": 6,
+     "magias_conhecidas": 14,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1,
+      1,
+      1,
+      0
+     ]
+    },
+    {
+     "nivel": 17,
+     "proficiencia": 6,
+     "asi_acumulados": 4,
+     "truques": 6,
+     "magias_conhecidas": 15,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1,
+      1,
+      1,
+      1
+     ]
+    },
+    {
+     "nivel": 18,
+     "proficiencia": 6,
+     "asi_acumulados": 4,
+     "truques": 6,
+     "magias_conhecidas": 15,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      3,
+      1,
+      1,
+      1,
+      1
+     ]
+    },
+    {
+     "nivel": 19,
+     "proficiencia": 6,
+     "asi_acumulados": 5,
+     "truques": 6,
+     "magias_conhecidas": 15,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      3,
+      2,
+      1,
+      1,
+      1
+     ]
+    },
+    {
+     "nivel": 20,
+     "proficiencia": 6,
+     "asi_acumulados": 5,
+     "truques": 6,
+     "magias_conhecidas": 15,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      3,
+      2,
+      2,
+      1,
+      1
+     ]
+    }
+   ]
+  },
+  {
+   "id": "warlock",
+   "nome": "Warlock",
+   "dado_vida": 8,
+   "resistencias": [
+    "sab",
+    "car"
+   ],
+   "armaduras": [
+    "leve"
+   ],
+   "armas": [
+    "simples"
+   ],
+   "pericias_escolha": 2,
+   "pericias_opcoes": [
+    "arcana",
+    "deception",
+    "history",
+    "intimidation",
+    "investigation",
+    "nature",
+    "religion"
+   ],
+   "conjuracao": "car",
+   "niveis": [
+    {
+     "nivel": 1,
+     "proficiencia": 2,
+     "asi_acumulados": 0,
+     "truques": 2,
+     "magias_conhecidas": 2,
+     "espacos": [
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 2,
+     "proficiencia": 2,
+     "asi_acumulados": 0,
+     "truques": 2,
+     "magias_conhecidas": 3,
+     "espacos": [
+      2,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 3,
+     "proficiencia": 2,
+     "asi_acumulados": 0,
+     "truques": 2,
+     "magias_conhecidas": 4,
+     "espacos": [
+      0,
+      2,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 4,
+     "proficiencia": 2,
+     "asi_acumulados": 1,
+     "truques": 3,
+     "magias_conhecidas": 5,
+     "espacos": [
+      0,
+      2,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 5,
+     "proficiencia": 3,
+     "asi_acumulados": 1,
+     "truques": 3,
+     "magias_conhecidas": 6,
+     "espacos": [
+      0,
+      0,
+      2,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 6,
+     "proficiencia": 3,
+     "asi_acumulados": 1,
+     "truques": 3,
+     "magias_conhecidas": 7,
+     "espacos": [
+      0,
+      0,
+      2,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 7,
+     "proficiencia": 3,
+     "asi_acumulados": 1,
+     "truques": 3,
+     "magias_conhecidas": 8,
+     "espacos": [
+      0,
+      0,
+      0,
+      2,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 8,
+     "proficiencia": 3,
+     "asi_acumulados": 2,
+     "truques": 3,
+     "magias_conhecidas": 9,
+     "espacos": [
+      0,
+      0,
+      0,
+      2,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 9,
+     "proficiencia": 4,
+     "asi_acumulados": 2,
+     "truques": 3,
+     "magias_conhecidas": 10,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      2,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 10,
+     "proficiencia": 4,
+     "asi_acumulados": 2,
+     "truques": 4,
+     "magias_conhecidas": 10,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      2,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 11,
+     "proficiencia": 4,
+     "asi_acumulados": 2,
+     "truques": 4,
+     "magias_conhecidas": 11,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      3,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 12,
+     "proficiencia": 4,
+     "asi_acumulados": 3,
+     "truques": 4,
+     "magias_conhecidas": 11,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      3,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 13,
+     "proficiencia": 5,
+     "asi_acumulados": 3,
+     "truques": 4,
+     "magias_conhecidas": 12,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      3,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 14,
+     "proficiencia": 5,
+     "asi_acumulados": 3,
+     "truques": 4,
+     "magias_conhecidas": 12,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      3,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 15,
+     "proficiencia": 5,
+     "asi_acumulados": 3,
+     "truques": 4,
+     "magias_conhecidas": 13,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      3,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 16,
+     "proficiencia": 5,
+     "asi_acumulados": 4,
+     "truques": 4,
+     "magias_conhecidas": 13,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      3,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 17,
+     "proficiencia": 6,
+     "asi_acumulados": 4,
+     "truques": 4,
+     "magias_conhecidas": 14,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      4,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 18,
+     "proficiencia": 6,
+     "asi_acumulados": 4,
+     "truques": 4,
+     "magias_conhecidas": 14,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      4,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 19,
+     "proficiencia": 6,
+     "asi_acumulados": 5,
+     "truques": 4,
+     "magias_conhecidas": 15,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      4,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 20,
+     "proficiencia": 6,
+     "asi_acumulados": 5,
+     "truques": 4,
+     "magias_conhecidas": 15,
+     "espacos": [
+      0,
+      0,
+      0,
+      0,
+      4,
+      0,
+      0,
+      0,
+      0
+     ]
+    }
+   ]
+  },
+  {
+   "id": "wizard",
+   "nome": "Wizard",
+   "dado_vida": 6,
+   "resistencias": [
+    "int",
+    "sab"
+   ],
+   "armaduras": [],
+   "armas": [
+    "daggers",
+    "darts",
+    "slings",
+    "quarterstaffs",
+    "crossbows-light"
+   ],
+   "pericias_escolha": 2,
+   "pericias_opcoes": [
+    "arcana",
+    "history",
+    "insight",
+    "investigation",
+    "medicine",
+    "religion"
+   ],
+   "conjuracao": "int",
+   "niveis": [
+    {
+     "nivel": 1,
+     "proficiencia": 2,
+     "asi_acumulados": 0,
+     "truques": 3,
+     "magias_conhecidas": null,
+     "espacos": [
+      2,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 2,
+     "proficiencia": 2,
+     "asi_acumulados": 0,
+     "truques": 3,
+     "magias_conhecidas": null,
+     "espacos": [
+      3,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 3,
+     "proficiencia": 2,
+     "asi_acumulados": 0,
+     "truques": 3,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      2,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 4,
+     "proficiencia": 2,
+     "asi_acumulados": 1,
+     "truques": 4,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 5,
+     "proficiencia": 3,
+     "asi_acumulados": 1,
+     "truques": 4,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      2,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 6,
+     "proficiencia": 3,
+     "asi_acumulados": 1,
+     "truques": 4,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      3,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 7,
+     "proficiencia": 3,
+     "asi_acumulados": 1,
+     "truques": 4,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      3,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 8,
+     "proficiencia": 3,
+     "asi_acumulados": 2,
+     "truques": 4,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      3,
+      2,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 9,
+     "proficiencia": 4,
+     "asi_acumulados": 2,
+     "truques": 4,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      1,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 10,
+     "proficiencia": 4,
+     "asi_acumulados": 2,
+     "truques": 5,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 11,
+     "proficiencia": 4,
+     "asi_acumulados": 2,
+     "truques": 5,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 12,
+     "proficiencia": 4,
+     "asi_acumulados": 3,
+     "truques": 5,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 13,
+     "proficiencia": 5,
+     "asi_acumulados": 3,
+     "truques": 5,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1,
+      1,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 14,
+     "proficiencia": 5,
+     "asi_acumulados": 3,
+     "truques": 5,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1,
+      1,
+      0,
+      0
+     ]
+    },
+    {
+     "nivel": 15,
+     "proficiencia": 5,
+     "asi_acumulados": 3,
+     "truques": 5,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1,
+      1,
+      1,
+      0
+     ]
+    },
+    {
+     "nivel": 16,
+     "proficiencia": 5,
+     "asi_acumulados": 4,
+     "truques": 5,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1,
+      1,
+      1,
+      0
+     ]
+    },
+    {
+     "nivel": 17,
+     "proficiencia": 6,
+     "asi_acumulados": 4,
+     "truques": 5,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      2,
+      1,
+      1,
+      1,
+      1
+     ]
+    },
+    {
+     "nivel": 18,
+     "proficiencia": 6,
+     "asi_acumulados": 4,
+     "truques": 5,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      3,
+      1,
+      1,
+      1,
+      1
+     ]
+    },
+    {
+     "nivel": 19,
+     "proficiencia": 6,
+     "asi_acumulados": 5,
+     "truques": 5,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      3,
+      2,
+      1,
+      1,
+      1
+     ]
+    },
+    {
+     "nivel": 20,
+     "proficiencia": 6,
+     "asi_acumulados": 5,
+     "truques": 5,
+     "magias_conhecidas": null,
+     "espacos": [
+      4,
+      3,
+      3,
+      3,
+      3,
+      2,
+      2,
+      1,
+      1
+     ]
+    }
+   ]
+  }
+ ],
+ "magias": [
+  {
+   "id": "acid-arrow",
+   "nome": "Acid Arrow",
+   "circulo": 2,
+   "escola": "evocation",
+   "classes": [
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": "ranged",
+   "resistencia": null,
+   "tipo_dano": "acid",
+   "dano": "4d4",
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "acid-splash",
+   "nome": "Acid Splash",
+   "circulo": 0,
+   "escola": "conjuration",
+   "classes": [
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "des",
+   "tipo_dano": "acid",
+   "dano": "1d6",
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "aid",
+   "nome": "Aid",
+   "circulo": 2,
+   "escola": "abjuration",
+   "classes": [
+    "cleric",
+    "paladin"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": true,
+   "area": false
+  },
+  {
+   "id": "alarm",
+   "nome": "Alarm",
+   "circulo": 1,
+   "escola": "abjuration",
+   "classes": [
+    "ranger",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": true,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "alter-self",
+   "nome": "Alter Self",
+   "circulo": 2,
+   "escola": "transmutation",
+   "classes": [
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "animal-friendship",
+   "nome": "Animal Friendship",
+   "circulo": 1,
+   "escola": "enchantment",
+   "classes": [
+    "bard",
+    "druid",
+    "ranger"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "sab",
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "animal-messenger",
+   "nome": "Animal Messenger",
+   "circulo": 2,
+   "escola": "enchantment",
+   "classes": [
+    "bard",
+    "druid",
+    "ranger"
+   ],
+   "concentracao": false,
+   "ritual": true,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "animal-shapes",
+   "nome": "Animal Shapes",
+   "circulo": 8,
+   "escola": "transmutation",
+   "classes": [
+    "druid"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "animate-dead",
+   "nome": "Animate Dead",
+   "circulo": 3,
+   "escola": "necromancy",
+   "classes": [
+    "cleric",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "animate-objects",
+   "nome": "Animate Objects",
+   "circulo": 5,
+   "escola": "transmutation",
+   "classes": [
+    "bard",
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "antilife-shell",
+   "nome": "Antilife Shell",
+   "circulo": 5,
+   "escola": "abjuration",
+   "classes": [
+    "druid"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "antimagic-field",
+   "nome": "Antimagic Field",
+   "circulo": 8,
+   "escola": "abjuration",
+   "classes": [
+    "cleric",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "antipathy-sympathy",
+   "nome": "Antipathy/Sympathy",
+   "circulo": 8,
+   "escola": "enchantment",
+   "classes": [
+    "druid",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "arcane-eye",
+   "nome": "Arcane Eye",
+   "circulo": 4,
+   "escola": "divination",
+   "classes": [
+    "cleric",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "arcane-hand",
+   "nome": "Arcane Hand",
+   "circulo": 5,
+   "escola": "evocation",
+   "classes": [
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "arcane-lock",
+   "nome": "Arcane Lock",
+   "circulo": 2,
+   "escola": "abjuration",
+   "classes": [
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "arcane-sword",
+   "nome": "Arcane Sword",
+   "circulo": 7,
+   "escola": "evocation",
+   "classes": [
+    "bard",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": "melee",
+   "resistencia": null,
+   "tipo_dano": "force",
+   "dano": "3d10",
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "arcanists-magic-aura",
+   "nome": "Arcanist's Magic Aura",
+   "circulo": 2,
+   "escola": "illusion",
+   "classes": [
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "astral-projection",
+   "nome": "Astral Projection",
+   "circulo": 9,
+   "escola": "necromancy",
+   "classes": [
+    "cleric",
+    "warlock",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "augury",
+   "nome": "Augury",
+   "circulo": 2,
+   "escola": "divination",
+   "classes": [
+    "cleric"
+   ],
+   "concentracao": false,
+   "ritual": true,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "awaken",
+   "nome": "Awaken",
+   "circulo": 5,
+   "escola": "transmutation",
+   "classes": [
+    "bard",
+    "druid"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "bane",
+   "nome": "Bane",
+   "circulo": 1,
+   "escola": "enchantment",
+   "classes": [
+    "bard",
+    "cleric"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "car",
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "banishment",
+   "nome": "Banishment",
+   "circulo": 4,
+   "escola": "abjuration",
+   "classes": [
+    "cleric",
+    "paladin",
+    "sorcerer",
+    "warlock",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "car",
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "barkskin",
+   "nome": "Barkskin",
+   "circulo": 2,
+   "escola": "transmutation",
+   "classes": [
+    "druid",
+    "ranger"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "beacon-of-hope",
+   "nome": "Beacon of Hope",
+   "circulo": 3,
+   "escola": "abjuration",
+   "classes": [
+    "cleric"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "bestow-curse",
+   "nome": "Bestow Curse",
+   "circulo": 3,
+   "escola": "necromancy",
+   "classes": [
+    "bard",
+    "cleric",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "sab",
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "black-tentacles",
+   "nome": "Black Tentacles",
+   "circulo": 4,
+   "escola": "conjuration",
+   "classes": [
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "des",
+   "tipo_dano": "bludgeoning",
+   "dano": "3d6",
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "blade-barrier",
+   "nome": "Blade Barrier",
+   "circulo": 6,
+   "escola": "evocation",
+   "classes": [
+    "cleric"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "des",
+   "tipo_dano": "slashing",
+   "dano": "6d10",
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "bless",
+   "nome": "Bless",
+   "circulo": 1,
+   "escola": "enchantment",
+   "classes": [
+    "cleric",
+    "paladin"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "blight",
+   "nome": "Blight",
+   "circulo": 4,
+   "escola": "necromancy",
+   "classes": [
+    "druid",
+    "sorcerer",
+    "warlock",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "con",
+   "tipo_dano": "necrotic",
+   "dano": "8d8",
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "blindness-deafness",
+   "nome": "Blindness/Deafness",
+   "circulo": 2,
+   "escola": "necromancy",
+   "classes": [
+    "bard",
+    "cleric",
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "con",
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "blink",
+   "nome": "Blink",
+   "circulo": 3,
+   "escola": "transmutation",
+   "classes": [
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "blur",
+   "nome": "Blur",
+   "circulo": 2,
+   "escola": "illusion",
+   "classes": [
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "branding-smite",
+   "nome": "Branding Smite",
+   "circulo": 2,
+   "escola": "evocation",
+   "classes": [
+    "paladin"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": "radiant",
+   "dano": "2d6",
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "burning-hands",
+   "nome": "Burning Hands",
+   "circulo": 1,
+   "escola": "evocation",
+   "classes": [
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "des",
+   "tipo_dano": "fire",
+   "dano": "3d6",
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "call-lightning",
+   "nome": "Call Lightning",
+   "circulo": 3,
+   "escola": "conjuration",
+   "classes": [
+    "druid"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": "lightning",
+   "dano": "3d10",
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "calm-emotions",
+   "nome": "Calm Emotions",
+   "circulo": 2,
+   "escola": "enchantment",
+   "classes": [
+    "bard",
+    "cleric"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "car",
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "chain-lightning",
+   "nome": "Chain Lightning",
+   "circulo": 6,
+   "escola": "evocation",
+   "classes": [
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "des",
+   "tipo_dano": "lightning",
+   "dano": "10d8",
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "charm-person",
+   "nome": "Charm Person",
+   "circulo": 1,
+   "escola": "enchantment",
+   "classes": [
+    "bard",
+    "druid",
+    "sorcerer",
+    "warlock",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "sab",
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "chill-touch",
+   "nome": "Chill Touch",
+   "circulo": 0,
+   "escola": "necromancy",
+   "classes": [
+    "sorcerer",
+    "warlock",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": "ranged",
+   "resistencia": null,
+   "tipo_dano": "necrotic",
+   "dano": "1d8",
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "circle-of-death",
+   "nome": "Circle of Death",
+   "circulo": 6,
+   "escola": "necromancy",
+   "classes": [
+    "sorcerer",
+    "warlock",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "con",
+   "tipo_dano": "necrotic",
+   "dano": "8d6",
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "clairvoyance",
+   "nome": "Clairvoyance",
+   "circulo": 3,
+   "escola": "divination",
+   "classes": [
+    "bard",
+    "cleric",
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "clone",
+   "nome": "Clone",
+   "circulo": 8,
+   "escola": "necromancy",
+   "classes": [
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "cloudkill",
+   "nome": "Cloudkill",
+   "circulo": 5,
+   "escola": "conjuration",
+   "classes": [
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "con",
+   "tipo_dano": "poison",
+   "dano": "5d8",
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "color-spray",
+   "nome": "Color Spray",
+   "circulo": 1,
+   "escola": "illusion",
+   "classes": [
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "command",
+   "nome": "Command",
+   "circulo": 1,
+   "escola": "enchantment",
+   "classes": [
+    "cleric",
+    "paladin"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "sab",
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "commune",
+   "nome": "Commune",
+   "circulo": 5,
+   "escola": "divination",
+   "classes": [
+    "cleric"
+   ],
+   "concentracao": false,
+   "ritual": true,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "commune-with-nature",
+   "nome": "Commune With Nature",
+   "circulo": 5,
+   "escola": "divination",
+   "classes": [
+    "druid",
+    "ranger"
+   ],
+   "concentracao": false,
+   "ritual": true,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "comprehend-languages",
+   "nome": "Comprehend Languages",
+   "circulo": 1,
+   "escola": "divination",
+   "classes": [
+    "bard",
+    "sorcerer",
+    "warlock",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": true,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "compulsion",
+   "nome": "Compulsion",
+   "circulo": 4,
+   "escola": "enchantment",
+   "classes": [
+    "bard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "sab",
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "cone-of-cold",
+   "nome": "Cone of Cold",
+   "circulo": 5,
+   "escola": "evocation",
+   "classes": [
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "con",
+   "tipo_dano": "cold",
+   "dano": "8d8",
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "confusion",
+   "nome": "Confusion",
+   "circulo": 4,
+   "escola": "enchantment",
+   "classes": [
+    "bard",
+    "druid",
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "sab",
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "conjure-animals",
+   "nome": "Conjure Animals",
+   "circulo": 3,
+   "escola": "conjuration",
+   "classes": [
+    "druid",
+    "ranger"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "conjure-celestial",
+   "nome": "Conjure Celestial",
+   "circulo": 7,
+   "escola": "conjuration",
+   "classes": [
+    "cleric"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "conjure-elemental",
+   "nome": "Conjure Elemental",
+   "circulo": 5,
+   "escola": "conjuration",
+   "classes": [
+    "druid",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "conjure-fey",
+   "nome": "Conjure Fey",
+   "circulo": 6,
+   "escola": "conjuration",
+   "classes": [
+    "druid",
+    "warlock"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "conjure-minor-elementals",
+   "nome": "Conjure Minor Elementals",
+   "circulo": 4,
+   "escola": "conjuration",
+   "classes": [
+    "druid",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "conjure-woodland-beings",
+   "nome": "Conjure Woodland Beings",
+   "circulo": 4,
+   "escola": "conjuration",
+   "classes": [
+    "druid",
+    "ranger"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "contact-other-plane",
+   "nome": "Contact Other Plane",
+   "circulo": 5,
+   "escola": "divination",
+   "classes": [
+    "warlock",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": true,
+   "ataque": null,
+   "resistencia": "int",
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "contagion",
+   "nome": "Contagion",
+   "circulo": 5,
+   "escola": "necromancy",
+   "classes": [
+    "cleric",
+    "druid"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": "melee",
+   "resistencia": "con",
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "contingency",
+   "nome": "Contingency",
+   "circulo": 6,
+   "escola": "evocation",
+   "classes": [
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "continual-flame",
+   "nome": "Continual Flame",
+   "circulo": 2,
+   "escola": "evocation",
+   "classes": [
+    "cleric",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "control-water",
+   "nome": "Control Water",
+   "circulo": 4,
+   "escola": "transmutation",
+   "classes": [
+    "cleric",
+    "druid",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "for",
+   "tipo_dano": "bludgeoning",
+   "dano": "2d8",
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "control-weather",
+   "nome": "Control Weather",
+   "circulo": 8,
+   "escola": "transmutation",
+   "classes": [
+    "cleric",
+    "druid",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "counterspell",
+   "nome": "Counterspell",
+   "circulo": 3,
+   "escola": "abjuration",
+   "classes": [
+    "sorcerer",
+    "warlock",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "create-food-and-water",
+   "nome": "Create Food and Water",
+   "circulo": 3,
+   "escola": "conjuration",
+   "classes": [
+    "cleric",
+    "druid",
+    "paladin"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "create-or-destroy-water",
+   "nome": "Create or Destroy Water",
+   "circulo": 1,
+   "escola": "transmutation",
+   "classes": [
+    "cleric",
+    "druid"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "create-undead",
+   "nome": "Create Undead",
+   "circulo": 6,
+   "escola": "necromancy",
+   "classes": [
+    "cleric",
+    "warlock",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "creation",
+   "nome": "Creation",
+   "circulo": 5,
+   "escola": "illusion",
+   "classes": [
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "cure-wounds",
+   "nome": "Cure Wounds",
+   "circulo": 1,
+   "escola": "evocation",
+   "classes": [
+    "bard",
+    "cleric",
+    "druid",
+    "paladin",
+    "ranger"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": true,
+   "area": false
+  },
+  {
+   "id": "dancing-lights",
+   "nome": "Dancing Lights",
+   "circulo": 0,
+   "escola": "evocation",
+   "classes": [
+    "bard",
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "darkness",
+   "nome": "Darkness",
+   "circulo": 2,
+   "escola": "evocation",
+   "classes": [
+    "sorcerer",
+    "warlock",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "darkvision",
+   "nome": "Darkvision",
+   "circulo": 2,
+   "escola": "transmutation",
+   "classes": [
+    "druid",
+    "ranger",
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "daylight",
+   "nome": "Daylight",
+   "circulo": 3,
+   "escola": "evocation",
+   "classes": [
+    "cleric",
+    "druid",
+    "paladin",
+    "ranger",
+    "sorcerer"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "death-ward",
+   "nome": "Death Ward",
+   "circulo": 4,
+   "escola": "abjuration",
+   "classes": [
+    "cleric",
+    "paladin"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "delayed-blast-fireball",
+   "nome": "Delayed Blast Fireball",
+   "circulo": 7,
+   "escola": "evocation",
+   "classes": [
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "des",
+   "tipo_dano": "fire",
+   "dano": "12d6",
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "demiplane",
+   "nome": "Demiplane",
+   "circulo": 8,
+   "escola": "conjuration",
+   "classes": [
+    "warlock",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "detect-evil-and-good",
+   "nome": "Detect Evil and Good",
+   "circulo": 1,
+   "escola": "divination",
+   "classes": [
+    "cleric",
+    "paladin"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "detect-magic",
+   "nome": "Detect Magic",
+   "circulo": 1,
+   "escola": "divination",
+   "classes": [
+    "bard",
+    "cleric",
+    "druid",
+    "paladin",
+    "ranger",
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": true,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "detect-poison-and-disease",
+   "nome": "Detect Poison and Disease",
+   "circulo": 1,
+   "escola": "divination",
+   "classes": [
+    "cleric",
+    "druid",
+    "paladin",
+    "ranger"
+   ],
+   "concentracao": true,
+   "ritual": true,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "detect-thoughts",
+   "nome": "Detect Thoughts",
+   "circulo": 2,
+   "escola": "divination",
+   "classes": [
+    "bard",
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "dimension-door",
+   "nome": "Dimension Door",
+   "circulo": 4,
+   "escola": "conjuration",
+   "classes": [
+    "bard",
+    "sorcerer",
+    "warlock",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": "force",
+   "dano": "4d6",
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "disguise-self",
+   "nome": "Disguise Self",
+   "circulo": 1,
+   "escola": "illusion",
+   "classes": [
+    "bard",
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "disintegrate",
+   "nome": "Disintegrate",
+   "circulo": 6,
+   "escola": "transmutation",
+   "classes": [
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "des",
+   "tipo_dano": "force",
+   "dano": "10d6 + 40",
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "dispel-evil-and-good",
+   "nome": "Dispel Evil and Good",
+   "circulo": 5,
+   "escola": "abjuration",
+   "classes": [
+    "cleric",
+    "paladin"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "car",
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "dispel-magic",
+   "nome": "Dispel Magic",
+   "circulo": 3,
+   "escola": "abjuration",
+   "classes": [
+    "bard",
+    "cleric",
+    "druid",
+    "paladin",
+    "sorcerer",
+    "warlock",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "divination",
+   "nome": "Divination",
+   "circulo": 4,
+   "escola": "divination",
+   "classes": [
+    "druid"
+   ],
+   "concentracao": false,
+   "ritual": true,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "divine-favor",
+   "nome": "Divine Favor",
+   "circulo": 1,
+   "escola": "evocation",
+   "classes": [
+    "paladin"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": "radiant",
+   "dano": "1d4",
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "divine-word",
+   "nome": "Divine Word",
+   "circulo": 7,
+   "escola": "evocation",
+   "classes": [
+    "cleric"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "car",
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "dominate-beast",
+   "nome": "Dominate Beast",
+   "circulo": 4,
+   "escola": "enchantment",
+   "classes": [
+    "druid",
+    "sorcerer"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "sab",
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "dominate-monster",
+   "nome": "Dominate Monster",
+   "circulo": 8,
+   "escola": "enchantment",
+   "classes": [
+    "bard",
+    "sorcerer",
+    "warlock",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "sab",
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "dominate-person",
+   "nome": "Dominate Person",
+   "circulo": 5,
+   "escola": "enchantment",
+   "classes": [
+    "bard",
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "sab",
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "dream",
+   "nome": "Dream",
+   "circulo": 5,
+   "escola": "illusion",
+   "classes": [
+    "bard",
+    "warlock",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "sab",
+   "tipo_dano": "psychic",
+   "dano": "3d6",
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "druidcraft",
+   "nome": "Druidcraft",
+   "circulo": 0,
+   "escola": "transmutation",
+   "classes": [
+    "druid"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "earthquake",
+   "nome": "Earthquake",
+   "circulo": 8,
+   "escola": "evocation",
+   "classes": [
+    "cleric",
+    "druid",
+    "sorcerer"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "eldritch-blast",
+   "nome": "Eldritch Blast",
+   "circulo": 0,
+   "escola": "evocation",
+   "classes": [
+    "warlock"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": "ranged",
+   "resistencia": null,
+   "tipo_dano": "force",
+   "dano": "1d10",
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "enhance-ability",
+   "nome": "Enhance Ability",
+   "circulo": 2,
+   "escola": "transmutation",
+   "classes": [
+    "bard",
+    "cleric",
+    "druid",
+    "sorcerer"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "enlarge-reduce",
+   "nome": "Enlarge/Reduce",
+   "circulo": 2,
+   "escola": "transmutation",
+   "classes": [
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "con",
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "entangle",
+   "nome": "Entangle",
+   "circulo": 1,
+   "escola": "conjuration",
+   "classes": [
+    "druid"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "for",
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "enthrall",
+   "nome": "Enthrall",
+   "circulo": 2,
+   "escola": "enchantment",
+   "classes": [
+    "bard",
+    "warlock"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "sab",
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "etherealness",
+   "nome": "Etherealness",
+   "circulo": 7,
+   "escola": "transmutation",
+   "classes": [
+    "bard",
+    "cleric",
+    "sorcerer",
+    "warlock",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "expeditious-retreat",
+   "nome": "Expeditious Retreat",
+   "circulo": 1,
+   "escola": "transmutation",
+   "classes": [
+    "sorcerer",
+    "warlock",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "eyebite",
+   "nome": "Eyebite",
+   "circulo": 6,
+   "escola": "necromancy",
+   "classes": [
+    "bard",
+    "sorcerer",
+    "warlock",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "sab",
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "fabricate",
+   "nome": "Fabricate",
+   "circulo": 4,
+   "escola": "transmutation",
+   "classes": [
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "faerie-fire",
+   "nome": "Faerie Fire",
+   "circulo": 1,
+   "escola": "evocation",
+   "classes": [
+    "druid"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "des",
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "faithful-hound",
+   "nome": "Faithful Hound",
+   "circulo": 4,
+   "escola": "conjuration",
+   "classes": [
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": "melee",
+   "resistencia": null,
+   "tipo_dano": "piercing",
+   "dano": "4d8",
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "false-life",
+   "nome": "False Life",
+   "circulo": 1,
+   "escola": "necromancy",
+   "classes": [
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": true,
+   "area": false
+  },
+  {
+   "id": "fear",
+   "nome": "Fear",
+   "circulo": 3,
+   "escola": "illusion",
+   "classes": [
+    "bard",
+    "sorcerer",
+    "warlock",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "sab",
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "feather-fall",
+   "nome": "Feather Fall",
+   "circulo": 1,
+   "escola": "transmutation",
+   "classes": [
+    "bard",
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "feeblemind",
+   "nome": "Feeblemind",
+   "circulo": 8,
+   "escola": "enchantment",
+   "classes": [
+    "bard",
+    "druid",
+    "warlock",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "int",
+   "tipo_dano": "psychic",
+   "dano": "4d6",
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "find-familiar",
+   "nome": "Find Familiar",
+   "circulo": 1,
+   "escola": "conjuration",
+   "classes": [
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": true,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "find-steed",
+   "nome": "Find Steed",
+   "circulo": 2,
+   "escola": "conjuration",
+   "classes": [
+    "paladin"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "find-the-path",
+   "nome": "Find the Path",
+   "circulo": 6,
+   "escola": "divination",
+   "classes": [
+    "bard",
+    "cleric",
+    "druid"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "find-traps",
+   "nome": "Find Traps",
+   "circulo": 2,
+   "escola": "divination",
+   "classes": [
+    "cleric",
+    "druid",
+    "ranger"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "finger-of-death",
+   "nome": "Finger of Death",
+   "circulo": 7,
+   "escola": "necromancy",
+   "classes": [
+    "sorcerer",
+    "warlock",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "con",
+   "tipo_dano": "necrotic",
+   "dano": "7d8 + 30",
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "fire-bolt",
+   "nome": "Fire Bolt",
+   "circulo": 0,
+   "escola": "evocation",
+   "classes": [
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": "ranged",
+   "resistencia": null,
+   "tipo_dano": "fire",
+   "dano": "1d10",
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "fire-shield",
+   "nome": "Fire Shield",
+   "circulo": 4,
+   "escola": "evocation",
+   "classes": [
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": "fire",
+   "dano": "2d8",
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "fire-storm",
+   "nome": "Fire Storm",
+   "circulo": 7,
+   "escola": "evocation",
+   "classes": [
+    "cleric",
+    "druid",
+    "sorcerer"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "des",
+   "tipo_dano": "fire",
+   "dano": "7d10",
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "fireball",
+   "nome": "Fireball",
+   "circulo": 3,
+   "escola": "evocation",
+   "classes": [
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "des",
+   "tipo_dano": "fire",
+   "dano": "8d6",
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "flame-blade",
+   "nome": "Flame Blade",
+   "circulo": 2,
+   "escola": "evocation",
+   "classes": [
+    "druid"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": "fire",
+   "dano": "3d6",
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "flame-strike",
+   "nome": "Flame Strike",
+   "circulo": 5,
+   "escola": "evocation",
+   "classes": [
+    "cleric"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "des",
+   "tipo_dano": "fire",
+   "dano": "4d6",
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "flaming-sphere",
+   "nome": "Flaming Sphere",
+   "circulo": 2,
+   "escola": "conjuration",
+   "classes": [
+    "druid",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": "fire",
+   "dano": "2d6",
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "flesh-to-stone",
+   "nome": "Flesh to Stone",
+   "circulo": 6,
+   "escola": "transmutation",
+   "classes": [
+    "warlock",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "con",
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "floating-disk",
+   "nome": "Floating Disk",
+   "circulo": 1,
+   "escola": "conjuration",
+   "classes": [
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": true,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "fly",
+   "nome": "Fly",
+   "circulo": 3,
+   "escola": "transmutation",
+   "classes": [
+    "sorcerer",
+    "warlock",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "fog-cloud",
+   "nome": "Fog Cloud",
+   "circulo": 1,
+   "escola": "conjuration",
+   "classes": [
+    "druid",
+    "ranger",
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "forbiddance",
+   "nome": "Forbiddance",
+   "circulo": 6,
+   "escola": "abjuration",
+   "classes": [
+    "cleric"
+   ],
+   "concentracao": false,
+   "ritual": true,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "forcecage",
+   "nome": "Forcecage",
+   "circulo": 7,
+   "escola": "evocation",
+   "classes": [
+    "bard",
+    "warlock",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "foresight",
+   "nome": "Foresight",
+   "circulo": 9,
+   "escola": "divination",
+   "classes": [
+    "bard",
+    "druid",
+    "warlock",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "freedom-of-movement",
+   "nome": "Freedom of Movement",
+   "circulo": 4,
+   "escola": "abjuration",
+   "classes": [
+    "bard",
+    "cleric",
+    "druid",
+    "ranger"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "freezing-sphere",
+   "nome": "Freezing Sphere",
+   "circulo": 6,
+   "escola": "evocation",
+   "classes": [
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "con",
+   "tipo_dano": "cold",
+   "dano": "10d6",
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "gaseous-form",
+   "nome": "Gaseous Form",
+   "circulo": 3,
+   "escola": "transmutation",
+   "classes": [
+    "sorcerer",
+    "warlock",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "gate",
+   "nome": "Gate",
+   "circulo": 9,
+   "escola": "conjuration",
+   "classes": [
+    "cleric",
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "geas",
+   "nome": "Geas",
+   "circulo": 5,
+   "escola": "enchantment",
+   "classes": [
+    "bard",
+    "cleric",
+    "druid",
+    "paladin",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "sab",
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "gentle-repose",
+   "nome": "Gentle Repose",
+   "circulo": 2,
+   "escola": "necromancy",
+   "classes": [
+    "cleric",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": true,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "giant-insect",
+   "nome": "Giant Insect",
+   "circulo": 4,
+   "escola": "transmutation",
+   "classes": [
+    "druid"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "glibness",
+   "nome": "Glibness",
+   "circulo": 8,
+   "escola": "transmutation",
+   "classes": [
+    "bard",
+    "warlock"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "globe-of-invulnerability",
+   "nome": "Globe of Invulnerability",
+   "circulo": 6,
+   "escola": "abjuration",
+   "classes": [
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "glyph-of-warding",
+   "nome": "Glyph of Warding",
+   "circulo": 3,
+   "escola": "abjuration",
+   "classes": [
+    "bard",
+    "cleric",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "goodberry",
+   "nome": "Goodberry",
+   "circulo": 1,
+   "escola": "transmutation",
+   "classes": [
+    "druid",
+    "ranger"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "grease",
+   "nome": "Grease",
+   "circulo": 1,
+   "escola": "conjuration",
+   "classes": [
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "des",
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "greater-invisibility",
+   "nome": "Greater Invisibility",
+   "circulo": 4,
+   "escola": "illusion",
+   "classes": [
+    "bard",
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "greater-restoration",
+   "nome": "Greater Restoration",
+   "circulo": 5,
+   "escola": "abjuration",
+   "classes": [
+    "bard",
+    "cleric",
+    "druid"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "guardian-of-faith",
+   "nome": "Guardian of Faith",
+   "circulo": 4,
+   "escola": "conjuration",
+   "classes": [
+    "cleric"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "des",
+   "tipo_dano": "radiant",
+   "dano": "20",
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "guards-and-wards",
+   "nome": "Guards and Wards",
+   "circulo": 6,
+   "escola": "abjuration",
+   "classes": [
+    "bard",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "guidance",
+   "nome": "Guidance",
+   "circulo": 0,
+   "escola": "divination",
+   "classes": [
+    "cleric",
+    "druid"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "guiding-bolt",
+   "nome": "Guiding Bolt",
+   "circulo": 1,
+   "escola": "evocation",
+   "classes": [
+    "cleric"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": "ranged",
+   "resistencia": null,
+   "tipo_dano": "radiant",
+   "dano": "4d6",
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "gust-of-wind",
+   "nome": "Gust of Wind",
+   "circulo": 2,
+   "escola": "evocation",
+   "classes": [
+    "druid",
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "for",
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "hallow",
+   "nome": "Hallow",
+   "circulo": 5,
+   "escola": "evocation",
+   "classes": [
+    "cleric"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "car",
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "hallucinatory-terrain",
+   "nome": "Hallucinatory Terrain",
+   "circulo": 4,
+   "escola": "illusion",
+   "classes": [
+    "bard",
+    "druid",
+    "warlock",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "harm",
+   "nome": "Harm",
+   "circulo": 6,
+   "escola": "necromancy",
+   "classes": [
+    "cleric"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "con",
+   "tipo_dano": "necrotic",
+   "dano": "14d6",
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "haste",
+   "nome": "Haste",
+   "circulo": 3,
+   "escola": "transmutation",
+   "classes": [
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "heal",
+   "nome": "Heal",
+   "circulo": 6,
+   "escola": "evocation",
+   "classes": [
+    "cleric",
+    "druid"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": true,
+   "area": false
+  },
+  {
+   "id": "healing-word",
+   "nome": "Healing Word",
+   "circulo": 1,
+   "escola": "evocation",
+   "classes": [
+    "bard",
+    "cleric",
+    "druid"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": true,
+   "area": false
+  },
+  {
+   "id": "heat-metal",
+   "nome": "Heat Metal",
+   "circulo": 2,
+   "escola": "transmutation",
+   "classes": [
+    "bard",
+    "druid"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "con",
+   "tipo_dano": "fire",
+   "dano": "2d8",
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "hellish-rebuke",
+   "nome": "Hellish Rebuke",
+   "circulo": 1,
+   "escola": "evocation",
+   "classes": [
+    "warlock"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "des",
+   "tipo_dano": "fire",
+   "dano": "2d10",
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "heroes-feast",
+   "nome": "Heroes' Feast",
+   "circulo": 6,
+   "escola": "conjuration",
+   "classes": [
+    "cleric",
+    "druid"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "heroism",
+   "nome": "Heroism",
+   "circulo": 1,
+   "escola": "enchantment",
+   "classes": [
+    "bard",
+    "paladin"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "hideous-laughter",
+   "nome": "Hideous Laughter",
+   "circulo": 1,
+   "escola": "enchantment",
+   "classes": [
+    "bard",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "sab",
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "hold-monster",
+   "nome": "Hold Monster",
+   "circulo": 5,
+   "escola": "enchantment",
+   "classes": [
+    "bard",
+    "sorcerer",
+    "warlock",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "sab",
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "hold-person",
+   "nome": "Hold Person",
+   "circulo": 2,
+   "escola": "enchantment",
+   "classes": [
+    "bard",
+    "cleric",
+    "druid",
+    "sorcerer",
+    "warlock",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "sab",
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "holy-aura",
+   "nome": "Holy Aura",
+   "circulo": 8,
+   "escola": "abjuration",
+   "classes": [
+    "cleric"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "hunters-mark",
+   "nome": "Hunter's Mark",
+   "circulo": 1,
+   "escola": "divination",
+   "classes": [
+    "ranger"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "hypnotic-pattern",
+   "nome": "Hypnotic Pattern",
+   "circulo": 3,
+   "escola": "illusion",
+   "classes": [
+    "bard",
+    "sorcerer",
+    "warlock",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "sab",
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "ice-storm",
+   "nome": "Ice Storm",
+   "circulo": 4,
+   "escola": "evocation",
+   "classes": [
+    "druid",
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "des",
+   "tipo_dano": "bludgeoning",
+   "dano": "2d8",
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "identify",
+   "nome": "Identify",
+   "circulo": 1,
+   "escola": "divination",
+   "classes": [
+    "bard",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": true,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "illusory-script",
+   "nome": "Illusory Script",
+   "circulo": 1,
+   "escola": "illusion",
+   "classes": [
+    "bard",
+    "warlock",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": true,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "imprisonment",
+   "nome": "Imprisonment",
+   "circulo": 9,
+   "escola": "abjuration",
+   "classes": [
+    "warlock",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "sab",
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "incendiary-cloud",
+   "nome": "Incendiary Cloud",
+   "circulo": 8,
+   "escola": "conjuration",
+   "classes": [
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "des",
+   "tipo_dano": "fire",
+   "dano": "10d8",
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "inflict-wounds",
+   "nome": "Inflict Wounds",
+   "circulo": 1,
+   "escola": "necromancy",
+   "classes": [
+    "cleric"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": "melee",
+   "resistencia": null,
+   "tipo_dano": "necrotic",
+   "dano": "3d10",
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "insect-plague",
+   "nome": "Insect Plague",
+   "circulo": 5,
+   "escola": "conjuration",
+   "classes": [
+    "cleric",
+    "druid",
+    "sorcerer"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "con",
+   "tipo_dano": "piercing",
+   "dano": "4d10",
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "instant-summons",
+   "nome": "Instant Summons",
+   "circulo": 6,
+   "escola": "conjuration",
+   "classes": [
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": true,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "invisibility",
+   "nome": "Invisibility",
+   "circulo": 2,
+   "escola": "illusion",
+   "classes": [
+    "bard",
+    "sorcerer",
+    "warlock",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "irresistible-dance",
+   "nome": "Irresistible Dance",
+   "circulo": 6,
+   "escola": "enchantment",
+   "classes": [
+    "bard",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "jump",
+   "nome": "Jump",
+   "circulo": 1,
+   "escola": "transmutation",
+   "classes": [
+    "druid",
+    "ranger",
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "knock",
+   "nome": "Knock",
+   "circulo": 2,
+   "escola": "transmutation",
+   "classes": [
+    "bard",
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "legend-lore",
+   "nome": "Legend Lore",
+   "circulo": 5,
+   "escola": "divination",
+   "classes": [
+    "bard",
+    "cleric",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "lesser-restoration",
+   "nome": "Lesser Restoration",
+   "circulo": 2,
+   "escola": "abjuration",
+   "classes": [
+    "bard",
+    "cleric",
+    "druid",
+    "paladin",
+    "ranger"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "levitate",
+   "nome": "Levitate",
+   "circulo": 2,
+   "escola": "transmutation",
+   "classes": [
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "light",
+   "nome": "Light",
+   "circulo": 0,
+   "escola": "evocation",
+   "classes": [
+    "bard",
+    "cleric",
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "des",
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "lightning-bolt",
+   "nome": "Lightning Bolt",
+   "circulo": 3,
+   "escola": "evocation",
+   "classes": [
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "des",
+   "tipo_dano": "lightning",
+   "dano": "8d6",
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "locate-animals-or-plants",
+   "nome": "Locate Animals or Plants",
+   "circulo": 2,
+   "escola": "divination",
+   "classes": [
+    "bard",
+    "druid",
+    "ranger"
+   ],
+   "concentracao": false,
+   "ritual": true,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "locate-creature",
+   "nome": "Locate Creature",
+   "circulo": 4,
+   "escola": "divination",
+   "classes": [
+    "bard",
+    "cleric",
+    "druid",
+    "paladin",
+    "ranger",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "locate-object",
+   "nome": "Locate Object",
+   "circulo": 2,
+   "escola": "divination",
+   "classes": [
+    "bard",
+    "cleric",
+    "druid",
+    "paladin",
+    "ranger",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "longstrider",
+   "nome": "Longstrider",
+   "circulo": 1,
+   "escola": "transmutation",
+   "classes": [
+    "bard",
+    "druid",
+    "ranger",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "mage-armor",
+   "nome": "Mage Armor",
+   "circulo": 1,
+   "escola": "abjuration",
+   "classes": [
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "mage-hand",
+   "nome": "Mage Hand",
+   "circulo": 0,
+   "escola": "conjuration",
+   "classes": [
+    "bard",
+    "sorcerer",
+    "warlock",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "magic-circle",
+   "nome": "Magic Circle",
+   "circulo": 3,
+   "escola": "abjuration",
+   "classes": [
+    "cleric",
+    "paladin",
+    "warlock",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "car",
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "magic-jar",
+   "nome": "Magic Jar",
+   "circulo": 6,
+   "escola": "necromancy",
+   "classes": [
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "car",
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "magic-missile",
+   "nome": "Magic Missile",
+   "circulo": 1,
+   "escola": "evocation",
+   "classes": [
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": "force",
+   "dano": "3d4 + 3",
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "magic-mouth",
+   "nome": "Magic Mouth",
+   "circulo": 2,
+   "escola": "illusion",
+   "classes": [
+    "bard",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": true,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "magic-weapon",
+   "nome": "Magic Weapon",
+   "circulo": 2,
+   "escola": "transmutation",
+   "classes": [
+    "paladin",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "magnificent-mansion",
+   "nome": "Magnificent Mansion",
+   "circulo": 7,
+   "escola": "conjuration",
+   "classes": [
+    "bard",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "major-image",
+   "nome": "Major Image",
+   "circulo": 3,
+   "escola": "illusion",
+   "classes": [
+    "bard",
+    "sorcerer",
+    "warlock",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "mass-cure-wounds",
+   "nome": "Mass Cure Wounds",
+   "circulo": 5,
+   "escola": "conjuration",
+   "classes": [
+    "bard",
+    "cleric",
+    "druid"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": true,
+   "area": true
+  },
+  {
+   "id": "mass-heal",
+   "nome": "Mass Heal",
+   "circulo": 9,
+   "escola": "conjuration",
+   "classes": [
+    "cleric"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": true,
+   "area": false
+  },
+  {
+   "id": "mass-healing-word",
+   "nome": "Mass Healing Word",
+   "circulo": 3,
+   "escola": "evocation",
+   "classes": [
+    "cleric"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": true,
+   "area": false
+  },
+  {
+   "id": "mass-suggestion",
+   "nome": "Mass Suggestion",
+   "circulo": 6,
+   "escola": "enchantment",
+   "classes": [
+    "bard",
+    "sorcerer",
+    "warlock",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "sab",
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "maze",
+   "nome": "Maze",
+   "circulo": 8,
+   "escola": "conjuration",
+   "classes": [
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "meld-into-stone",
+   "nome": "Meld Into Stone",
+   "circulo": 3,
+   "escola": "transmutation",
+   "classes": [
+    "cleric"
+   ],
+   "concentracao": false,
+   "ritual": true,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "mending",
+   "nome": "Mending",
+   "circulo": 0,
+   "escola": "transmutation",
+   "classes": [
+    "cleric",
+    "bard",
+    "druid",
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "message",
+   "nome": "Message",
+   "circulo": 0,
+   "escola": "transmutation",
+   "classes": [
+    "bard",
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "meteor-swarm",
+   "nome": "Meteor Swarm",
+   "circulo": 9,
+   "escola": "evocation",
+   "classes": [
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "des",
+   "tipo_dano": "fire",
+   "dano": "20d6",
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "mind-blank",
+   "nome": "Mind Blank",
+   "circulo": 8,
+   "escola": "abjuration",
+   "classes": [
+    "bard",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "minor-illusion",
+   "nome": "Minor Illusion",
+   "circulo": 0,
+   "escola": "illusion",
+   "classes": [
+    "bard",
+    "sorcerer",
+    "warlock",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "mirage-arcane",
+   "nome": "Mirage Arcane",
+   "circulo": 7,
+   "escola": "illusion",
+   "classes": [
+    "bard",
+    "druid",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "mirror-image",
+   "nome": "Mirror Image",
+   "circulo": 2,
+   "escola": "illusion",
+   "classes": [
+    "sorcerer",
+    "warlock",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "mislead",
+   "nome": "Mislead",
+   "circulo": 5,
+   "escola": "illusion",
+   "classes": [
+    "bard",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "misty-step",
+   "nome": "Misty Step",
+   "circulo": 2,
+   "escola": "conjuration",
+   "classes": [
+    "sorcerer",
+    "warlock",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "modify-memory",
+   "nome": "Modify Memory",
+   "circulo": 5,
+   "escola": "enchantment",
+   "classes": [
+    "bard",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "sab",
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "moonbeam",
+   "nome": "Moonbeam",
+   "circulo": 2,
+   "escola": "evocation",
+   "classes": [
+    "druid"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "con",
+   "tipo_dano": "radiant",
+   "dano": "2d10",
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "move-earth",
+   "nome": "Move Earth",
+   "circulo": 6,
+   "escola": "transmutation",
+   "classes": [
+    "druid",
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "nondetection",
+   "nome": "Nondetection",
+   "circulo": 3,
+   "escola": "abjuration",
+   "classes": [
+    "bard",
+    "ranger",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "pass-without-trace",
+   "nome": "Pass Without Trace",
+   "circulo": 2,
+   "escola": "abjuration",
+   "classes": [
+    "druid",
+    "ranger"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "passwall",
+   "nome": "Passwall",
+   "circulo": 5,
+   "escola": "transmutation",
+   "classes": [
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "phantasmal-killer",
+   "nome": "Phantasmal Killer",
+   "circulo": 4,
+   "escola": "illusion",
+   "classes": [
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "sab",
+   "tipo_dano": "psychic",
+   "dano": "4d10",
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "phantom-steed",
+   "nome": "Phantom Steed",
+   "circulo": 3,
+   "escola": "illusion",
+   "classes": [
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": true,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "planar-ally",
+   "nome": "Planar Ally",
+   "circulo": 6,
+   "escola": "conjuration",
+   "classes": [
+    "cleric"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "planar-binding",
+   "nome": "Planar Binding",
+   "circulo": 5,
+   "escola": "abjuration",
+   "classes": [
+    "bard",
+    "cleric",
+    "druid",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "car",
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "plane-shift",
+   "nome": "Plane Shift",
+   "circulo": 7,
+   "escola": "conjuration",
+   "classes": [
+    "cleric",
+    "druid",
+    "sorcerer",
+    "warlock",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": "melee",
+   "resistencia": "car",
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "plant-growth",
+   "nome": "Plant Growth",
+   "circulo": 3,
+   "escola": "transmutation",
+   "classes": [
+    "bard",
+    "druid",
+    "ranger"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "poison-spray",
+   "nome": "Poison Spray",
+   "circulo": 0,
+   "escola": "conjuration",
+   "classes": [
+    "sorcerer",
+    "warlock",
+    "wizard",
+    "druid"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "con",
+   "tipo_dano": "poison",
+   "dano": "1d12",
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "polymorph",
+   "nome": "Polymorph",
+   "circulo": 4,
+   "escola": "transmutation",
+   "classes": [
+    "bard",
+    "druid",
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "sab",
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "power-word-kill",
+   "nome": "Power Word Kill",
+   "circulo": 9,
+   "escola": "enchantment",
+   "classes": [
+    "bard",
+    "sorcerer",
+    "warlock",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "power-word-stun",
+   "nome": "Power Word Stun",
+   "circulo": 8,
+   "escola": "enchantment",
+   "classes": [
+    "bard",
+    "sorcerer",
+    "warlock",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "prayer-of-healing",
+   "nome": "Prayer of Healing",
+   "circulo": 2,
+   "escola": "evocation",
+   "classes": [
+    "cleric"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": true,
+   "area": false
+  },
+  {
+   "id": "prestidigitation",
+   "nome": "Prestidigitation",
+   "circulo": 0,
+   "escola": "transmutation",
+   "classes": [
+    "bard",
+    "sorcerer",
+    "warlock",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "prismatic-spray",
+   "nome": "Prismatic Spray",
+   "circulo": 7,
+   "escola": "evocation",
+   "classes": [
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "des",
+   "tipo_dano": null,
+   "dano": "10d6",
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "prismatic-wall",
+   "nome": "Prismatic Wall",
+   "circulo": 9,
+   "escola": "abjuration",
+   "classes": [
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "private-sanctum",
+   "nome": "Private Sanctum",
+   "circulo": 4,
+   "escola": "abjuration",
+   "classes": [
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "produce-flame",
+   "nome": "Produce Flame",
+   "circulo": 0,
+   "escola": "conjuration",
+   "classes": [
+    "druid"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": "ranged",
+   "resistencia": null,
+   "tipo_dano": "fire",
+   "dano": "1d8",
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "programmed-illusion",
+   "nome": "Programmed Illusion",
+   "circulo": 6,
+   "escola": "illusion",
+   "classes": [
+    "bard",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "project-image",
+   "nome": "Project Image",
+   "circulo": 7,
+   "escola": "illusion",
+   "classes": [
+    "bard",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "protection-from-energy",
+   "nome": "Protection From Energy",
+   "circulo": 3,
+   "escola": "abjuration",
+   "classes": [
+    "cleric",
+    "druid",
+    "ranger",
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "protection-from-evil-and-good",
+   "nome": "Protection from Evil and Good",
+   "circulo": 1,
+   "escola": "abjuration",
+   "classes": [
+    "cleric",
+    "paladin",
+    "warlock",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "protection-from-poison",
+   "nome": "Protection from Poison",
+   "circulo": 2,
+   "escola": "abjuration",
+   "classes": [
+    "cleric",
+    "druid",
+    "paladin",
+    "ranger"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "purify-food-and-drink",
+   "nome": "Purify Food and Drink",
+   "circulo": 1,
+   "escola": "transmutation",
+   "classes": [
+    "cleric",
+    "druid",
+    "paladin"
+   ],
+   "concentracao": false,
+   "ritual": true,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "raise-dead",
+   "nome": "Raise Dead",
+   "circulo": 5,
+   "escola": "necromancy",
+   "classes": [
+    "bard",
+    "cleric",
+    "paladin"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "ray-of-enfeeblement",
+   "nome": "Ray of Enfeeblement",
+   "circulo": 2,
+   "escola": "necromancy",
+   "classes": [
+    "warlock",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": "ranged",
+   "resistencia": "con",
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "ray-of-frost",
+   "nome": "Ray of Frost",
+   "circulo": 0,
+   "escola": "evocation",
+   "classes": [
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": "ranged",
+   "resistencia": null,
+   "tipo_dano": "cold",
+   "dano": "1d8",
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "regenerate",
+   "nome": "Regenerate",
+   "circulo": 7,
+   "escola": "transmutation",
+   "classes": [
+    "bard",
+    "cleric",
+    "druid"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": true,
+   "area": false
+  },
+  {
+   "id": "reincarnate",
+   "nome": "Reincarnate",
+   "circulo": 5,
+   "escola": "transmutation",
+   "classes": [
+    "druid"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "remove-curse",
+   "nome": "Remove Curse",
+   "circulo": 3,
+   "escola": "abjuration",
+   "classes": [
+    "cleric",
+    "paladin",
+    "warlock",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "resilient-sphere",
+   "nome": "Resilient Sphere",
+   "circulo": 4,
+   "escola": "evocation",
+   "classes": [
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "des",
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "resistance",
+   "nome": "Resistance",
+   "circulo": 0,
+   "escola": "abjuration",
+   "classes": [
+    "cleric",
+    "druid"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "resurrection",
+   "nome": "Resurrection",
+   "circulo": 7,
+   "escola": "necromancy",
+   "classes": [
+    "bard",
+    "cleric"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "reverse-gravity",
+   "nome": "Reverse Gravity",
+   "circulo": 7,
+   "escola": "transmutation",
+   "classes": [
+    "druid",
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "des",
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "revivify",
+   "nome": "Revivify",
+   "circulo": 3,
+   "escola": "conjuration",
+   "classes": [
+    "cleric",
+    "paladin"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "rope-trick",
+   "nome": "Rope Trick",
+   "circulo": 2,
+   "escola": "transmutation",
+   "classes": [
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "sacred-flame",
+   "nome": "Sacred Flame",
+   "circulo": 0,
+   "escola": "evocation",
+   "classes": [
+    "cleric"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "des",
+   "tipo_dano": "radiant",
+   "dano": "1d8",
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "sanctuary",
+   "nome": "Sanctuary",
+   "circulo": 1,
+   "escola": "abjuration",
+   "classes": [
+    "cleric"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "scorching-ray",
+   "nome": "Scorching Ray",
+   "circulo": 2,
+   "escola": "evocation",
+   "classes": [
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": "fire",
+   "dano": "2d6",
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "scrying",
+   "nome": "Scrying",
+   "circulo": 5,
+   "escola": "divination",
+   "classes": [
+    "bard",
+    "cleric",
+    "druid",
+    "warlock",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "sab",
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "secret-chest",
+   "nome": "Secret Chest",
+   "circulo": 4,
+   "escola": "conjuration",
+   "classes": [
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "see-invisibility",
+   "nome": "See Invisibility",
+   "circulo": 2,
+   "escola": "divination",
+   "classes": [
+    "bard",
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "seeming",
+   "nome": "Seeming",
+   "circulo": 5,
+   "escola": "illusion",
+   "classes": [
+    "bard",
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "sending",
+   "nome": "Sending",
+   "circulo": 3,
+   "escola": "evocation",
+   "classes": [
+    "bard",
+    "cleric",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "sequester",
+   "nome": "Sequester",
+   "circulo": 7,
+   "escola": "transmutation",
+   "classes": [
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "shapechange",
+   "nome": "Shapechange",
+   "circulo": 9,
+   "escola": "transmutation",
+   "classes": [
+    "druid",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "shatter",
+   "nome": "Shatter",
+   "circulo": 2,
+   "escola": "evocation",
+   "classes": [
+    "bard",
+    "sorcerer",
+    "warlock",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "con",
+   "tipo_dano": "thunder",
+   "dano": "3d8",
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "shield",
+   "nome": "Shield",
+   "circulo": 1,
+   "escola": "abjuration",
+   "classes": [
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "shield-of-faith",
+   "nome": "Shield of Faith",
+   "circulo": 1,
+   "escola": "abjuration",
+   "classes": [
+    "cleric",
+    "paladin"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "shillelagh",
+   "nome": "Shillelagh",
+   "circulo": 0,
+   "escola": "transmutation",
+   "classes": [
+    "druid"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "shocking-grasp",
+   "nome": "Shocking Grasp",
+   "circulo": 0,
+   "escola": "evocation",
+   "classes": [
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": "melee",
+   "resistencia": null,
+   "tipo_dano": "lightning",
+   "dano": "1d8",
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "silence",
+   "nome": "Silence",
+   "circulo": 2,
+   "escola": "illusion",
+   "classes": [
+    "bard",
+    "cleric",
+    "ranger"
+   ],
+   "concentracao": true,
+   "ritual": true,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "silent-image",
+   "nome": "Silent Image",
+   "circulo": 1,
+   "escola": "illusion",
+   "classes": [
+    "bard",
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "simulacrum",
+   "nome": "Simulacrum",
+   "circulo": 7,
+   "escola": "illusion",
+   "classes": [
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "sleep",
+   "nome": "Sleep",
+   "circulo": 1,
+   "escola": "enchantment",
+   "classes": [
+    "bard",
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": "5d8",
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "sleet-storm",
+   "nome": "Sleet Storm",
+   "circulo": 3,
+   "escola": "conjuration",
+   "classes": [
+    "druid",
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "slow",
+   "nome": "Slow",
+   "circulo": 3,
+   "escola": "transmutation",
+   "classes": [
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "sab",
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "spare-the-dying",
+   "nome": "Spare the Dying",
+   "circulo": 0,
+   "escola": "necromancy",
+   "classes": [
+    "cleric"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "speak-with-animals",
+   "nome": "Speak with Animals",
+   "circulo": 1,
+   "escola": "divination",
+   "classes": [
+    "bard",
+    "druid",
+    "ranger"
+   ],
+   "concentracao": false,
+   "ritual": true,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "speak-with-dead",
+   "nome": "Speak with Dead",
+   "circulo": 3,
+   "escola": "necromancy",
+   "classes": [
+    "bard",
+    "cleric"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "speak-with-plants",
+   "nome": "Speak with Plants",
+   "circulo": 3,
+   "escola": "transmutation",
+   "classes": [
+    "bard",
+    "druid",
+    "ranger"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "spider-climb",
+   "nome": "Spider Climb",
+   "circulo": 2,
+   "escola": "transmutation",
+   "classes": [
+    "sorcerer",
+    "warlock",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "spike-growth",
+   "nome": "Spike Growth",
+   "circulo": 2,
+   "escola": "transmutation",
+   "classes": [
+    "druid",
+    "ranger"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "spirit-guardians",
+   "nome": "Spirit Guardians",
+   "circulo": 3,
+   "escola": "conjuration",
+   "classes": [
+    "cleric"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "spiritual-weapon",
+   "nome": "Spiritual Weapon",
+   "circulo": 2,
+   "escola": "evocation",
+   "classes": [
+    "cleric"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": "melee",
+   "resistencia": null,
+   "tipo_dano": "force",
+   "dano": "1d8 + MOD",
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "stinking-cloud",
+   "nome": "Stinking Cloud",
+   "circulo": 3,
+   "escola": "conjuration",
+   "classes": [
+    "bard",
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "con",
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "stone-shape",
+   "nome": "Stone Shape",
+   "circulo": 4,
+   "escola": "transmutation",
+   "classes": [
+    "cleric",
+    "druid",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "stoneskin",
+   "nome": "Stoneskin",
+   "circulo": 4,
+   "escola": "abjuration",
+   "classes": [
+    "druid",
+    "ranger",
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "storm-of-vengeance",
+   "nome": "Storm of Vengeance",
+   "circulo": 9,
+   "escola": "conjuration",
+   "classes": [
+    "druid"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "con",
+   "tipo_dano": "thunder",
+   "dano": "2d6",
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "suggestion",
+   "nome": "Suggestion",
+   "circulo": 2,
+   "escola": "enchantment",
+   "classes": [
+    "bard",
+    "sorcerer",
+    "warlock",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "sab",
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "sunbeam",
+   "nome": "Sunbeam",
+   "circulo": 6,
+   "escola": "evocation",
+   "classes": [
+    "druid",
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "con",
+   "tipo_dano": "radiant",
+   "dano": "6d8",
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "sunburst",
+   "nome": "Sunburst",
+   "circulo": 8,
+   "escola": "evocation",
+   "classes": [
+    "druid",
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "con",
+   "tipo_dano": "radiant",
+   "dano": "12d6",
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "symbol",
+   "nome": "Symbol",
+   "circulo": 7,
+   "escola": "abjuration",
+   "classes": [
+    "bard",
+    "cleric",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "telekinesis",
+   "nome": "Telekinesis",
+   "circulo": 5,
+   "escola": "transmutation",
+   "classes": [
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "telepathic-bond",
+   "nome": "Telepathic Bond",
+   "circulo": 5,
+   "escola": "divination",
+   "classes": [
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": true,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "teleport",
+   "nome": "Teleport",
+   "circulo": 7,
+   "escola": "conjuration",
+   "classes": [
+    "bard",
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "teleportation-circle",
+   "nome": "Teleportation Circle",
+   "circulo": 5,
+   "escola": "conjuration",
+   "classes": [
+    "bard",
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "thaumaturgy",
+   "nome": "Thaumaturgy",
+   "circulo": 0,
+   "escola": "transmutation",
+   "classes": [
+    "cleric"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "thunderwave",
+   "nome": "Thunderwave",
+   "circulo": 1,
+   "escola": "evocation",
+   "classes": [
+    "bard",
+    "druid",
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "con",
+   "tipo_dano": "thunder",
+   "dano": "2d8",
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "time-stop",
+   "nome": "Time Stop",
+   "circulo": 9,
+   "escola": "transmutation",
+   "classes": [
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "tiny-hut",
+   "nome": "Tiny Hut",
+   "circulo": 3,
+   "escola": "evocation",
+   "classes": [
+    "bard",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": true,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "tongues",
+   "nome": "Tongues",
+   "circulo": 3,
+   "escola": "divination",
+   "classes": [
+    "bard",
+    "cleric",
+    "sorcerer",
+    "warlock",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "transport-via-plants",
+   "nome": "Transport via Plants",
+   "circulo": 6,
+   "escola": "conjuration",
+   "classes": [
+    "druid"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "tree-stride",
+   "nome": "Tree Stride",
+   "circulo": 5,
+   "escola": "conjuration",
+   "classes": [
+    "druid",
+    "ranger"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "true-polymorph",
+   "nome": "True Polymorph",
+   "circulo": 9,
+   "escola": "transmutation",
+   "classes": [
+    "bard",
+    "warlock",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "true-resurrection",
+   "nome": "True Resurrection",
+   "circulo": 9,
+   "escola": "necromancy",
+   "classes": [
+    "cleric",
+    "druid"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "true-seeing",
+   "nome": "True Seeing",
+   "circulo": 6,
+   "escola": "divination",
+   "classes": [
+    "bard",
+    "cleric",
+    "sorcerer",
+    "warlock",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "true-strike",
+   "nome": "True Strike",
+   "circulo": 0,
+   "escola": "divination",
+   "classes": [
+    "bard",
+    "sorcerer",
+    "warlock",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "unseen-servant",
+   "nome": "Unseen Servant",
+   "circulo": 1,
+   "escola": "conjuration",
+   "classes": [
+    "bard",
+    "warlock",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": true,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "vampiric-touch",
+   "nome": "Vampiric Touch",
+   "circulo": 3,
+   "escola": "necromancy",
+   "classes": [
+    "warlock",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": "melee",
+   "resistencia": null,
+   "tipo_dano": "necrotic",
+   "dano": "3d6",
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "vicious-mockery",
+   "nome": "Vicious Mockery",
+   "circulo": 0,
+   "escola": "enchantment",
+   "classes": [
+    "bard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "sab",
+   "tipo_dano": "psychic",
+   "dano": "1d4",
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "wall-of-fire",
+   "nome": "Wall of Fire",
+   "circulo": 4,
+   "escola": "evocation",
+   "classes": [
+    "druid",
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "des",
+   "tipo_dano": "fire",
+   "dano": "5d8",
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "wall-of-force",
+   "nome": "Wall of Force",
+   "circulo": 5,
+   "escola": "evocation",
+   "classes": [
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "wall-of-ice",
+   "nome": "Wall of Ice",
+   "circulo": 6,
+   "escola": "evocation",
+   "classes": [
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "des",
+   "tipo_dano": "cold",
+   "dano": "10d6",
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "wall-of-stone",
+   "nome": "Wall of Stone",
+   "circulo": 5,
+   "escola": "evocation",
+   "classes": [
+    "druid",
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "wall-of-thorns",
+   "nome": "Wall of Thorns",
+   "circulo": 6,
+   "escola": "conjuration",
+   "classes": [
+    "druid"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "des",
+   "tipo_dano": "piercing",
+   "dano": "7d8",
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "warding-bond",
+   "nome": "Warding Bond",
+   "circulo": 2,
+   "escola": "abjuration",
+   "classes": [
+    "cleric"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "water-breathing",
+   "nome": "Water Breathing",
+   "circulo": 3,
+   "escola": "transmutation",
+   "classes": [
+    "druid",
+    "ranger",
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": true,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "water-walk",
+   "nome": "Water Walk",
+   "circulo": 3,
+   "escola": "transmutation",
+   "classes": [
+    "cleric",
+    "druid",
+    "ranger",
+    "sorcerer"
+   ],
+   "concentracao": false,
+   "ritual": true,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "web",
+   "nome": "Web",
+   "circulo": 2,
+   "escola": "conjuration",
+   "classes": [
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "weird",
+   "nome": "Weird",
+   "circulo": 9,
+   "escola": "illusion",
+   "classes": [
+    "wizard"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "sab",
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "wind-walk",
+   "nome": "Wind Walk",
+   "circulo": 6,
+   "escola": "transmutation",
+   "classes": [
+    "druid"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "wind-wall",
+   "nome": "Wind Wall",
+   "circulo": 3,
+   "escola": "evocation",
+   "classes": [
+    "druid",
+    "ranger"
+   ],
+   "concentracao": true,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": "for",
+   "tipo_dano": "bludgeoning",
+   "dano": "3d8",
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "wish",
+   "nome": "Wish",
+   "circulo": 9,
+   "escola": "conjuration",
+   "classes": [
+    "sorcerer",
+    "wizard"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": false
+  },
+  {
+   "id": "word-of-recall",
+   "nome": "Word of Recall",
+   "circulo": 6,
+   "escola": "conjuration",
+   "classes": [
+    "cleric"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": true
+  },
+  {
+   "id": "zone-of-truth",
+   "nome": "Zone of Truth",
+   "circulo": 2,
+   "escola": "enchantment",
+   "classes": [
+    "bard",
+    "cleric",
+    "paladin"
+   ],
+   "concentracao": false,
+   "ritual": false,
+   "ataque": null,
+   "resistencia": null,
+   "tipo_dano": null,
+   "dano": null,
+   "cura": false,
+   "area": true
+  }
+ ],
+ "armas": [
+  {
+   "id": "battleaxe",
+   "nome": "Battleaxe",
+   "categoria": "marcial",
+   "alcance": "corpo_a_corpo",
+   "dano": "1d8",
+   "tipo_dano": "slashing",
+   "propriedades": [
+    "versatile"
+   ]
+  },
+  {
+   "id": "blowgun",
+   "nome": "Blowgun",
+   "categoria": "marcial",
+   "alcance": "distancia",
+   "dano": "1",
+   "tipo_dano": "piercing",
+   "propriedades": [
+    "ammunition",
+    "loading"
+   ]
+  },
+  {
+   "id": "club",
+   "nome": "Club",
+   "categoria": "simples",
+   "alcance": "corpo_a_corpo",
+   "dano": "1d4",
+   "tipo_dano": "bludgeoning",
+   "propriedades": [
+    "light",
+    "monk"
+   ]
+  },
+  {
+   "id": "crossbow-hand",
+   "nome": "Crossbow, hand",
+   "categoria": "marcial",
+   "alcance": "distancia",
+   "dano": "1d6",
+   "tipo_dano": "piercing",
+   "propriedades": [
+    "ammunition",
+    "light",
+    "loading"
+   ]
+  },
+  {
+   "id": "crossbow-heavy",
+   "nome": "Crossbow, heavy",
+   "categoria": "marcial",
+   "alcance": "distancia",
+   "dano": "1d10",
+   "tipo_dano": "piercing",
+   "propriedades": [
+    "ammunition",
+    "heavy",
+    "loading",
+    "two-handed"
+   ]
+  },
+  {
+   "id": "crossbow-light",
+   "nome": "Crossbow, light",
+   "categoria": "simples",
+   "alcance": "distancia",
+   "dano": "1d8",
+   "tipo_dano": "piercing",
+   "propriedades": [
+    "ammunition",
+    "loading",
+    "two-handed"
+   ]
+  },
+  {
+   "id": "dagger",
+   "nome": "Dagger",
+   "categoria": "simples",
+   "alcance": "corpo_a_corpo",
+   "dano": "1d4",
+   "tipo_dano": "piercing",
+   "propriedades": [
+    "finesse",
+    "light",
+    "thrown",
+    "monk"
+   ]
+  },
+  {
+   "id": "dart",
+   "nome": "Dart",
+   "categoria": "simples",
+   "alcance": "distancia",
+   "dano": "1d4",
+   "tipo_dano": "piercing",
+   "propriedades": [
+    "finesse",
+    "thrown"
+   ]
+  },
+  {
+   "id": "flail",
+   "nome": "Flail",
+   "categoria": "marcial",
+   "alcance": "corpo_a_corpo",
+   "dano": "1d8",
+   "tipo_dano": "bludgeoning",
+   "propriedades": []
+  },
+  {
+   "id": "glaive",
+   "nome": "Glaive",
+   "categoria": "marcial",
+   "alcance": "corpo_a_corpo",
+   "dano": "1d10",
+   "tipo_dano": "slashing",
+   "propriedades": [
+    "heavy",
+    "reach",
+    "two-handed"
+   ]
+  },
+  {
+   "id": "greataxe",
+   "nome": "Greataxe",
+   "categoria": "marcial",
+   "alcance": "corpo_a_corpo",
+   "dano": "1d12",
+   "tipo_dano": "slashing",
+   "propriedades": [
+    "heavy",
+    "two-handed"
+   ]
+  },
+  {
+   "id": "greatclub",
+   "nome": "Greatclub",
+   "categoria": "simples",
+   "alcance": "corpo_a_corpo",
+   "dano": "1d8",
+   "tipo_dano": "bludgeoning",
+   "propriedades": [
+    "two-handed"
+   ]
+  },
+  {
+   "id": "greatsword",
+   "nome": "Greatsword",
+   "categoria": "marcial",
+   "alcance": "corpo_a_corpo",
+   "dano": "2d6",
+   "tipo_dano": "slashing",
+   "propriedades": [
+    "heavy",
+    "two-handed"
+   ]
+  },
+  {
+   "id": "halberd",
+   "nome": "Halberd",
+   "categoria": "marcial",
+   "alcance": "corpo_a_corpo",
+   "dano": "1d10",
+   "tipo_dano": "slashing",
+   "propriedades": [
+    "heavy",
+    "reach",
+    "two-handed"
+   ]
+  },
+  {
+   "id": "handaxe",
+   "nome": "Handaxe",
+   "categoria": "simples",
+   "alcance": "corpo_a_corpo",
+   "dano": "1d6",
+   "tipo_dano": "slashing",
+   "propriedades": [
+    "light",
+    "thrown",
+    "monk"
+   ]
+  },
+  {
+   "id": "javelin",
+   "nome": "Javelin",
+   "categoria": "simples",
+   "alcance": "corpo_a_corpo",
+   "dano": "1d6",
+   "tipo_dano": "piercing",
+   "propriedades": [
+    "thrown",
+    "monk"
+   ]
+  },
+  {
+   "id": "lance",
+   "nome": "Lance",
+   "categoria": "marcial",
+   "alcance": "corpo_a_corpo",
+   "dano": "1d12",
+   "tipo_dano": "piercing",
+   "propriedades": [
+    "reach",
+    "special"
+   ]
+  },
+  {
+   "id": "light-hammer",
+   "nome": "Light hammer",
+   "categoria": "simples",
+   "alcance": "corpo_a_corpo",
+   "dano": "1d4",
+   "tipo_dano": "bludgeoning",
+   "propriedades": [
+    "light",
+    "thrown",
+    "monk"
+   ]
+  },
+  {
+   "id": "longbow",
+   "nome": "Longbow",
+   "categoria": "marcial",
+   "alcance": "distancia",
+   "dano": "1d8",
+   "tipo_dano": "piercing",
+   "propriedades": [
+    "ammunition",
+    "heavy",
+    "two-handed"
+   ]
+  },
+  {
+   "id": "longsword",
+   "nome": "Longsword",
+   "categoria": "marcial",
+   "alcance": "corpo_a_corpo",
+   "dano": "1d8",
+   "tipo_dano": "slashing",
+   "propriedades": [
+    "versatile"
+   ]
+  },
+  {
+   "id": "mace",
+   "nome": "Mace",
+   "categoria": "simples",
+   "alcance": "corpo_a_corpo",
+   "dano": "1d6",
+   "tipo_dano": "bludgeoning",
+   "propriedades": [
+    "monk"
+   ]
+  },
+  {
+   "id": "maul",
+   "nome": "Maul",
+   "categoria": "marcial",
+   "alcance": "corpo_a_corpo",
+   "dano": "2d6",
+   "tipo_dano": "bludgeoning",
+   "propriedades": [
+    "heavy",
+    "two-handed"
+   ]
+  },
+  {
+   "id": "morningstar",
+   "nome": "Morningstar",
+   "categoria": "marcial",
+   "alcance": "corpo_a_corpo",
+   "dano": "1d8",
+   "tipo_dano": "piercing",
+   "propriedades": []
+  },
+  {
+   "id": "pike",
+   "nome": "Pike",
+   "categoria": "marcial",
+   "alcance": "corpo_a_corpo",
+   "dano": "1d10",
+   "tipo_dano": "piercing",
+   "propriedades": [
+    "heavy",
+    "reach",
+    "two-handed"
+   ]
+  },
+  {
+   "id": "quarterstaff",
+   "nome": "Quarterstaff",
+   "categoria": "simples",
+   "alcance": "corpo_a_corpo",
+   "dano": "1d6",
+   "tipo_dano": "bludgeoning",
+   "propriedades": [
+    "versatile",
+    "monk"
+   ]
+  },
+  {
+   "id": "rapier",
+   "nome": "Rapier",
+   "categoria": "marcial",
+   "alcance": "corpo_a_corpo",
+   "dano": "1d8",
+   "tipo_dano": "piercing",
+   "propriedades": [
+    "finesse"
+   ]
+  },
+  {
+   "id": "scimitar",
+   "nome": "Scimitar",
+   "categoria": "marcial",
+   "alcance": "corpo_a_corpo",
+   "dano": "1d6",
+   "tipo_dano": "slashing",
+   "propriedades": [
+    "finesse",
+    "light"
+   ]
+  },
+  {
+   "id": "shortbow",
+   "nome": "Shortbow",
+   "categoria": "simples",
+   "alcance": "distancia",
+   "dano": "1d6",
+   "tipo_dano": "piercing",
+   "propriedades": [
+    "ammunition",
+    "two-handed"
+   ]
+  },
+  {
+   "id": "shortsword",
+   "nome": "Shortsword",
+   "categoria": "marcial",
+   "alcance": "corpo_a_corpo",
+   "dano": "1d6",
+   "tipo_dano": "piercing",
+   "propriedades": [
+    "finesse",
+    "light",
+    "monk"
+   ]
+  },
+  {
+   "id": "sickle",
+   "nome": "Sickle",
+   "categoria": "simples",
+   "alcance": "corpo_a_corpo",
+   "dano": "1d4",
+   "tipo_dano": "slashing",
+   "propriedades": [
+    "light",
+    "monk"
+   ]
+  },
+  {
+   "id": "sling",
+   "nome": "Sling",
+   "categoria": "simples",
+   "alcance": "distancia",
+   "dano": "1d4",
+   "tipo_dano": "bludgeoning",
+   "propriedades": [
+    "ammunition"
+   ]
+  },
+  {
+   "id": "spear",
+   "nome": "Spear",
+   "categoria": "simples",
+   "alcance": "corpo_a_corpo",
+   "dano": "1d6",
+   "tipo_dano": "piercing",
+   "propriedades": [
+    "thrown",
+    "versatile",
+    "monk"
+   ]
+  },
+  {
+   "id": "trident",
+   "nome": "Trident",
+   "categoria": "marcial",
+   "alcance": "corpo_a_corpo",
+   "dano": "1d6",
+   "tipo_dano": "piercing",
+   "propriedades": [
+    "thrown",
+    "versatile"
+   ]
+  },
+  {
+   "id": "war-pick",
+   "nome": "War pick",
+   "categoria": "marcial",
+   "alcance": "corpo_a_corpo",
+   "dano": "1d8",
+   "tipo_dano": "piercing",
+   "propriedades": []
+  },
+  {
+   "id": "warhammer",
+   "nome": "Warhammer",
+   "categoria": "marcial",
+   "alcance": "corpo_a_corpo",
+   "dano": "1d8",
+   "tipo_dano": "bludgeoning",
+   "propriedades": [
+    "versatile"
+   ]
+  },
+  {
+   "id": "whip",
+   "nome": "Whip",
+   "categoria": "marcial",
+   "alcance": "corpo_a_corpo",
+   "dano": "1d4",
+   "tipo_dano": "slashing",
+   "propriedades": [
+    "finesse",
+    "reach"
+   ]
+  }
+ ],
+ "armaduras": [
+  {
+   "id": "breastplate",
+   "nome": "Breastplate",
+   "categoria": "media",
+   "ca_base": 14,
+   "soma_des": true,
+   "des_maxima": 2,
+   "for_minima": 0,
+   "desvantagem_furtividade": false
+  },
+  {
+   "id": "chain-mail",
+   "nome": "Chain Mail",
+   "categoria": "pesada",
+   "ca_base": 16,
+   "soma_des": false,
+   "des_maxima": null,
+   "for_minima": 13,
+   "desvantagem_furtividade": true
+  },
+  {
+   "id": "chain-shirt",
+   "nome": "Chain Shirt",
+   "categoria": "media",
+   "ca_base": 13,
+   "soma_des": true,
+   "des_maxima": 2,
+   "for_minima": 0,
+   "desvantagem_furtividade": false
+  },
+  {
+   "id": "half-plate-armor",
+   "nome": "Half Plate Armor",
+   "categoria": "media",
+   "ca_base": 15,
+   "soma_des": true,
+   "des_maxima": 2,
+   "for_minima": 0,
+   "desvantagem_furtividade": true
+  },
+  {
+   "id": "hide-armor",
+   "nome": "Hide Armor",
+   "categoria": "media",
+   "ca_base": 12,
+   "soma_des": true,
+   "des_maxima": 2,
+   "for_minima": 0,
+   "desvantagem_furtividade": false
+  },
+  {
+   "id": "leather-armor",
+   "nome": "Leather Armor",
+   "categoria": "leve",
+   "ca_base": 11,
+   "soma_des": true,
+   "des_maxima": null,
+   "for_minima": 0,
+   "desvantagem_furtividade": false
+  },
+  {
+   "id": "padded-armor",
+   "nome": "Padded Armor",
+   "categoria": "leve",
+   "ca_base": 11,
+   "soma_des": true,
+   "des_maxima": null,
+   "for_minima": 0,
+   "desvantagem_furtividade": true
+  },
+  {
+   "id": "plate-armor",
+   "nome": "Plate Armor",
+   "categoria": "pesada",
+   "ca_base": 18,
+   "soma_des": false,
+   "des_maxima": null,
+   "for_minima": 15,
+   "desvantagem_furtividade": true
+  },
+  {
+   "id": "ring-mail",
+   "nome": "Ring Mail",
+   "categoria": "pesada",
+   "ca_base": 14,
+   "soma_des": false,
+   "des_maxima": null,
+   "for_minima": 0,
+   "desvantagem_furtividade": true
+  },
+  {
+   "id": "scale-mail",
+   "nome": "Scale Mail",
+   "categoria": "media",
+   "ca_base": 14,
+   "soma_des": true,
+   "des_maxima": 2,
+   "for_minima": 0,
+   "desvantagem_furtividade": true
+  },
+  {
+   "id": "shield",
+   "nome": "Shield",
+   "categoria": "escudo",
+   "ca_base": 2,
+   "soma_des": false,
+   "des_maxima": null,
+   "for_minima": 0,
+   "desvantagem_furtividade": false
+  },
+  {
+   "id": "splint-armor",
+   "nome": "Splint Armor",
+   "categoria": "pesada",
+   "ca_base": 17,
+   "soma_des": false,
+   "des_maxima": null,
+   "for_minima": 15,
+   "desvantagem_furtividade": true
+  },
+  {
+   "id": "studded-leather-armor",
+   "nome": "Studded Leather Armor",
+   "categoria": "leve",
+   "ca_base": 12,
+   "soma_des": true,
+   "des_maxima": null,
+   "for_minima": 0,
+   "desvantagem_furtividade": false
+  }
+ ],
+ "pericias": [
+  {
+   "id": "acrobatics",
+   "nome": "Acrobatics",
+   "atributo": "des"
+  },
+  {
+   "id": "animal-handling",
+   "nome": "Animal Handling",
+   "atributo": "sab"
+  },
+  {
+   "id": "arcana",
+   "nome": "Arcana",
+   "atributo": "int"
+  },
+  {
+   "id": "athletics",
+   "nome": "Athletics",
+   "atributo": "for"
+  },
+  {
+   "id": "deception",
+   "nome": "Deception",
+   "atributo": "car"
+  },
+  {
+   "id": "history",
+   "nome": "History",
+   "atributo": "int"
+  },
+  {
+   "id": "insight",
+   "nome": "Insight",
+   "atributo": "sab"
+  },
+  {
+   "id": "intimidation",
+   "nome": "Intimidation",
+   "atributo": "car"
+  },
+  {
+   "id": "investigation",
+   "nome": "Investigation",
+   "atributo": "int"
+  },
+  {
+   "id": "medicine",
+   "nome": "Medicine",
+   "atributo": "sab"
+  },
+  {
+   "id": "nature",
+   "nome": "Nature",
+   "atributo": "int"
+  },
+  {
+   "id": "perception",
+   "nome": "Perception",
+   "atributo": "sab"
+  },
+  {
+   "id": "performance",
+   "nome": "Performance",
+   "atributo": "car"
+  },
+  {
+   "id": "persuasion",
+   "nome": "Persuasion",
+   "atributo": "car"
+  },
+  {
+   "id": "religion",
+   "nome": "Religion",
+   "atributo": "int"
+  },
+  {
+   "id": "sleight-of-hand",
+   "nome": "Sleight of Hand",
+   "atributo": "des"
+  },
+  {
+   "id": "stealth",
+   "nome": "Stealth",
+   "atributo": "des"
+  },
+  {
+   "id": "survival",
+   "nome": "Survival",
+   "atributo": "sab"
+  }
+ ]
+}

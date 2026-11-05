@@ -24,3 +24,6 @@ privado/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Cache local de downloads (SRD etc.)
+.cache/

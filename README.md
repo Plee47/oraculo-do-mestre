@@ -54,20 +54,67 @@ Por que essa divisão: [ADR 0001](docs/decisoes/0001-databricks-fabrica-streamli
 ## Roteiro
 
 - [x] **Fase 0 · Fundação:** ficha genérica, D&D 5e, site no ar, CI/CD e guardião de conteúdo
-- [ ] **Fase 1 · D&D SRD:** pipeline medalhão no Databricks com o SRD e gerador de fichas
+- [x] **Fase 1 · D&D SRD:** pipeline medalhão no Databricks com o SRD e gerador de fichas
 - [ ] **Fase 2 · Análises:** fraquezas do grupo, desequilíbrio de encontros, dicas explicáveis
 - [ ] **Fase 3 · Leitor de livros:** detector "é livro de RPG?" e extração com LLM avaliada contra o SRD
 - [ ] **Fase 4 · Feiticeiros & Maldições:** segundo sistema, extraído pelo leitor
 - [ ] **Fase 5 · Polimento:** resultados, vídeo de demonstração
+
+## Pipeline de dados (Fase 1)
+
+```mermaid
+flowchart LR
+    API[(dnd5eapi.co<br/>SRD 5.1)] -->|download| V[/volume livros_abertos/]
+    V -->|Auto Loader| B[bronze_srd<br/>~600 JSONs]
+    B -->|parse + expectativas| S[silver_dnd5e_*<br/>racas · classes · magias<br/>armas · armaduras · pericias]
+    S --> G1[gold_dnd5e_magias_por_classe]
+    S -->|só se licença aberta| E[/exportacao/dnd5e/catalogo.json/]
+    E -->|scripts/sincronizar_dados.py| R[dados/publicos/ no repo]
+    R --> SITE[Gerador de fichas no site]
+```
+
+| Camada | Tabela | O que garante |
+|---|---|---|
+| Bronze | `bronze_srd` | JSON exatamente como veio da API, ingestão incremental (Auto Loader) |
+| Silver | `silver_dnd5e_*` | Uma tabela por entidade, colunas planas para SQL + `dados_json` completo |
+| Gold | `gold_dnd5e_magias_por_classe` | Funções das magias (dano, controle, cura, utilidade) por classe e círculo |
+| Exportação | `catalogo.json` | Só sai se o sistema estiver marcado como público (ADR 0002) |
+
+O job **falha** se o catálogo não passar nas expectativas de qualidade: 12 classes com os 20
+níveis completos, 300 ou mais magias, nenhuma magia apontando para uma classe inexistente…
+O parsing usa as mesmas funções puras testadas no CI, e o catálogo gerado no Databricks é
+idêntico ao gerado localmente.
+
+### Gerador de fichas
+
+Dado nível e papel (defensor, atacante, conjurador ou suporte), o gerador monta a ficha e
+explica cada escolha:
+
+1. **Classe** do papel pedido.
+2. **Atributos** pelo conjunto padrão, na ordem de prioridade da classe.
+3. **Raça** cujos bônus mais combinam com essa prioridade.
+4. **Melhorias de atributo** de acordo com a tabela de níveis do SRD.
+5. **Perícias** ligadas aos atributos mais altos.
+6. **Armadura** de maior CA permitida (respeitando FOR mínima e "druida não usa metal").
+7. **Arma** coerente com o estilo (acuidade com DES, sem arma de duas mãos com escudo).
+8. **Magias** pela função do papel, evitando acumular magias de concentração.
+
+**Limitações conhecidas:** o equipamento ignora o custo em ouro (um guerreiro de nível 1 pode
+sair de armadura completa), não há subclasses nem talentos, e os nomes de magias e itens ficam
+em inglês, como no SRD.
 
 ## Estrutura
 
 ```
 ├── src/oraculo/
 │   ├── nucleo/             # ficha genérica + contrato de sistema (ADR 0003)
-│   ├── sistemas/dnd5e/     # sistema.yaml (dados SRD) + regras em Python
+│   ├── sistemas/dnd5e/     # regras, catálogo, parser do SRD, gerador de fichas
 │   └── guardiao.py         # bloqueia livros/dados protegidos no repo (ADR 0002)
-├── scripts/deploy.py       # deploy no Databricks: código no volume + bundle (ADR 0004)
+├── dados/publicos/         # dados exportados pelo Databricks (só licença aberta)
+├── scripts/
+│   ├── deploy.py           # deploy no Databricks: código no volume + bundle (ADR 0004)
+│   ├── carregar_srd.py     # plano B: baixa o SRD localmente e envia ao volume
+│   └── sincronizar_dados.py# traz o catálogo exportado para dados/publicos/
 ├── app/                    # site Streamlit
 ├── pipelines/              # notebooks e jobs do Databricks
 ├── databricks.yml          # Asset Bundle (targets dev/prod)
@@ -89,6 +136,7 @@ streamlit run app/streamlit_app.py       # site local em http://localhost:8501
 ```bash
 databricks auth login --host https://<seu-workspace>.cloud.databricks.com
 python scripts/deploy.py --run      # envia o código ao volume, faz o deploy e roda o pipeline
+python scripts/sincronizar_dados.py # traz o catálogo exportado para dados/publicos/
 ```
 
 O código vai para um volume do Unity Catalog em vez da pasta do workspace. O motivo está no
