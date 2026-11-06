@@ -1,7 +1,8 @@
 # Oráculo do Mestre
 
-**Envie qualquer livro de RPG; o Oráculo confere se é mesmo RPG, lê as regras e entrega o
-resumo do sistema, fichas e encontros dentro das regras dele, como alguém que leu o livro.** Projeto de portfólio de
+**Encontrou algum sistema? Entregue-o ao Oráculo e veja a base do seu RPG nascer.** Ele confere se
+o livro é mesmo de RPG, lê as regras e devolve o resumo do sistema, fichas prontas para jogar e
+encontros, como alguém que leu o livro. Projeto de portfólio de
 **ciência de dados e engenharia de dados com Databricks**: pipeline medalhão, modelo de
 classificação avaliado sem vazamento, LLMs avaliados contra gabarito e usados em produção com
 validação, e MLOps de ponta a ponta, tudo gratuito.
@@ -407,10 +408,10 @@ sobre o tema do Streamlit (`.streamlit/config.toml`) e uma camada de CSS (`app/e
 | [**Taste Skill**](https://github.com/leonxlnx/taste-skill) | Um único sistema visual (uma paleta, um estilo de botão e de borda), texto direto que diz o que o produto faz, o produto real na tela e nada de violeta genérico |
 | [**Design Engineering de Emil Kowalski**](https://github.com/emilkowalski/skills) | Micro-interações: botões que afundam ao clique (`scale(0.97)`), curvas de animação próprias abaixo de 300 ms, hover só em dispositivos com mouse e respeito a movimento reduzido |
 
-O resultado é a identidade **"grimório de dados"**: papel quente, tinta escura e um único
-destaque cor de brasa. Os títulos usam Fraunces (serifa que lembra livro de regras), o texto
-usa Inter e os dados usam JetBrains Mono. O pipeline do Databricks aparece no início como uma
-linha do tempo, não como uma grade de cards.
+O resultado é a identidade **"grimório"**: verde quase preto, pergaminho claro e um único
+destaque dourado. Os títulos usam Cinzel (capitulares de inscrição), o texto usa EB Garamond (livro
+antigo), os dados usam JetBrains Mono e o nome do site vem em letra gótica. O estilo foi escolhido
+entre quatro protótipos da página inicial.
 
 ## Roteiro
 

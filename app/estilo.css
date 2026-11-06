@@ -1,29 +1,33 @@
 /* Oráculo do Mestre — camada visual sobre o tema do Streamlit (.streamlit/config.toml).
    Cores repetidas aqui são as mesmas do tema. */
+@import url("https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&display=swap");
 :root {
-  --papel: #f7f2e8;
-  --papel-2: #efe7d8;
-  --tinta: #221d17;
-  --tinta-suave: #6b5f50;
-  --linha: #dccfb9;
-  --brasa: #b5452b;
-  --brasa-escura: #9c3a24;
+  --papel: #14211d;
+  --papel-2: #1b2c27;
+  --papel-3: #0d1714;
+  --tinta: #ece3cf;
+  --tinta-suave: #c9bfa8;
+  --linha: #46503f;
+  --ouro: #e0c07a;
+  --ouro-suave: #d4b36c;
+  --ouro-fundo: #5c4e2c;
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
 }
 
 /* ------------------------------------------------------------ superfícies do navegador */
-::selection { background: #ebc3b4; color: var(--tinta); }
-html { caret-color: var(--brasa); scrollbar-color: #cdbd9f var(--papel); }
+::selection { background: var(--ouro); color: var(--papel); }
+html { caret-color: var(--ouro); scrollbar-color: var(--ouro-fundo) var(--papel); }
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-track { background: var(--papel); }
-::-webkit-scrollbar-thumb { background: #cdbd9f; border-radius: 10px; border: 2px solid var(--papel); }
-:focus-visible { outline: 2px solid var(--brasa); outline-offset: 2px; }
+::-webkit-scrollbar-thumb { background: var(--ouro-fundo); border-radius: 10px; border: 2px solid var(--papel); }
+:focus-visible { outline: 2px solid var(--ouro); outline-offset: 2px; }
 a { text-underline-offset: 0.2em; }
-[data-testid="stMetricValue"], [data-testid="stDataFrame"], .num { font-variant-numeric: tabular-nums; }
+[data-testid="stMetricValue"], [data-testid="stDataFrame"], .num { font-variant-numeric: lining-nums tabular-nums; }
+[data-testid="stMetricValue"] { font-family: "Cinzel", serif; }
 
 /* ------------------------------------------------------------ tipografia */
-h1, h2, h3 { letter-spacing: -0.02em; text-wrap: balance; }
+h1, h2, h3 { letter-spacing: 0.01em; text-wrap: balance; }
 [data-testid="stMarkdownContainer"] p { max-width: 75ch; }
 [data-testid="stCaptionContainer"], [data-testid="stCaptionContainer"] p {
   color: var(--tinta-suave) !important; opacity: 1;
@@ -38,31 +42,37 @@ h1, h2, h3 { letter-spacing: -0.02em; text-wrap: balance; }
 .stButton > button:active, .stDownloadButton > button:active { transform: scale(0.97); }
 @media (hover: hover) and (pointer: fine) {
   .stButton > button:hover, .stDownloadButton > button:hover {
-    box-shadow: 0 2px 8px rgba(34, 29, 23, 0.08);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
   }
 }
 
 /* ------------------------------------------------------------ vitrine do início */
 .vitrine { padding: 0.5rem 0 0.25rem; }
 .vitrine h1 {
-  font-family: "Fraunces", serif;
-  font-size: clamp(2.4rem, 4.6vw, 4rem);
-  line-height: 1.04;
-  letter-spacing: -0.03em;
+  font-family: "Cinzel", serif;
+  font-size: clamp(1.9rem, 3.1vw, 2.9rem);
+  font-weight: 500;
+  line-height: 1.16;
+  letter-spacing: 0.005em;
+  color: #f4ecd8;
   margin: 0 0 1rem;
   padding: 0;
 }
-.vitrine h1 em { font-style: italic; color: var(--brasa); }
-.vitrine p.lead { font-size: 1.15rem; line-height: 1.55; color: var(--tinta-suave); max-width: 52ch; margin: 0; }
+.vitrine h1 em { font-style: normal; color: var(--ouro); }
+.vitrine p.lead::first-letter {
+  float: left; font-family: "Cinzel", serif; font-weight: 600; font-size: 4rem; line-height: 0.85;
+  padding: 0.35rem 0.55rem 0 0; color: var(--ouro);
+}
+.vitrine p.lead { font-size: 1.2rem; line-height: 1.5; color: var(--tinta-suave); max-width: 52ch; margin: 0; }
 .vitrine p.lead strong { color: var(--tinta); font-weight: 600; }
 
 .fluxo { display: flex; gap: 1.5rem; margin: 1.5rem 0 0; padding: 0 !important; list-style: none; flex-wrap: wrap; }
 .fluxo li { margin: 0 !important; padding: 0 !important; }
-.fluxo li { display: flex; gap: 0.6rem; align-items: baseline; color: var(--tinta-suave); font-size: 0.95rem; }
+.fluxo li { display: flex; gap: 0.5rem; align-items: baseline; color: var(--tinta-suave); font-size: 1.05rem; }
 .fluxo li b { color: var(--tinta); font-weight: 600; }
 .fluxo li .n {
-  font-family: "Fraunces", serif; font-weight: 600; color: var(--brasa);
-  font-size: 1.1rem; font-variant-numeric: lining-nums;
+  font-family: "Cinzel", serif; font-weight: 600; color: var(--ouro);
+  font-size: 1rem;
 }
 
 /* Pipeline do Databricks: um diagrama, não uma grade de cards. */
@@ -76,11 +86,11 @@ h1, h2, h3 { letter-spacing: -0.02em; text-wrap: balance; }
 .pipeline li::before {
   content: ""; position: absolute; top: -5px; left: 0;
   width: 9px; height: 9px; border-radius: 50%;
-  background: var(--papel); border: 2px solid var(--brasa);
+  background: var(--papel); border: 2px solid var(--ouro);
 }
-.pipeline li:first-child::before { background: var(--brasa); }
-.pipeline .etapa { font-family: "Fraunces", serif; font-weight: 600; font-size: 1.1rem; color: var(--tinta); }
-.pipeline .tec { font-family: "JetBrains Mono", monospace; font-size: 0.75rem; color: var(--brasa-escura); margin: 0.15rem 0 0.45rem; }
+.pipeline li:first-child::before { background: var(--ouro); }
+.pipeline .etapa { font-family: "Cinzel", serif; font-weight: 600; font-size: 1.1rem; color: var(--tinta); }
+.pipeline .tec { font-family: "JetBrains Mono", monospace; font-size: 0.75rem; color: var(--ouro-suave); margin: 0.15rem 0 0.45rem; }
 .pipeline .feito { font-size: 0.9rem; line-height: 1.45; color: var(--tinta-suave); }
 .pipeline .feito b { color: var(--tinta); font-weight: 600; font-variant-numeric: tabular-nums; }
 @media (max-width: 900px) {
@@ -99,10 +109,10 @@ h1, h2, h3 { letter-spacing: -0.02em; text-wrap: balance; }
 .atributos > div + div { border-left: 1px solid var(--linha); }
 .atributos .sigla { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.08em; color: var(--tinta-suave); }
 .atributos .valor {
-  font-family: "Fraunces", serif; font-size: 2rem; font-weight: 600; line-height: 1.1;
+  font-family: "Cinzel", serif; font-size: 2rem; font-weight: 600; line-height: 1.1;
   color: var(--tinta); font-variant-numeric: tabular-nums lining-nums;
 }
-.atributos .mod { font-size: 0.9rem; color: var(--brasa-escura); font-variant-numeric: tabular-nums; }
+.atributos .mod { font-size: 0.9rem; color: var(--ouro-suave); font-variant-numeric: tabular-nums; }
 @media (max-width: 640px) {
   .atributos { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .atributos > div:nth-child(4) { border-left: 0; }
@@ -115,12 +125,12 @@ h1, h2, h3 { letter-spacing: -0.02em; text-wrap: balance; }
 .itens li span { color: var(--tinta-suave); font-variant-numeric: tabular-nums; }
 
 /* ------------------------------------------------------------ barra lateral */
-.livro-atual { border: 1px solid #d3c4aa; border-radius: 0.5rem; padding: 0.75rem 0.9rem; background: var(--papel); }
+.livro-atual { border: 1px solid var(--ouro-fundo); border-radius: 0.2rem; padding: 0.75rem 0.9rem; background: var(--papel); }
 .livro-atual .rotulo { font-size: 0.75rem; color: var(--tinta-suave); }
-.livro-atual .nome { font-family: "Fraunces", serif; font-weight: 600; font-size: 1.05rem; line-height: 1.25; margin: 0.1rem 0; overflow-wrap: anywhere; }
-.livro-atual .sistema { font-size: 0.85rem; color: var(--brasa-escura); font-weight: 500; }
-.marca { font-family: "Fraunces", serif; font-weight: 600; font-size: 1.35rem; letter-spacing: -0.02em; color: var(--tinta); margin: 0 0 0.25rem; }
-.marca span { color: var(--brasa); }
+.livro-atual .nome { font-family: "Cinzel", serif; font-weight: 600; font-size: 1.05rem; line-height: 1.25; margin: 0.1rem 0; overflow-wrap: anywhere; }
+.livro-atual .sistema { font-size: 0.85rem; color: var(--ouro-suave); font-weight: 500; }
+.marca { font-family: "UnifrakturCook", "EB Garamond", serif; font-weight: 700; font-size: 2.1rem; line-height: 1; color: var(--ouro); margin: 0 0 0.5rem; }
+.marca span { color: var(--ouro); }
 
 /* ------------------------------------------------------------ movimento reduzido */
 @media (prefers-reduced-motion: reduce) {
@@ -130,11 +140,11 @@ h1, h2, h3 { letter-spacing: -0.02em; text-wrap: balance; }
 /* Extras: resultado de uma rolagem. Sem ligaduras: ">=" precisa continuar escrito como foi digitado. */
 .rolagem { font-variant-ligatures: none; }
 [data-testid="InputInstructions"] { display: none; }
-.rolagem { border: 1px solid var(--linha); border-radius: 0.5rem; padding: 0.85rem 1rem; margin: 0.5rem 0; background: var(--papel); }
+.rolagem { border: 1px solid var(--linha); border-radius: 0.2rem; padding: 0.85rem 1rem; margin: 0.5rem 0; background: var(--papel-2); }
 .rolagem .topo { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; }
 .rolagem .expressao { font-family: "JetBrains Mono", monospace; font-size: 0.85rem; color: var(--tinta-suave); overflow-wrap: anywhere; }
 .rolagem .total {
-  font-family: "Fraunces", serif; font-weight: 600; font-size: 2.5rem; line-height: 1; color: var(--tinta);
+  font-family: "Cinzel", serif; font-weight: 500; font-size: 2.5rem; line-height: 1; color: var(--tinta);
   font-variant-numeric: tabular-nums; animation: total-entra 220ms var(--ease-out);
 }
 .rolagem .grupo { display: flex; flex-wrap: wrap; align-items: center; gap: 0.3rem; margin-top: 0.55rem; }
@@ -143,11 +153,24 @@ h1, h2, h3 { letter-spacing: -0.02em; text-wrap: balance; }
   min-width: 1.9rem; padding: 0.15rem 0.35rem; text-align: center; border: 1px solid var(--linha); border-radius: 0.3rem;
   font-variant-numeric: tabular-nums; font-size: 0.95rem; color: var(--tinta);
 }
-.rolagem .dado.maximo { border: 2px solid var(--brasa); font-weight: 600; }
+.rolagem .dado.maximo { border: 2px solid var(--ouro); font-weight: 600; }
 .rolagem .dado.minimo { border: 2px dashed var(--tinta-suave); }
 .rolagem .dado.fora { color: var(--tinta-suave); text-decoration: line-through; opacity: 0.7; }
-.rolagem .dado.sucesso { background: var(--brasa); border-color: var(--brasa); color: #fff; font-weight: 600; }
-.rolagem .dado.falha { border-style: dashed; color: var(--brasa-escura); font-weight: 600; }
+.rolagem .dado.sucesso { background: var(--ouro); border-color: var(--ouro); color: var(--papel); font-weight: 600; }
+.rolagem .dado.falha { border-style: dashed; color: var(--ouro-suave); font-weight: 600; }
 .rolagem .conta { margin-top: 0.55rem; font-family: "JetBrains Mono", monospace; font-size: 0.75rem; color: var(--tinta-suave); overflow-wrap: anywhere; }
 @keyframes total-entra { from { opacity: 0; transform: scale(0.94); } to { opacity: 1; transform: scale(1); } }
 @media (prefers-reduced-motion: reduce) { .rolagem .total { animation: none; } }
+
+/* ------------------------------------------------------------ grimório */
+/* O dourado é claro: o texto dos botões principais fica escuro para ter contraste. */
+[data-testid="stBaseButton-primary"], [data-testid="stBaseButton-primaryFormSubmit"] { color: var(--papel) !important; font-weight: 600; }
+[data-testid="stBaseButton-primary"] p, [data-testid="stBaseButton-primaryFormSubmit"] p { color: var(--papel) !important; }
+
+/* A caixa de entrega do livro, com moldura dupla como a de uma iluminura. */
+.st-key-oferenda { border: 1px solid var(--ouro) !important; outline: 1px solid var(--ouro-fundo); outline-offset: 4px; background: var(--papel-2); }
+.oferenda-titulo { font-family: "Cinzel", serif; font-weight: 600; font-size: 1.15rem; color: var(--ouro); text-align: center; }
+h2 { color: #f4ecd8; }
+.vitrine .inteiro { white-space: nowrap; }  /* "Entregue-o" não se parte no hífen */
+/* EB Garamond é compacta: um pouco de ar deixa o texto pequeno mais fácil de ler. */
+.stApp p, .stApp li, .stApp label { letter-spacing: 0.012em; }
