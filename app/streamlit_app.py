@@ -27,6 +27,7 @@ if recarregar_se_mudou([RAIZ / "src", RAIZ / "dados"]):
 
 from oraculo.fichas_pdf import (
     TEMAS,
+    BlocoImpresso,
     FichaImpressa,
     Tema,
     ValorImpresso,
@@ -160,7 +161,7 @@ def _downloads_da_ficha(ficha: Ficha, montar_pdf, tema: Tema, em_branco: FichaIm
         file_name=f"ficha_em_branco_{normalizar_id(em_branco.sistema)}.pdf",
         mime="application/pdf",
         icon=":material/edit_document:",
-        help="Para imprimir e preencher à mão, com os campos deste sistema.",
+        help="Para preencher no leitor de PDF ou imprimir, com os campos deste sistema.",
         key=f"branca_{chave}",
         width="stretch",
     )
@@ -533,9 +534,10 @@ def _impressa_dnd(ficha: Ficha, cat: Catalogo) -> FichaImpressa:
     resistencias = " · ".join(
         f"{a.abrev} {d.get(f'resistencia_{a.id}', d[f'mod_{a.id}']):+d}" for a in defn.atributos
     )
+    treinadas = set(ficha.pericias)
+    pericias = [ValorImpresso(p.nome, marcado=p.id in treinadas) for p in cat.pericias]
     secoes = [
         ("Testes de resistência", [resistencias]),
-        ("Perícias", [", ".join(cat.pericia(p).nome for p in ficha.pericias)]),
         ("Equipamento", equipamento),
         ("Magias", [
             f"{'Truques' if c == 0 else f'{c}º círculo'}: {', '.join(nomes)}"
@@ -555,6 +557,7 @@ def _impressa_dnd(ficha: Ficha, cat: Catalogo) -> FichaImpressa:
         atributos=[(a.abrev, ficha.atributos[a.id], d[f"mod_{a.id}"]) for a in defn.atributos],
         valores=valores,
         secoes=secoes,
+        blocos=[BlocoImpresso("Perícias", "marcas", pericias)],
         narrativa=dict(ficha.narrativa),
         credito=_CREDITO_DND,
     )
@@ -570,12 +573,20 @@ def _branca_dnd() -> FichaImpressa:
         atributos=[atributo_em_branco(a.abrev, True) for a in defn.atributos],
         valores=[ValorImpresso(n, anotar=n == "Pontos de Vida") for n in nomes],
         campos=["Nome", "Jogador", "Raça", "Classe", "Subclasse", "Nível"],
-        pautadas=[
-            ("Testes de resistência", 2),
-            ("Perícias", 3),
-            ("Ataques e magias", 6),
-            ("Equipamento", 4),
-            ("Aparência e história", 4),
+        blocos=[
+            BlocoImpresso(
+                "Testes de resistência",
+                "valores",
+                [ValorImpresso(a.nome) for a in defn.atributos],
+            ),
+            BlocoImpresso(
+                "Perícias",
+                "marcas",
+                [ValorImpresso(p.nome) for p in catalogo_dnd5e().pericias],
+            ),
+            BlocoImpresso("Ataques e magias", linhas=6),
+            BlocoImpresso("Equipamento", linhas=4),
+            BlocoImpresso("Aparência e história", linhas=4),
         ],
         secoes=[
             (
@@ -1009,9 +1020,10 @@ def _impressa_fm(ficha: Ficha, regras) -> FichaImpressa:
     resistencias = " · ".join(
         f"{r['nome']} {d[f'resistencia_{rid}']:+d}" for rid, r in extras["resistencias"].items()
     )
-    pericias = ", ".join(
-        extras["pericias"][p]["nome"] for p in ficha.pericias if p in extras["pericias"]
-    )
+    treinadas = set(ficha.pericias)
+    pericias = [
+        ValorImpresso(p["nome"], marcado=pid in treinadas) for pid, p in extras["pericias"].items()
+    ]
     return FichaImpressa(
         nome=ficha.nome,
         sistema=SISTEMAS_SUPORTADOS["fm"],
@@ -1023,16 +1035,17 @@ def _impressa_fm(ficha: Ficha, regras) -> FichaImpressa:
         valores=valores,
         secoes=[
             ("Testes de resistência", [resistencias]),
-            ("Perícias treinadas", [pericias]),
             ("Técnica e feitiços", [", ".join(ficha.poderes)]),
             ("Equipamento", [", ".join(ficha.equipamento)]),
         ],
+        blocos=[BlocoImpresso("Perícias", "marcas", pericias)],
         narrativa=dict(ficha.narrativa),
         credito=_CREDITO_FM,
     )
 
 
 def _branca_fm(regras) -> FichaImpressa:
+    extras = regras.definicao.extras
     nomes = ["Pontos de Vida", "PE ou Estamina", "Defesa", "CD de especialização", "Atenção",
              "Iniciativa", "Deslocamento", "CD de técnica"]  # fmt: skip
     return FichaImpressa(
@@ -1042,12 +1055,20 @@ def _branca_fm(regras) -> FichaImpressa:
         atributos=[atributo_em_branco(a.abrev, True) for a in regras.definicao.atributos],
         valores=[ValorImpresso(n, anotar=i < 2) for i, n in enumerate(nomes)],
         campos=["Nome", "Jogador", "Origem", "Especialização", "Nível"],
-        pautadas=[
-            ("Testes de resistência", 2),
-            ("Perícias treinadas", 3),
-            ("Técnica e feitiços", 6),
-            ("Equipamento", 4),
-            ("Aparência e história", 4),
+        blocos=[
+            BlocoImpresso(
+                "Testes de resistência",
+                "valores",
+                [ValorImpresso(r["nome"]) for r in extras["resistencias"].values()],
+            ),
+            BlocoImpresso(
+                "Perícias",
+                "marcas",
+                [ValorImpresso(p["nome"]) for p in extras["pericias"].values()],
+            ),
+            BlocoImpresso("Técnica e feitiços", linhas=6),
+            BlocoImpresso("Equipamento", linhas=4),
+            BlocoImpresso("Aparência e história", linhas=4),
         ],
         credito=_CREDITO_FM,
     )

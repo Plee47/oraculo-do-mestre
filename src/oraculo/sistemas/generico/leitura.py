@@ -30,6 +30,7 @@ from oraculo.sistemas.generico.formulas import normalizar_id
 from oraculo.sistemas.generico.modelo import (
     Arquetipo,
     Atributo,
+    BlocoFicha,
     Criatura,
     Derivado,
     Etapa,
@@ -88,7 +89,7 @@ _RE_LINHA_SUMARIO = re.compile(r"(\.{3,}|\s)\s*\d{1,3}\s*$", re.M)
 _RE_NUMERO = re.compile(r"\b\d{1,3}\b")
 
 # Mudou um prompt, o modelo ou a seleção de páginas? Mude a versão: o cache antigo deixa de valer.
-VERSAO_LEITURA = "2026-11-06.8"
+VERSAO_LEITURA = "2026-11-06.9"
 VERSAO_VETORES = "qwen3-0.6b-1200c"
 ESTRATEGIAS = ("palavras", "bm25", "hibrida")
 # Estratégia do site, escolhida pela avaliação contra o gabarito do SRD (notebook 23).
@@ -812,6 +813,7 @@ def ler_sistema(
     if e_rpg:
         _completar_opcoes(sistema, linhas_originais, limpas, cliente)
         _preencher_lacunas(sistema, limpas, cliente, selecao)
+        _ler_ficha(sistema, limpas, cliente, selecao)
     leitura = Leitura(sistema, e_rpg, len({i for v in selecao.values() for i in v}), livro=livro)
     if cache is not None and e_rpg:
         cache.gravar(livro, "sistema", chave, VERSAO_LEITURA, json.dumps({
@@ -819,6 +821,83 @@ def ler_sistema(
             "paginas_lidas": leitura.paginas_lidas,
         }))  # fmt: skip
     return leitura
+
+
+# --------------------------------------------------------------------------- ficha do jogador
+PROMPT_FICHA = """Trechos em que o livro fala da ficha de personagem e do que o jogador anota nela.
+Monte as partes da ficha que um jogador precisa preencher para jogar ESTE sistema, como o livro as
+descreve (inclusive as que têm nome próprio neste jogo).
+
+A ficha JÁ TEM estes campos; não os repita:
+{ja_tem}
+
+Devolva: {"blocos": [{
+  "titulo": "nome da parte, como o livro chama",
+  "tipo": "valores | contadores | texto",
+  "itens": ["cada campo dessa parte, com o nome exato do livro"],
+  "pagina": int ou null}]}
+
+Tipos:
+- "valores": um número por item (testes de resistência, habilidades de combate, aptidões com nível).
+- "contadores": algo que sobe e desce em jogo, com máximo e atual (pontos temporários, dados de
+  vida, sanidade, deslocamento não entra aqui).
+- "texto": espaço de escrever (técnica, poderes, aspectos pessoais, história, invocações). Se a
+  parte tem campos próprios, liste-os em "itens"; senão, "itens": [].
+
+Regras: só o que o livro pede que seja anotado. Nada de inventar campos. Não liste catálogos de
+opções (todas as magias, todos os itens): isso é um campo "texto". No máximo 10 blocos, na ordem
+da ficha."""
+ORCAMENTO_FICHA = 30_000
+_RE_FICHA = re.compile(
+    r"\b(ficha|folha de personagem|planilha de personagem|character sheet|hoja de personaje)", re.I
+)
+
+
+def _paginas_da_ficha(limpas: list[str]) -> list[int]:
+    """As páginas que mais falam da ficha, sem LLM."""
+    contagem = {i: len(_RE_FICHA.findall(p)) for i, p in enumerate(limpas)}
+    escolhidas, total = [], 0
+    for i in sorted((i for i, n in contagem.items() if n), key=lambda i: -contagem[i]):
+        if total + len(limpas[i]) <= ORCAMENTO_FICHA:
+            escolhidas.append(i)
+            total += len(limpas[i])
+    return sorted(escolhidas)
+
+
+def _ler_ficha(
+    s: SistemaLido, limpas: list[str], cliente: ClienteLLM, selecao: dict[str, list[int]]
+) -> None:
+    """Lê como é a ficha do jogador neste sistema: um pedido a mais, uma vez por livro.
+
+    Trava contra invenção: um campo só entra se o nome dele aparecer no texto do livro."""
+    indices = _paginas_da_ficha(limpas) or selecao.get("criacao", [])
+    if not indices:
+        return
+    ja_tem = [a.nome for a in s.atributos] + [d.nome for d in s.derivados]
+    ja_tem += [p.nome for p in s.pericias] + [e.nome for e in s.etapas if e.tipo == "escolha"]
+    prompt = PROMPT_FICHA.replace("{ja_tem}", ", ".join(ja_tem) or "(nenhum)")
+    try:
+        dados = _pedir(cliente, prompt, _trechos(limpas, indices), 4000)
+    except (ValueError, json.JSONDecodeError):
+        s.avisos.append("A leitura da ficha de personagem não voltou em JSON válido.")
+        return
+    repetidos = {normalizar_id(n) for n in ja_tem}
+    livro = _sem_marcas(" ".join(limpas))
+    blocos = []
+    for bloco in _itens(BlocoFicha, dados.get("blocos"), "Parte da ficha", s.avisos):
+        if normalizar_id(bloco.titulo) in repetidos | {"pericias", "atributos"}:
+            continue
+        itens = []
+        for item in bloco.itens:
+            if normalizar_id(item) in repetidos:
+                continue
+            if _sem_marcas(item) in livro:
+                itens.append(item)
+            else:
+                s.avisos.append(f"Campo {item} descartado: o nome não aparece no texto do livro.")
+        if itens or (bloco.tipo == "texto" and _sem_marcas(bloco.titulo) in livro):
+            blocos.append(bloco.model_copy(update={"itens": itens}))
+    s.ficha = blocos[:10]
 
 
 # --------------------------------------------------------------------------- leitura a fundo

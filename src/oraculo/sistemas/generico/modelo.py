@@ -342,6 +342,25 @@ class Niveis(_Base):
 APELIDOS_VIDA = ("pv", "pv_max", "pv_maximo", "pv_maximos", "hp", "hp_max", "vida", "vida_maxima")
 
 
+class BlocoFicha(_Base):
+    """Uma parte da ficha de personagem que o livro descreve, além dos atributos e valores."""
+
+    titulo: str
+    tipo: str = "texto"  # valores | contadores | texto
+    itens: list[str] = Field(default_factory=list)
+    pagina: int | None = None
+
+    @field_validator("tipo", mode="before")
+    @classmethod
+    def _tipo(cls, v: object) -> str:
+        return _opcao(v, ("valores", "contadores", "texto"), "texto")
+
+    @field_validator("pagina", mode="before")
+    @classmethod
+    def _pagina(cls, v: object) -> int | None:
+        return _inteiro_ou_nada(v)
+
+
 class SistemaLido(_Base):
     nome: str
     autores: str = ""
@@ -356,6 +375,7 @@ class SistemaLido(_Base):
     pericias: list[Pericia] = Field(default_factory=list)
     arquetipos: list[Arquetipo] = Field(default_factory=list)
     etapas: list[Etapa] = Field(default_factory=list)
+    ficha: list[BlocoFicha] = Field(default_factory=list)  # o que o jogador anota, pelo livro
     nome_arquetipo: str = "arquétipo"  # classe, clã, profissão, clã vampírico...
     criaturas: list[Criatura] = Field(default_factory=list)
     regras_encontro: str = ""

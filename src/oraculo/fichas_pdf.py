@@ -5,16 +5,29 @@ dos títulos. Nada da arte do livro é copiado. O fundo é sempre claro, para sa
 vida e recursos têm espaço para anotar o valor atual a lápis. Usa as fontes embutidas de todo PDF,
 que cobrem o português.
 
-A mesma estrutura serve à ficha preenchida e à ficha em branco, de preencher à mão: nesta, os
-valores vêm vazios, e `campos` e `pautadas` dão espaço para escrever.
+É a ficha que o jogador usa para jogar. Todo espaço de escrever também é um campo do PDF: dá para
+imprimir e usar a lápis, ou digitar no leitor de PDF. A mesma estrutura serve à ficha gerada e à
+ficha em branco: nesta, os valores vêm vazios, e `campos` e `blocos` dão espaço para preencher.
 """
 
 from __future__ import annotations
 
+import io
 import re
 from dataclasses import dataclass, field
 
 from fpdf import FPDF
+from pypdf import PdfReader, PdfWriter
+from pypdf.generic import (
+    ArrayObject,
+    BooleanObject,
+    DecodedStreamObject,
+    DictionaryObject,
+    FloatObject,
+    NameObject,
+    NumberObject,
+    TextStringObject,
+)
 
 Cor = tuple[int, int, int]
 
@@ -70,6 +83,35 @@ class ValorImpresso:
     nome: str
     valor: str = ""  # vazio na ficha em branco
     anotar: bool = False  # vida, recursos: espaço para o valor atual
+    marcado: bool = False  # nos blocos de marcar: perícia treinada, por exemplo
+
+
+@dataclass
+class BlocoImpresso:
+    """Uma parte da ficha para preencher. tipo: "texto" (linhas para escrever, com um rótulo por
+    item, se houver), "valores" (caixas com valor) ou "marcas" (lista de marcar, com bônus)."""
+
+    titulo: str
+    tipo: str = "texto"
+    itens: list[ValorImpresso] = field(default_factory=list)
+    linhas: int = 3
+
+
+@dataclass
+class _CampoForm:
+    """Área da página que vira campo de digitar. Medidas em mm, a partir do topo da página."""
+
+    nome: str
+    pagina: int
+    x: float
+    y: float
+    w: float
+    h: float
+    tamanho: float
+    centro: bool = False
+    multilinha: bool = False
+    caixa: bool = False
+    marcado: bool = False
 
 
 @dataclass
@@ -85,7 +127,7 @@ class FichaImpressa:
     narrativa: dict[str, str] = field(default_factory=dict)
     credito: str = ""
     campos: list[str] = field(default_factory=list)  # rótulos de campos para escrever à mão
-    pautadas: list[tuple[str, int]] = field(default_factory=list)  # (título, linhas para escrever)
+    blocos: list[BlocoImpresso] = field(default_factory=list)
 
 
 def atributo_em_branco(sigla: str, com_modificador: bool) -> tuple[str, None, int | None]:
@@ -110,6 +152,7 @@ class _Pdf(FPDF):
     def __init__(self, ficha: FichaImpressa, tema: Tema) -> None:
         super().__init__(format="A4")
         self.ficha, self.tema = ficha, tema
+        self.formulario: list[_CampoForm] = []
         self.set_auto_page_break(True, margin=18)
         self.set_margins(16, 16, 16)
         self.set_title(texto_seguro(f"{ficha.nome or 'Ficha em branco'} - {ficha.sistema}"))
@@ -306,7 +349,7 @@ class _Pdf(FPDF):
         self.set_text_color(*t.tinta)
 
     def campos(self) -> None:
-        """Campos de escrever à mão, em duas colunas: nome, jogador, classe, nível..."""
+        """Campos de escrever, em duas colunas: nome, jogador, classe, nível..."""
         f, t = self.ficha, self.tema
         if not f.campos:
             return
@@ -317,6 +360,7 @@ class _Pdf(FPDF):
                 self._garantir(10)
                 y = self.get_y()
             x = self.l_margin + (i % 2) * (largura + vao)
+            self._campo(rotulo, x, y, largura, 5.2, tamanho=10)
             texto = self._ajustar(rotulo, largura, t.fonte_corpo, "", 7.5)
             self.set_text_color(*t.destaque)
             self.set_xy(x, y + 5.5)
@@ -393,26 +437,35 @@ class _Pdf(FPDF):
                         self.set_font(t.fonte_corpo, size=9)
                         self.set_text_color(*t.destaque)
                         self.cell(largura, 5, f"{mod:+d}", align="C")
-                elif mod is not None:  # espaço do modificador, para escrever
-                    self.set_draw_color(*t.suave)
-                    self.set_line_width(0.25)
-                    meio = x + largura / 2
-                    self.line(meio - 4, y + altura - 2.6, meio + 4, y + altura - 2.6)
+                else:
+                    fim = y + altura - (8 if mod is not None else 1)
+                    self._campo(sigla, x + 1, y + 5.5, largura - 2, fim - y - 5.5, 14, centro=True)
+                    if mod is not None:  # espaço do modificador, para escrever
+                        self.set_draw_color(*t.suave)
+                        self.set_line_width(0.25)
+                        meio = x + largura / 2
+                        self.line(meio - 4, y + altura - 2.6, meio + 4, y + altura - 2.6)
+                        self._campo(
+                            f"mod {sigla}", meio - 4, y + altura - 7, 8, 4.4, 9, centro=True
+                        )
             self.set_xy(self.l_margin, y + altura + vao)
         self.ln(2.5)
 
     def valores(self) -> None:
-        f, t = self.ficha, self.tema
-        if not f.valores:
+        self._grade_valores(self.ficha.valores)
+
+    def _grade_valores(self, itens: list[ValorImpresso]) -> None:
+        t = self.tema
+        if not itens:
             return
         por_linha = 4
         vao = 1.5
         largura = (self.epw - vao * (por_linha - 1)) / por_linha
         altura = 18
-        for i in range(0, len(f.valores), por_linha):
+        for i in range(0, len(itens), por_linha):
             self._garantir(altura + vao)
             y = self.get_y()
-            for j, v in enumerate(f.valores[i : i + por_linha]):
+            for j, v in enumerate(itens[i : i + por_linha]):
                 x = self.l_margin + j * (largura + vao)
                 self._caixa(x, y, largura, altura, v.nome, centro=False)
                 if v.valor:
@@ -420,24 +473,50 @@ class _Pdf(FPDF):
                     self.set_xy(x + 1.5, y + 5.5)
                     self.set_text_color(*t.tinta)
                     self.cell(largura - 3, 7, valor)
-                if v.anotar:  # espaço para o valor atual, a lápis
-                    self.set_font(t.fonte_corpo, size=7)
-                    self.set_text_color(*t.destaque)
+                elif not v.anotar:
+                    self._campo(v.nome, x + 1.5, y + 6, largura - 3, 10.5, 14)
+                if v.anotar:  # máximo (se ainda não há valor) e atual, para escrever
                     if not v.valor:
-                        self.set_xy(x + 1.5, y + 7.2)
-                        self.cell(10, 4, "Máximo:")
-                        self.set_draw_color(*t.suave)
-                        self.set_line_width(0.2)
-                        self.line(x + 12.5, y + 10.4, x + largura - 3, y + 10.4)
-                        self.set_font(t.fonte_corpo, size=7)
-                        self.set_text_color(*t.destaque)
-                    self.set_xy(x + 1.5, y + 12.2)
-                    self.cell(10, 4, "Atual:")
-                    self.set_draw_color(*t.suave)
-                    self.set_line_width(0.2)
-                    self.line(x + 12.5, y + 15.4, x + largura - 3, y + 15.4)
+                        self._linha_anotada("Máximo:", v.nome, x, y + 7.2, largura)
+                    self._linha_anotada("Atual:", v.nome, x, y + 12.2, largura)
             self.set_xy(self.l_margin, y + altura + vao)
         self.ln(2.5)
+
+    def _linha_anotada(self, rotulo: str, nome: str, x: float, y: float, largura: float) -> None:
+        t = self.tema
+        self.set_font(t.fonte_corpo, size=7)
+        self.set_text_color(*t.destaque)
+        self.set_xy(x + 1.5, y)
+        self.cell(10, 4, rotulo)
+        self.set_draw_color(*t.suave)
+        self.set_line_width(0.2)
+        self.line(x + 12.5, y + 3.2, x + largura - 3, y + 3.2)
+        self._campo(f"{nome} {rotulo}", x + 12.5, y - 0.3, largura - 15.5, 3.5, 8)
+
+    def _campo(
+        self,
+        nome: str,
+        x: float,
+        y: float,
+        w: float,
+        h: float,
+        tamanho: float = 10,
+        *,
+        centro: bool = False,
+        multilinha: bool = False,
+    ) -> None:
+        """Marca uma área como campo de digitar no PDF (ver _com_formulario)."""
+        self.formulario.append(
+            _CampoForm(nome, self.page_no(), x, y, w, h, tamanho, centro, multilinha)
+        )
+
+    def _marca(self, nome: str, x: float, y: float, lado: float, marcado: bool) -> None:
+        self.set_draw_color(*self.tema.tinta)
+        self.set_line_width(0.25)
+        self.rect(x, y, lado, lado)
+        self.formulario.append(
+            _CampoForm(nome, self.page_no(), x, y, lado, lado, 0, caixa=True, marcado=marcado)
+        )
 
     def _garantir(self, altura: float) -> None:
         if self.get_y() + altura > self.page_break_trigger:
@@ -530,17 +609,77 @@ class _Pdf(FPDF):
             self.ln(5.6)
         self.ln(2.5)
 
-    def secao_pautada(self, titulo: str, linhas: int) -> None:
-        """Uma seção para escrever à mão. O bloco não se parte entre páginas."""
+    def bloco(self, b: BlocoImpresso) -> None:
+        if b.tipo == "valores":
+            self._garantir(9 + 18)
+            self._titulo_secao(b.titulo)
+            self._grade_valores(b.itens)
+        elif b.tipo == "marcas":
+            self._bloco_marcas(b)
+        else:
+            self._bloco_texto(b)
+
+    def _pautas(self, nome: str, linhas: int) -> None:
         t = self.tema
-        self._garantir(9 + linhas * 7)
-        self._titulo_secao(titulo)
         self.set_draw_color(*t.suave)
         self.set_line_width(0.2)
         y = self.get_y()
         for i in range(1, linhas + 1):
             self.line(self.l_margin, y + i * 7, self.l_margin + self.epw, y + i * 7)
-        self.set_y(y + linhas * 7 + 4)
+        self._campo(nome, self.l_margin, y + 0.5, self.epw, linhas * 7, 10, multilinha=True)
+        self.set_y(y + linhas * 7 + 3)
+
+    def _bloco_texto(self, b: BlocoImpresso) -> None:
+        """Espaço para escrever, com um rótulo por item, se houver. Não se parte entre páginas."""
+        t = self.tema
+        linhas = b.linhas or 3
+        if not b.itens:
+            self._garantir(9 + linhas * 7)
+            self._titulo_secao(b.titulo)
+            self._pautas(b.titulo, linhas)
+            return
+        self._garantir(9 + 4 + linhas * 7)
+        self._titulo_secao(b.titulo)
+        for item in b.itens:
+            self._garantir(4 + linhas * 7 + 3)
+            self.set_x(self.l_margin)
+            texto = self._ajustar(item.nome, self.epw, t.fonte_corpo, "B", 8.5)
+            self.set_text_color(*t.destaque)
+            self.cell(self.epw, 4, texto, new_x="LMARGIN", new_y="NEXT")
+            self._pautas(f"{b.titulo} {item.nome}", linhas)
+
+    def _bloco_marcas(self, b: BlocoImpresso) -> None:
+        """Lista para marcar (treinado ou não), com espaço para o bônus, em três colunas."""
+        t = self.tema
+        colunas = 3
+        vao = 4
+        largura = (self.epw - vao * (colunas - 1)) / colunas
+        altura = 5.6
+        por_coluna = (len(b.itens) + colunas - 1) // colunas
+        self._garantir(9 + min(por_coluna, 12) * altura)
+        self._titulo_secao(b.titulo)
+        for linha in range(por_coluna):
+            self._garantir(altura)
+            y = self.get_y()
+            for col in range(colunas):
+                indice = col * por_coluna + linha
+                if indice >= len(b.itens):
+                    continue
+                item = b.itens[indice]
+                x = self.l_margin + col * (largura + vao)
+                self._marca(item.nome, x, y + 1, 3.2, item.marcado)
+                texto = self._ajustar(item.nome, largura - 15, t.fonte_corpo, "", 8.5)
+                self.set_text_color(*t.tinta)
+                self.set_xy(x + 3.8, y + 0.6)
+                self.cell(largura - 14, 4, texto)
+                self.set_draw_color(*t.suave)
+                self.set_line_width(0.2)
+                self.line(x + largura - 9, y + 4.4, x + largura, y + 4.4)
+                self._campo(
+                    f"{item.nome} bônus", x + largura - 9, y + 0.6, 9, 3.8, 8.5, centro=True
+                )
+            self.set_xy(self.l_margin, y + altura)
+        self.ln(3.5)
 
     def anotacoes(self) -> None:
         t = self.tema
@@ -548,10 +687,117 @@ class _Pdf(FPDF):
         self._titulo_secao("Anotações")
         self.set_draw_color(*t.suave)
         self.set_line_width(0.2)
-        y = self.get_y() + 6
+        inicio = self.get_y()
+        y = inicio + 6
         while y < self.page_break_trigger - 2:
             self.line(self.l_margin, y, self.l_margin + self.epw, y)
             y += 7
+        self._campo(
+            "Anotações",
+            self.l_margin,
+            inicio,
+            self.epw,
+            y - 7 - inicio,
+            10,
+            multilinha=True,
+        )
+
+
+def _com_formulario(
+    pdf: bytes, altura_pagina: float, campos: list[_CampoForm], tema: Tema
+) -> bytes:
+    """Acrescenta os campos de digitar: a ficha serve impressa ou preenchida no leitor de PDF.
+
+    O fundo do campo é transparente, para o tema continuar aparecendo por baixo."""
+    k = 72 / 25.4
+    saida = PdfWriter(clone_from=PdfReader(io.BytesIO(pdf)))
+    nome_fonte = {"Helvetica": "Helv", "Times": "TiRo", "Courier": "Cour"}[tema.fonte_corpo]
+    base = {"Helvetica": "Helvetica", "Times": "Times-Roman", "Courier": "Courier"}[
+        tema.fonte_corpo
+    ]
+    fonte = saida._add_object(
+        DictionaryObject({
+            NameObject("/Type"): NameObject("/Font"),
+            NameObject("/Subtype"): NameObject("/Type1"),
+            NameObject("/BaseFont"): NameObject(f"/{base}"),
+            NameObject("/Encoding"): NameObject("/WinAnsiEncoding"),
+        })
+    )  # fmt: skip
+    cor = " ".join(f"{c / 255:.3f}" for c in tema.tinta)
+    campos_pdf = ArrayObject()
+    usados: dict[str, int] = {}
+    for c in campos:
+        base_nome = re.sub(r"[^\w ]", "", texto_seguro(c.nome)).strip() or "campo"
+        usados[base_nome] = usados.get(base_nome, 0) + 1
+        nome = base_nome if usados[base_nome] == 1 else f"{base_nome} {usados[base_nome]}"
+        pagina = saida.pages[c.pagina - 1]
+        x0, y0 = c.x * k, (altura_pagina - c.y - c.h) * k
+        x1, y1 = (c.x + c.w) * k, (altura_pagina - c.y) * k
+        widget = DictionaryObject({
+            NameObject("/Type"): NameObject("/Annot"),
+            NameObject("/Subtype"): NameObject("/Widget"),
+            NameObject("/T"): TextStringObject(nome),
+            NameObject("/F"): NumberObject(4),
+            NameObject("/P"): pagina.indirect_reference,
+            NameObject("/Rect"): ArrayObject([FloatObject(round(v, 2)) for v in (x0, y0, x1, y1)]),
+        })  # fmt: skip
+        if c.caixa:
+            lado = x1 - x0
+            valor = NameObject("/Sim" if c.marcado else "/Off")
+            widget.update({
+                NameObject("/FT"): NameObject("/Btn"),
+                NameObject("/V"): valor,
+                NameObject("/AS"): valor,
+                NameObject("/AP"): DictionaryObject({NameObject("/N"): DictionaryObject({
+                    NameObject("/Sim"): _aparencia(saida, lado, cor, True),
+                    NameObject("/Off"): _aparencia(saida, lado, cor, False),
+                })}),
+            })  # fmt: skip
+        else:
+            bandeiras = 4096 if c.multilinha else 0
+            widget.update({
+                NameObject("/FT"): NameObject("/Tx"),
+                NameObject("/Ff"): NumberObject(bandeiras),
+                NameObject("/Q"): NumberObject(1 if c.centro else 0),
+                NameObject("/DA"): TextStringObject(f"/{nome_fonte} {c.tamanho:g} Tf {cor} rg"),
+            })  # fmt: skip
+        ref = saida._add_object(widget)
+        if "/Annots" not in pagina:
+            pagina[NameObject("/Annots")] = ArrayObject()
+        pagina["/Annots"].append(ref)
+        campos_pdf.append(ref)
+    saida._root_object[NameObject("/AcroForm")] = saida._add_object(
+        DictionaryObject({
+            NameObject("/Fields"): campos_pdf,
+            NameObject("/NeedAppearances"): BooleanObject(True),
+            NameObject("/DA"): TextStringObject(f"/{nome_fonte} 10 Tf {cor} rg"),
+            NameObject("/DR"): DictionaryObject({
+                NameObject("/Font"): DictionaryObject({NameObject(f"/{nome_fonte}"): fonte})
+            }),
+        })
+    )  # fmt: skip
+    buffer = io.BytesIO()
+    saida.write(buffer)
+    return buffer.getvalue()
+
+
+def _aparencia(saida: PdfWriter, lado: float, cor: str, marcada: bool):
+    """Como a caixa de marcar aparece: um X na cor do tema, ou vazia."""
+    desenho = ""
+    if marcada:
+        a, b = lado * 0.2, lado * 0.8
+        desenho = (
+            f"q {cor} RG 1.2 w {a:.2f} {a:.2f} m {b:.2f} {b:.2f} l "
+            f"{a:.2f} {b:.2f} m {b:.2f} {a:.2f} l S Q"
+        )
+    fluxo = DecodedStreamObject()
+    fluxo.set_data(desenho.encode())
+    fluxo.update({
+        NameObject("/Type"): NameObject("/XObject"),
+        NameObject("/Subtype"): NameObject("/Form"),
+        NameObject("/BBox"): ArrayObject([FloatObject(v) for v in (0, 0, lado, lado)]),
+    })  # fmt: skip
+    return saida._add_object(fluxo)
 
 
 def gerar_pdf(ficha: FichaImpressa, tema: Tema) -> bytes:
@@ -561,8 +807,8 @@ def gerar_pdf(ficha: FichaImpressa, tema: Tema) -> bytes:
     pdf.campos()
     pdf.atributos()
     pdf.valores()
-    for titulo, n in ficha.pautadas:
-        pdf.secao_pautada(titulo, n)
+    for bloco in ficha.blocos:
+        pdf.bloco(bloco)
     for titulo, linhas in ficha.secoes:
         cheias = [linha for linha in linhas if linha.strip()]
         if cheias:
@@ -573,4 +819,4 @@ def gerar_pdf(ficha: FichaImpressa, tema: Tema) -> bytes:
             [f"{rotulo}: {texto}" for rotulo, texto in ficha.narrativa.items()],
         )
     pdf.anotacoes()
-    return bytes(pdf.output())
+    return _com_formulario(bytes(pdf.output()), pdf.h, pdf.formulario, tema)
