@@ -315,3 +315,10 @@ def test_fm_analises():
 def test_bastidores_mostra_a_comparacao_dos_llms():
     at = ir(abrir(), "Bastidores do leitor")
     assert at.dataframe
+
+
+@pytest.mark.parametrize("sistema", ["dnd5e", "fm", "lido"])
+def test_ficha_oferece_pdf_em_qualquer_sistema(sistema):
+    at = ir(abrir(sistema), "Gerador de fichas")
+    rotulos = [b.proto.label for b in at.get("download_button")]
+    assert "Baixar ficha em PDF" in rotulos and "Baixar em JSON" in rotulos

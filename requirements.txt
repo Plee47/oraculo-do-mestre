@@ -5,3 +5,4 @@ streamlit>=1.50
 pydantic>=2.6
 pyyaml>=6.0
 pypdf>=4  # leitura de PDFs no detector de livros
+fpdf2>=2.8  # ficha em PDF para os jogadores

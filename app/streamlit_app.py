@@ -25,6 +25,7 @@ if recarregar_se_mudou([RAIZ / "src", RAIZ / "dados"]):
     st.cache_resource.clear()
     st.cache_data.clear()
 
+from oraculo.fichas_pdf import TEMAS, FichaImpressa, Tema, ValorImpresso, gerar_pdf, tema_para
 from oraculo.leitor.cache import cache_configurado
 from oraculo.leitor.detector import (
     MINIMO_CARACTERES,
@@ -53,6 +54,7 @@ from oraculo.sistemas.generico.gerador import calcular_derivados as calcular_der
 from oraculo.sistemas.generico.gerador import gerar_ficha as gerar_ficha_lida
 from oraculo.sistemas.generico.gerador import limites as limites_lido
 from oraculo.sistemas.generico.gerador import validar as validar_lido
+from oraculo.sistemas.generico.impressao import ficha_impressa, tema_do_sistema
 from oraculo.sistemas.generico.leitura import (
     ErroLeitura,
     detalhar_opcao,
@@ -126,8 +128,9 @@ def _ir_para(pagina: str) -> None:
     st.session_state.pagina = pagina
 
 
-def _acoes_da_ficha(ficha: Ficha, ctx: ContextoFicha) -> None:
-    """Sugestão criativa e downloads: iguais para qualquer sistema."""
+def _acoes_da_ficha(ficha: Ficha, ctx: ContextoFicha, montar_pdf, tema: Tema) -> None:
+    """Sugestão criativa e downloads: iguais para qualquer sistema. `montar_pdf(ficha)` devolve
+    a ficha impressa, já com a narrativa, se houver."""
     chave = hashlib.sha256(ficha.model_dump_json().encode()).hexdigest()
     guardadas = st.session_state.setdefault("_narrativas", {})
     cliente = cliente_llm()
@@ -153,12 +156,25 @@ def _acoes_da_ficha(ficha: Ficha, ctx: ContextoFicha) -> None:
             )
             for rotulo, texto in ficha.narrativa.items():
                 st.markdown(f"**{rotulo}.** {texto}")
-    st.download_button(
-        "Baixar ficha (JSON)",
+    col_pdf, col_json, _ = st.columns([1, 1, 2])
+    col_pdf.download_button(
+        "Baixar ficha em PDF",
+        gerar_pdf(montar_pdf(ficha), tema),
+        file_name=f"{normalizar_id(ficha.nome)}.pdf",
+        mime="application/pdf",
+        icon=":material/picture_as_pdf:",
+        type="primary",
+        key=f"pdf_{chave[:12]}",
+        width="stretch",
+    )
+    col_json.download_button(
+        "Baixar em JSON",
         ficha.model_dump_json(indent=2),
         file_name=f"{normalizar_id(ficha.nome)}.json",
         mime="application/json",
+        icon=":material/data_object:",
         key=f"baixar_{chave[:12]}",
+        width="stretch",
     )
 
 
@@ -444,6 +460,61 @@ def mostrar_ficha(ficha: Ficha, cat: Catalogo) -> None:
             atributos=[(a.nome, ficha.atributos[a.id]) for a in defn.atributos],
             valores=[("Pontos de Vida", d["pv_maximo"])],
         ),
+        lambda f: _impressa_dnd(f, cat),
+        TEMAS["fantasia"],
+    )
+
+
+def _impressa_dnd(ficha: Ficha, cat: Catalogo) -> FichaImpressa:
+    regras = obter_regras("dnd5e")
+    defn = regras.definicao
+    d = regras.derivados(ficha)
+    armas = {a.id: a for a in cat.armas}
+    armaduras = {a.id: a for a in cat.armaduras}
+    armadura = next((armaduras[i] for i in ficha.equipamento if i in armaduras
+                     and armaduras[i].categoria != "escudo"), None)  # fmt: skip
+    escudo = next((armaduras[i] for i in ficha.equipamento if i in armaduras
+                   and armaduras[i].categoria == "escudo"), None)  # fmt: skip
+    valores = [
+        ValorImpresso("Pontos de Vida", str(d["pv_maximo"]), anotar=True),
+        ValorImpresso(
+            "Classe de Armadura", str(calcular_ca(ficha.atributos, ficha.classe, armadura, escudo))
+        ),
+        ValorImpresso("Iniciativa", f"{d['iniciativa']:+d}"),
+        ValorImpresso("Proficiência", f"+{d['proficiencia']}"),
+    ]
+    if "cd_magia" in d:
+        valores.append(ValorImpresso("CD de magia", str(d["cd_magia"])))
+    equipamento = []
+    for item in ficha.equipamento:
+        if item in armas:
+            equipamento.append(f"{armas[item].nome} ({armas[item].dano} {armas[item].tipo_dano})")
+        elif item in armaduras:
+            equipamento.append(armaduras[item].nome)
+    magias = {m.id: m for m in cat.magias}
+    por_circulo: dict[int, list[str]] = {}
+    for mid in ficha.poderes:
+        if mid in magias:
+            por_circulo.setdefault(magias[mid].circulo, []).append(magias[mid].nome)
+    secoes = [
+        ("Perícias", [", ".join(cat.pericia(p).nome for p in ficha.pericias)]),
+        ("Equipamento", equipamento),
+        ("Magias", [
+            f"{'Truques' if c == 0 else f'{c}º círculo'}: {', '.join(nomes)}"
+            for c, nomes in sorted(por_circulo.items())
+        ]),
+    ]  # fmt: skip
+    classe = defn.classe(ficha.classe)
+    raca = defn.extras["racas"].get(ficha.origem, ficha.origem or "")
+    return FichaImpressa(
+        nome=ficha.nome,
+        sistema=SISTEMAS_SUPORTADOS["dnd5e"],
+        subtitulo=f"{raca} {classe.nome} de nível {ficha.nivel}",
+        atributos=[(a.abrev, ficha.atributos[a.id], d[f"mod_{a.id}"]) for a in defn.atributos],
+        valores=valores,
+        secoes=secoes,
+        narrativa=dict(ficha.narrativa),
+        credito="SRD 5.1, Wizards of the Coast LLC, CC BY 4.0",
     )
 
 
@@ -799,6 +870,50 @@ def _fm_gerador(regras) -> None:
             atributos=[(a.nome, ficha.atributos[a.id]) for a in defn.atributos],
             valores=[("Pontos de Vida", d["pv_maximo"])],
         ),
+        lambda f: _impressa_fm(f, regras),
+        tema_para("sobrenatural"),
+    )
+
+
+def _impressa_fm(ficha: Ficha, regras) -> FichaImpressa:
+    defn = regras.definicao
+    d = regras.derivados(ficha)
+    extras = defn.extras
+    energia = "pe" if "pe" in d else "estamina"
+    valores = [
+        ValorImpresso("Pontos de Vida", str(d["pv_maximo"]), anotar=True),
+        ValorImpresso(_ROTULOS_FM[energia], str(d[energia]), anotar=True),
+        ValorImpresso("Defesa", str(d["defesa"])),
+        ValorImpresso("CD de especialização", str(d["cd_especializacao"])),
+        ValorImpresso("Atenção", str(d["atencao"])),
+        ValorImpresso("Iniciativa", f"{d['iniciativa']:+d}"),
+        ValorImpresso("Deslocamento", f"{d['deslocamento']} m"),
+    ]
+    if "cd_tecnica" in d:
+        valores.append(ValorImpresso("CD de técnica", str(d["cd_tecnica"])))
+    resistencias = " · ".join(
+        f"{r['nome']} {d[f'resistencia_{rid}']:+d}" for rid, r in extras["resistencias"].items()
+    )
+    pericias = ", ".join(
+        extras["pericias"][p]["nome"] for p in ficha.pericias if p in extras["pericias"]
+    )
+    return FichaImpressa(
+        nome=ficha.nome,
+        sistema=SISTEMAS_SUPORTADOS["fm"],
+        subtitulo=(
+            f"{extras['origens'][ficha.origem]['nome']} · "
+            f"{defn.classe(ficha.classe).nome} de nível {ficha.nivel}"
+        ),
+        atributos=[(a.abrev, ficha.atributos[a.id], d[f"mod_{a.id}"]) for a in defn.atributos],
+        valores=valores,
+        secoes=[
+            ("Testes de resistência", [resistencias]),
+            ("Perícias treinadas", [pericias]),
+            ("Técnica e feitiços", [", ".join(ficha.poderes)]),
+            ("Equipamento", [", ".join(ficha.equipamento)]),
+        ],
+        narrativa=dict(ficha.narrativa),
+        credito="Feiticeiros & Maldições v2.5, de Setsugiri, Parker e equipe",
     )
 
 
@@ -1393,7 +1508,9 @@ def _gerador_lido() -> None:
             st.write(f"- {e}")
     for p in validar_lido(s, ficha):
         (st.error if p.gravidade == "erro" else st.warning)(p.mensagem)
-    _acoes_da_ficha(ficha, contexto_lido(s, ficha))
+    _acoes_da_ficha(
+        ficha, contexto_lido(s, ficha), lambda f: ficha_impressa(s, f), tema_do_sistema(s)
+    )
 
 
 def _ficha_rapida_lida() -> None:
