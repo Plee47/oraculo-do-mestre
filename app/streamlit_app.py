@@ -25,6 +25,7 @@ if recarregar_se_mudou([RAIZ / "src", RAIZ / "dados"]):
     st.cache_resource.clear()
     st.cache_data.clear()
 
+from oraculo.leitor.cache import cache_configurado
 from oraculo.leitor.detector import (
     MINIMO_CARACTERES,
     ModeloDetector,
@@ -52,7 +53,7 @@ from oraculo.sistemas.generico.gerador import calcular_derivados as calcular_der
 from oraculo.sistemas.generico.gerador import gerar_ficha as gerar_ficha_lida
 from oraculo.sistemas.generico.gerador import limites as limites_lido
 from oraculo.sistemas.generico.gerador import validar as validar_lido
-from oraculo.sistemas.generico.leitura import ErroLeitura, ler_sistema
+from oraculo.sistemas.generico.leitura import ErroLeitura, leitura_guardada, ler_sistema
 from oraculo.sistemas.generico.modelo import SistemaLido, normalizar
 
 st.set_page_config(
@@ -202,7 +203,7 @@ def _envio_do_livro() -> None:
     v = avaliar_documento(modelo, paginas)
     decisao = decidir(modelo, paginas)
     mostrar_veredito(v, decisao, paginas, modelo)
-    ler = {"on_click": _ler_livro, "args": (paginas, nome, v.nota, decisao.incerto)}
+    pediu_leitura = False
     if decisao.caminho == "pronto":
         st.button(
             f"Usar as regras prontas de {SISTEMAS_SUPORTADOS[v.sistema]}",
@@ -211,17 +212,27 @@ def _envio_do_livro() -> None:
             on_click=_usar_livro,
             args=(v.sistema, nome, v.nota),
         )
-        st.button(
-            "Não é esse sistema? Ler como sistema novo", icon=":material/auto_awesome:", **ler
+        pediu_leitura = st.button(
+            "Não é esse sistema? Ler como sistema novo", icon=":material/auto_awesome:"
         )
     elif decisao.caminho == "leitura":
-        st.button(
+        pediu_leitura = st.button(
             "Ler o livro com IA e montar o sistema",
             type="primary",
             icon=":material/auto_awesome:",
-            **ler,
         )
-        st.caption("Leva cerca de um minuto: a IA lê a mecânica, a criação e as criaturas.")
+        st.caption(
+            "Na primeira vez leva de 1 a 3 minutos: a IA indexa o livro e lê a mecânica, a "
+            "criação e as criaturas. Depois, este livro abre em segundos."
+        )
+    if pediu_leitura:
+        with st.status("Lendo o livro…", expanded=True) as status:
+            st.write("Procurando no livro as páginas de mecânica, criação e criaturas.")
+            st.write("A IA está lendo essas páginas; livros maiores levam mais tempo.")
+            _ler_livro(paginas, nome, v.nota, decisao.incerto)
+            status.update(label="Leitura concluída.", state="complete")
+        if "_erro_leitura" not in st.session_state:
+            st.rerun()
     if st.session_state.get("_erro_leitura"):
         st.error(st.session_state["_erro_leitura"], icon=":material/error:")
 
@@ -866,11 +877,23 @@ def cliente_llm():
     """Cliente do LLM a partir dos segredos do site (ou do ambiente, rodando localmente)."""
     if "_cliente_llm_teste" in st.session_state:  # testes automatizados do site
         return st.session_state["_cliente_llm_teste"]
+    return cliente_configurado(_segredos())
+
+
+def _segredos() -> dict:
     try:
-        segredos = dict(st.secrets)
-    except Exception:  # sem secrets.toml: tenta as variáveis de ambiente
-        segredos = {}
-    return cliente_configurado(segredos)
+        return dict(st.secrets)
+    except Exception:  # sem secrets.toml: vale o ambiente
+        return {}
+
+
+def cache_leituras():
+    """Tabela privada do Databricks onde ficam as leituras (nunca o texto do livro)."""
+    if "_cache_teste" in st.session_state:  # testes automatizados do site
+        return st.session_state["_cache_teste"]
+    if "_cache" not in st.session_state:
+        st.session_state["_cache"] = cache_configurado(_segredos())
+    return st.session_state["_cache"]
 
 
 def sistema_lido() -> SistemaLido:
@@ -891,7 +914,7 @@ def _usar_sistema_lido(s: SistemaLido, nome_arquivo: str, nota: float | None) ->
         "demo": False,
         "lido": json.loads(s.model_dump_json()),
     }
-    st.session_state.pagina = RESUMO
+    st.session_state["_pagina_pendente"] = RESUMO  # o menu pode já estar desenhado
 
 
 def _ler_livro(paginas: list[str], nome: str, nota: float | None, incerto: bool) -> None:
@@ -899,6 +922,13 @@ def _ler_livro(paginas: list[str], nome: str, nota: float | None, incerto: bool)
     chave = hashlib.sha256("\n".join(paginas).encode()).hexdigest()
     lidos = st.session_state.setdefault("_lidos", {})
     if chave not in lidos:
+        cache = cache_leituras()
+        guardada = leitura_guardada(paginas, cache)
+        if guardada is not None:  # já lido antes (por qualquer pessoa): não gasta LLM
+            lidos[chave] = guardada.sistema.model_dump_json()
+            st.session_state.pop("_erro_leitura", None)
+            _usar_sistema_lido(guardada.sistema, nome, nota)
+            return
         feitas = st.session_state.get("_leituras", 0)
         if feitas >= MAX_LEITURAS_POR_SESSAO:
             st.session_state["_erro_leitura"] = (
@@ -915,7 +945,7 @@ def _ler_livro(paginas: list[str], nome: str, nota: float | None, incerto: bool)
             return
         st.session_state["_leituras"] = feitas + 1
         try:
-            leitura = ler_sistema(paginas, cliente, nome)
+            leitura = ler_sistema(paginas, cliente, nome, cache=cache)
         except (ErroLLM, ErroLeitura) as e:
             st.session_state["_erro_leitura"] = f"Não consegui ler o livro: {e}"
             return
@@ -1429,6 +1459,8 @@ livro = livro_atual()
 paginas = [
     INICIO, *([RESUMO, GERADOR, FICHA, ANALISES] if livro else []), BASTIDORES, ROTEIRO, CONTEUDO
 ]  # fmt: skip
+if "_pagina_pendente" in st.session_state:
+    st.session_state.pagina = st.session_state.pop("_pagina_pendente")
 if st.session_state.get("pagina") not in paginas:
     st.session_state.pagina = INICIO
 st.sidebar.html('<div class="marca">Oráculo <span>do Mestre</span></div>')

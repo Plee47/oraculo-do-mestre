@@ -26,6 +26,7 @@ PASTA_DADOS_PUBLICOS = "dados/publicos/"
 ARQUIVOS_DERIVADOS_PUBLICOS = {
     "dados/publicos/modelos/detector_rpg.json",
     "dados/publicos/avaliacoes/leitor_srd51.json",
+    "dados/publicos/avaliacoes/leitor_generico_srd51.json",
 }
 PASTAS_DERIVADAS = ("dados/publicos/modelos/", "dados/publicos/avaliacoes/")
 

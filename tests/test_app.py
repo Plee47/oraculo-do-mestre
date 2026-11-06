@@ -6,6 +6,9 @@ from pathlib import Path
 import pytest
 from streamlit.testing.v1 import AppTest
 
+from oraculo.leitor.cache import CacheMemoria
+from oraculo.sistemas.generico.leitura import ler_sistema
+
 APP = str(Path(__file__).parents[1] / "app" / "streamlit_app.py")
 # Trecho de RPG genérico (sem as classes do D&D): vai para a leitura com IA.
 TRECHO_RPG = (
@@ -148,6 +151,23 @@ def test_qualquer_rpg_e_lido_pela_ia_e_libera_as_ferramentas():
         assert not erros_de_ficha(at)
     assert at.title[0].value == "Análises · Ninjas 2d8"
     assert any(m.label == "Balanço estimado" for m in at.metric)
+
+
+def test_livro_ja_lido_vem_do_cache_sem_gastar_llm():
+    class LLMProibido:
+        def completar(self, *a, **k):
+            raise AssertionError("não devia chamar o LLM")
+
+    cache = CacheMemoria()
+    ler_sistema([TRECHO_RPG], LLMFalso(), cache=cache)  # alguém já leu este livro
+    at = AppTest.from_file(APP, default_timeout=60)
+    at.session_state["_cliente_llm_teste"] = LLMProibido()
+    at.session_state["_cache_teste"] = cache
+    at.run()
+    at.text_area[0].set_value(TRECHO_RPG).run()
+    next(b for b in at.button if b.label.startswith("Ler o livro")).click().run()
+    assert not at.exception
+    assert at.title[0].value == "Resumo do sistema · Ninjas 2d8"
 
 
 def test_sem_credencial_a_leitura_explica_o_motivo(monkeypatch):
