@@ -474,7 +474,7 @@ def test_leitura_completa_com_llm_falso():
     llm = LLMFalso()
     leitura = ler_sistema(_paginas(), llm, "livro.pdf")
     s = leitura.sistema
-    assert leitura.e_rpg and s.nome == "Ninjas 2d8" and len(llm.chamadas) == 4
+    assert leitura.e_rpg and s.nome == "Ninjas 2d8" and len(llm.chamadas) >= 4
     assert [a.nome for a in s.arquetipos] == ["Clã da Folha", "Clã da Névoa"]
     assert any("Arquétipo ignorado" in a for a in s.avisos)  # item malformado vira aviso
     assert s.criaturas[0].nome == "Lobo" and s.niveis.nivel_inicial == 4
@@ -483,7 +483,7 @@ def test_leitura_completa_com_llm_falso():
 def test_leitura_tenta_de_novo_quando_nao_vem_json():
     llm = LLMFalso(ruim_primeiro=True)
     s = ler_sistema(_paginas(), llm).sistema
-    assert len(llm.chamadas) == 5 and s.atributos
+    assert llm.criacao == 2 and s.atributos  # pediu a criação de novo depois da resposta ruim
 
 
 def test_leitura_sem_texto_falha_com_mensagem():
@@ -1025,3 +1025,67 @@ def test_dano_montado_do_texto_quando_nao_vem_formula():
     sem_dado = sistema({"nome": "x", "mecanica": {"dano_explicacao": "O dano varia."}})
     _dano_da_explicacao(sem_dado)
     assert sem_dado.mecanica.dano_basico == ""
+
+
+class LLMCompletar:
+    def __init__(self):
+        self.pequeno = None
+
+    def completar(self, sistema, usuario, max_tokens=6000, pequeno=False):
+        if "opções que FALTAM" in usuario:
+            self.pequeno = pequeno
+            return json.dumps(
+                {
+                    "faltando": [
+                        {"etapa": "classe", "nome": "Paladin", "pagina": 8},
+                        {"etapa": "classe", "nome": "Classe Inventada"},
+                        {"etapa": "sub", "nome": "Champion", "pai": "Fighter"},
+                        {"etapa": "classe", "nome": "Fighter"},
+                        {"etapa": "nao_existe", "nome": "Paladin"},
+                        "lixo",
+                    ]
+                }
+            )
+        if "Trechos do início" in usuario:
+            return json.dumps(
+                {"e_livro_de_rpg": True, "nome": "Jogo", "mecanica": {"dano_basico": "1d6"}}
+            )
+        if "ESTRUTURA" in usuario:
+            return json.dumps(
+                {
+                    "etapas": [
+                        {
+                            "id": "classe",
+                            "nome": "Classe",
+                            "tipo": "escolha",
+                            "opcoes": [{"nome": "Fighter"}],
+                        },
+                        {
+                            "id": "sub",
+                            "nome": "Subclasse",
+                            "tipo": "escolha",
+                            "depende_de": "classe",
+                            "opcoes": [{"nome": "Thief", "pai": "Fighter"}],
+                        },
+                    ]
+                }
+            )
+        if "criação de personagem" in usuario:
+            return json.dumps(
+                {"atributos": [{"nome": "Força"}], "derivados": [{"nome": "Vida", "formula": "10"}]}
+            )
+        return "{}"
+
+
+def test_completar_opcoes_so_aceita_nomes_que_estao_no_livro():
+    paginas = _paginas()
+    paginas[8] = "Paladin\nClass Features\nChampion\n" + "texto de regra " * 30
+    llm = LLMCompletar()
+    s = ler_sistema(paginas, llm).sistema
+    assert llm.pequeno  # modelo pequeno: menos cota
+    classe, sub = s.etapa("classe"), s.etapa("sub")
+    assert [o.nome for o in classe.opcoes] == ["Fighter", "Paladin"]
+    assert classe.opcao("Paladin").pagina == 8
+    assert sub.opcao("Champion").pai == "Fighter"
+    assert any("Classe Inventada" in a and "não aparece" in a for a in s.avisos)
+    assert [a.nome for a in s.arquetipos] == ["Fighter", "Paladin"]  # a lista da ficha acompanha

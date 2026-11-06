@@ -88,7 +88,7 @@ _RE_LINHA_SUMARIO = re.compile(r"(\.{3,}|\s)\s*\d{1,3}\s*$", re.M)
 _RE_NUMERO = re.compile(r"\b\d{1,3}\b")
 
 # Mudou um prompt, o modelo ou a seleção de páginas? Mude a versão: o cache antigo deixa de valer.
-VERSAO_LEITURA = "2026-11-06.6"
+VERSAO_LEITURA = "2026-11-06.7"
 VERSAO_VETORES = "qwen3-0.6b-1200c"
 ESTRATEGIAS = ("palavras", "bm25", "hibrida")
 # Estratégia do site, escolhida pela avaliação contra o gabarito do SRD (notebook 23).
@@ -487,6 +487,76 @@ def _etapas(itens: object, avisos: list[str]) -> list[Etapa]:
     return etapas
 
 
+PROMPT_COMPLETAR = """Abaixo está o MAPA de um livro de RPG (títulos de cada página) e as decisões
+que o jogador toma ao criar um personagem, com as opções já encontradas. Olhando o mapa, liste as
+opções que FALTAM em cada decisão. Devolva:
+{
+ "faltando": [{"etapa": "id da decisão", "nome": "EXATAMENTE como no mapa",
+   "pai": "para decisões que dependem de outra, a opção a que esta pertence, ou \"\"",
+   "pagina": número da página no mapa}]
+}
+Só liste opções reais dessa decisão (uma classe, uma raça, uma subclasse). Títulos de regras e de
+seções ("Class Features", "Hit Points", "Equipment") NÃO são opções. Se nada faltar, devolva
+{"faltando": []}.
+
+DECISÕES:
+{etapas}
+
+MAPA DO LIVRO:
+{mapa}"""
+
+
+def _sem_marcas(texto: str) -> str:
+    return re.sub(r"\s+", " ", normalizar_id(texto).replace("_", " ")).strip()
+
+
+def _completar_opcoes(
+    s: SistemaLido, originais: list[str], limpas: list[str], cliente: ClienteLLM
+) -> None:
+    """Completa as listas de opções olhando o mapa do livro, com o modelo pequeno.
+
+    Trava contra invenção: um nome novo só entra se aparecer no texto do livro.
+    """
+    etapas = [e for e in s.etapas if e.tipo == "escolha" and e.opcoes]
+    mapa = mapa_do_livro(originais)
+    if not etapas or not mapa:
+        return
+    descricao = "\n".join(
+        f"- {e.id} ({e.nome})"
+        + (f", depende de {e.depende_de}" if e.depende_de else "")
+        + ": "
+        + ", ".join(o.nome for o in e.opcoes)
+        for e in etapas
+    )
+    prompt = PROMPT_COMPLETAR.replace("{etapas}", descricao).replace("{mapa}", mapa)
+    try:
+        dados = extrair_json(cliente.completar(SISTEMA, prompt, 3000, pequeno=True))
+    except (ValueError, json.JSONDecodeError):
+        return  # continua com o que a primeira leitura achou
+    faltando = dados.get("faltando")
+    if not isinstance(faltando, list):
+        return
+    livro = _sem_marcas(" ".join(limpas))
+    novas = 0
+    for item in faltando:
+        if not isinstance(item, dict):
+            continue
+        etapa = s.etapa(normalizar_id(str(item.get("etapa", ""))))
+        nome = str(item.get("nome") or "").strip()
+        if etapa is None or etapa.tipo != "escolha" or not nome or etapa.opcao(nome):
+            continue
+        if _sem_marcas(nome) not in livro:
+            s.avisos.append(f"Opção {nome} descartada: o nome não aparece no texto do livro.")
+            continue
+        try:
+            etapa.opcoes.append(Opcao.model_validate({**item, "nome": nome}))
+            novas += 1
+        except ValidationError:
+            continue
+    if novas:
+        normalizar(s)
+
+
 PROMPT_LACUNAS = """Faltam estas regras na leitura deste livro: {faltam}.
 Procure SÓ isso nos trechos e devolva o que achar:
 {
@@ -740,6 +810,7 @@ def ler_sistema(
     e_rpg = bool(visao.get("e_livro_de_rpg", True))
     normalizar(sistema)
     if e_rpg:
+        _completar_opcoes(sistema, linhas_originais, limpas, cliente)
         _preencher_lacunas(sistema, limpas, cliente, selecao)
     leitura = Leitura(sistema, e_rpg, len({i for v in selecao.values() for i in v}), livro=livro)
     if cache is not None and e_rpg:
