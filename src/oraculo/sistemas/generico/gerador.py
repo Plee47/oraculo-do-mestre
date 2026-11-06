@@ -398,3 +398,25 @@ def validar(s: SistemaLido, ficha: Ficha) -> list[Problema]:
                 )
             )
     return problemas
+
+
+def dicas_da_ficha(s: SistemaLido, ficha: Ficha) -> dict[str, str]:
+    """O que o livro diz sobre as habilidades, poderes e perícias, pelo id normalizado do nome."""
+    dicas: dict[str, str] = {}
+    for e in s.etapas:
+        o = e.opcao(ficha.escolhas.get(e.id))
+        if not o:
+            continue
+        for h in (*o.habilidades_detalhe, *o.poderes_detalhe):
+            if not h.resumo:
+                continue
+            texto = h.resumo
+            if h.nivel is not None:
+                texto += f" A partir de {s.niveis.nome} {h.nivel}."
+            if h.pagina is not None:
+                texto += f" Página {h.pagina}."
+            dicas.setdefault(normalizar_id(h.nome), texto)
+    for pericia in s.pericias:
+        if pericia.descricao:
+            dicas.setdefault(normalizar_id(pericia.nome), pericia.descricao)
+    return dicas

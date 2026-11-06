@@ -89,7 +89,7 @@ _RE_LINHA_SUMARIO = re.compile(r"(\.{3,}|\s)\s*\d{1,3}\s*$", re.M)
 _RE_NUMERO = re.compile(r"\b\d{1,3}\b")
 
 # Mudou um prompt, o modelo ou a seleção de páginas? Mude a versão: o cache antigo deixa de valer.
-VERSAO_LEITURA = "2026-11-06.9"
+VERSAO_LEITURA = "2026-11-06.10"
 VERSAO_VETORES = "qwen3-0.6b-1200c"
 ESTRATEGIAS = ("palavras", "bm25", "hibrida")
 # Estratégia do site, escolhida pela avaliação contra o gabarito do SRD (notebook 23).
@@ -397,7 +397,8 @@ Atributos do sistema: {atributos}. Valores calculados do sistema: {valores}.
  "dano_tipico": "fórmula do dano do ataque inicial que o livro indica para ela, ou null",
  "habilidades": [{"nome": "...", "resumo": "1 frase com o efeito", "nivel": int ou null,
    "pagina": número da página}] (até 12, das iniciais para as avançadas),
- "poderes": [magias, técnicas ou disciplinas iniciais que ela dá, pelo nome] (até 15),
+ "poderes": [{"nome": "...", "resumo": "1 frase com o que faz, com suas palavras",
+   "pagina": número da página}] (magias, técnicas ou disciplinas iniciais que ela dá; até 15),
  "subopcoes": [{"nome": "...", "descricao": "1 frase"}] (opções que dependem desta, como
    subclasses ou caminhos; [] se não houver)
 }
@@ -911,7 +912,7 @@ def _aplicar_detalhes(s: SistemaLido, etapa: Etapa, o: Opcao, dados: dict) -> No
             setattr(o, campo, str(dados[campo]))
     if isinstance(dados.get("atributos_chave"), list) and dados["atributos_chave"]:
         o.atributos_chave = [str(x) for x in dados["atributos_chave"]]
-    for campo in ("pericias", "equipamento", "poderes"):
+    for campo in ("pericias", "equipamento"):
         if isinstance(dados.get(campo), list) and dados[campo]:
             setattr(o, campo, [str(x) for x in dados[campo] if x])
     if isinstance(dados.get("bonus_atributos"), dict):
@@ -923,6 +924,11 @@ def _aplicar_detalhes(s: SistemaLido, etapa: Etapa, o: Opcao, dados: dict) -> No
     o.habilidades_detalhe = _itens(Habilidade, dados.get("habilidades"), "Habilidade", avisos)
     if o.habilidades_detalhe:
         o.habilidades = [h.nome for h in o.habilidades_detalhe]
+    if isinstance(dados.get("poderes"), list) and dados["poderes"]:
+        # O modelo às vezes devolve só o nome: vira um poder sem explicação, sem se perder.
+        poderes = [{"nome": p} if isinstance(p, str) else p for p in dados["poderes"] if p]
+        o.poderes_detalhe = _itens(Habilidade, poderes, "Poder", avisos)
+        o.poderes = [p.nome for p in o.poderes_detalhe]
     normalizar_opcao(s, o, avisos, calculavel_em(s))
     filha = next((e for e in s.etapas if e.depende_de == etapa.id), None)
     if filha is not None:

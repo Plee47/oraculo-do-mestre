@@ -187,6 +187,7 @@ class Opcao(Arquetipo):
     bonus_atributos: dict[str, int] = Field(default_factory=dict)
     habilidades_detalhe: list[Habilidade] = Field(default_factory=list)
     poderes: list[str] = Field(default_factory=list)  # magias, técnicas, disciplinas iniciais
+    poderes_detalhe: list[Habilidade] = Field(default_factory=list)
     detalhada: bool = False
 
     @field_validator("pagina", mode="before")

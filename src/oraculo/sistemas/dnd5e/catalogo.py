@@ -68,6 +68,7 @@ class Magia(BaseModel):
     dano: str | None = None  # dano no círculo base (ou no nível 1, para truques)
     cura: bool = False
     area: bool = False
+    descricao: str = ""  # texto do SRD
 
     @property
     def funcao(self) -> str:
@@ -105,6 +106,7 @@ class Pericia(BaseModel):
     id: str
     nome: str
     atributo: str
+    descricao: str = ""  # texto do SRD
 
 
 class AtaqueMonstro(BaseModel):
