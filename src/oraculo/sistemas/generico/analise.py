@@ -7,13 +7,15 @@ inventar número. As contas de encontro são estimativas por valor médio e o te
 
 from __future__ import annotations
 
+import math
+import random
 from dataclasses import dataclass
 from statistics import mean
 
 from oraculo.nucleo.analise import Achado, ordenar
 from oraculo.nucleo.ficha import Ficha
 from oraculo.sistemas.generico.formulas import ErroFormula, avaliar
-from oraculo.sistemas.generico.gerador import calcular_derivados, limites
+from oraculo.sistemas.generico.gerador import calcular_derivados, gerar_ficha, limites
 from oraculo.sistemas.generico.modelo import Ataque, Criatura, SistemaLido
 
 
@@ -188,13 +190,11 @@ def dano_por_turno(s: SistemaLido, c: Criatura) -> float | None:
     return max(medias) if medias else None
 
 
-def analisar_encontro(
-    s: SistemaLido, fichas: list[Ficha], criaturas: list[tuple[Criatura, int]]
-) -> tuple[ResumoEncontro, list[Achado]]:
-    pjs = [perfil(s, f) for f in fichas]
+def _estimar(
+    s: SistemaLido, pjs: list[PerfilLido], criaturas: list[tuple[Criatura, int]]
+) -> ResumoEncontro:
+    """A conta do encontro, por valor médio. Campos sem dado do livro ficam None."""
     acerto = s.mecanica.chance_acerto_estimada
-    achados: list[Achado] = []
-
     # Dano esperado por turno = dano médio × multiplicador médio (graus de sucesso) × acerto.
     fator = acerto * s.mecanica.multiplicador_dano_medio
     tem = lambda xs: bool(xs) and all(x is not None for x in xs)  # noqa: E731
@@ -214,6 +214,22 @@ def analisar_encontro(
                     else "difícil" if razao >= 0.8 else "mortal")  # fmt: skip
     else:
         veredito = "sem dados suficientes"
+    return ResumoEncontro(vida_grupo, vida_cri, dano_grupo, dano_cri, vencer, perder, veredito)
+
+
+def analisar_encontro(
+    s: SistemaLido, fichas: list[Ficha], criaturas: list[tuple[Criatura, int]]
+) -> tuple[ResumoEncontro, list[Achado]]:
+    pjs = [perfil(s, f) for f in fichas]
+    acerto = s.mecanica.chance_acerto_estimada
+    achados: list[Achado] = []
+    resumo = _estimar(s, pjs, criaturas)
+    vida_grupo, vida_cri = resumo.vida_grupo, resumo.vida_criaturas
+    dano_grupo, dano_cri = resumo.dano_grupo, resumo.dano_criaturas
+    vencer, perder, veredito = (
+        resumo.rodadas_para_vencer, resumo.rodadas_para_perder, resumo.veredito,
+    )  # fmt: skip
+    danos = [(c, n, dano_por_turno(s, c)) for c, n in criaturas]
 
     multiplicador = s.mecanica.multiplicador_dano_medio
     regra_acerto = (
@@ -283,5 +299,83 @@ def analisar_encontro(
             detalhe=s.regras_encontro, regra="Orientação do próprio livro.",
         ))  # fmt: skip
 
-    resumo = ResumoEncontro(vida_grupo, vida_cri, dano_grupo, dano_cri, vencer, perder, veredito)
     return resumo, ordenar(achados)
+
+
+# --------------------------------------------------------------------------- sugestão
+# Rodadas até o grupo cair ÷ rodadas para vencer que se busca em cada dificuldade.
+ALVOS_DIFICULDADE = {"fácil": 3.5, "equilibrado": 2.0, "difícil": 1.1}
+MAX_CANDIDATAS = 12
+
+
+@dataclass(frozen=True)
+class SugestaoEncontro:
+    criaturas: list[tuple[Criatura, int]]
+    resumo: ResumoEncontro
+    origem: str  # "livro" ou "regras"
+
+
+def _candidatas(s: SistemaLido, fichas: list[Ficha], seed: int) -> tuple[list[Criatura], str]:
+    """Criaturas do livro com vida e dano; sem elas, PdMs montados pelas regras do livro."""
+    do_livro = [c for c in s.criaturas if c.vida and dano_por_turno(s, c)]
+    if do_livro:
+        return do_livro, "livro"
+    nivel = fichas[0].nivel if fichas else None
+    nomes = [a.nome for a in s.arquetipos] or [None]
+    gerados = []
+    for i, nome in enumerate((nomes * 6)[:6]):
+        ficha = gerar_ficha(
+            s, arquetipo=nome, nivel=nivel, seed=seed + 100 + i, nome=f"PdM {i + 1}"
+        )
+        c = criatura_de_ficha(s, ficha)
+        if c.vida and dano_por_turno(s, c):
+            gerados.append(c)
+    return gerados, "regras"
+
+
+def sugerir_encontro(
+    s: SistemaLido, fichas: list[Ficha], dificuldade: str = "equilibrado", seed: int = 1
+) -> SugestaoEncontro | None:
+    """O grupo de inimigos cuja estimativa fica mais perto da dificuldade pedida.
+
+    Usa a mesma conta da análise de encontro. Nas dificuldades fácil e equilibrada, evita
+    criaturas que derrubam o personagem mais frágil com um golpe. None se o livro não deu os
+    números necessários (vida e dano dos personagens e dos inimigos).
+    """
+    if dificuldade not in ALVOS_DIFICULDADE:
+        raise ValueError(f"dificuldade desconhecida: {dificuldade!r}")
+    pjs = [perfil(s, f) for f in fichas]
+    if not pjs or any(p.vida is None or not p.dano for p in pjs):
+        return None
+    candidatas, origem = _candidatas(s, fichas, seed)
+    if not candidatas:
+        return None
+    rng = random.Random(seed)
+    rng.shuffle(candidatas)
+    candidatas = candidatas[:MAX_CANDIDATAS]
+    multiplicador = s.mecanica.multiplicador_dano_medio
+    menor_vida = min(p.vida for p in pjs)
+    if dificuldade != "difícil":
+        seguras = [c for c in candidatas if dano_por_turno(s, c) * multiplicador < menor_vida]
+        candidatas = seguras or candidatas
+
+    grupos: list[list[tuple[Criatura, int]]] = []
+    for a in candidatas:
+        grupos += [[(a, n)] for n in range(1, 11)]
+    for i, a in enumerate(candidatas):
+        for b in candidatas[i + 1 :]:
+            grupos += [[(a, x), (b, y)] for x in range(1, 5) for y in range(1, 5)]
+
+    alvo = ALVOS_DIFICULDADE[dificuldade]
+
+    def custo(grupo: list[tuple[Criatura, int]]) -> float:
+        resumo = _estimar(s, pjs, grupo)
+        if not resumo.rodadas_para_vencer or not resumo.rodadas_para_perder:
+            return math.inf
+        razao = resumo.rodadas_para_perder / resumo.rodadas_para_vencer
+        return abs(math.log(razao / alvo)) + 0.01 * sum(n for _, n in grupo)
+
+    melhor = min(grupos, key=custo)
+    if custo(melhor) == math.inf:
+        return None
+    return SugestaoEncontro(melhor, _estimar(s, pjs, melhor), origem)

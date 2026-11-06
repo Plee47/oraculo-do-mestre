@@ -43,9 +43,9 @@ from oraculo.sistemas.dnd5e.gerador import PAPEIS, calcular_ca, gerar_ficha
 from oraculo.sistemas.fm import analise as fm_analise
 from oraculo.sistemas.fm import custo_compra_pontos as fm_custo
 from oraculo.sistemas.fm import gerador as fm_gerador
+from oraculo.sistemas.generico.analise import ALVOS_DIFICULDADE, criatura_de_ficha, sugerir_encontro
 from oraculo.sistemas.generico.analise import analisar_encontro as analisar_encontro_lido
 from oraculo.sistemas.generico.analise import analisar_grupo as analisar_grupo_lido
-from oraculo.sistemas.generico.analise import criatura_de_ficha
 from oraculo.sistemas.generico.analise import perfil as perfil_lido
 from oraculo.sistemas.generico.formulas import normalizar_id
 from oraculo.sistemas.generico.gerador import SISTEMA_LIDO
@@ -57,6 +57,7 @@ from oraculo.sistemas.generico.leitura import (
     ErroLeitura,
     detalhar_opcao,
     leitura_guardada,
+    ler_mais_criaturas,
     ler_sistema,
 )
 from oraculo.sistemas.generico.modelo import SistemaLido, normalizar
@@ -1396,6 +1397,43 @@ def _ficha_rapida_lida() -> None:
         (st.error if p.gravidade == "erro" else st.warning)(p.mensagem)
 
 
+def _tabela_criaturas(criaturas: list) -> None:
+    linhas = []
+    for c in criaturas:
+        ataques = "; ".join(f"{a.nome} ({a.dano})" if a.dano else a.nome for a in c.ataques)
+        linhas.append({
+            "Criatura": c.nome,
+            "Ameaça": c.ameaca or "—",
+            "Vida": "—" if c.vida is None else str(c.vida),
+            "Defesa": "—" if c.defesa is None else str(c.defesa),
+            "Ataques": ataques or "—",
+            "Página": "—" if c.pagina is None else str(c.pagina),
+        })  # fmt: skip
+    st.dataframe(linhas, hide_index=True, width="stretch")
+
+
+def _mais_criaturas(s: SistemaLido) -> None:
+    """Lê mais um lote de páginas de criaturas, só se a pessoa pedir."""
+    paginas = st.session_state.get("_paginas_livro")
+    cliente = cliente_llm()
+    if not paginas or cliente is None:
+        return
+    st.caption(f"O Oráculo leu {len(s.criaturas)} criaturas deste livro até agora.")
+    if not st.button("Ler mais criaturas do livro", icon=":material/menu_book:", key="lido_mais"):
+        return
+    try:
+        with st.spinner("Lendo mais páginas de criaturas…"):
+            novas = ler_mais_criaturas(s, paginas, cliente, cache_leituras())
+    except (ErroLLM, ErroLeitura) as erro:
+        st.warning(f"Não consegui ler mais criaturas: {erro}")
+        return
+    st.session_state.livro["lido"] = json.loads(s.model_dump_json())
+    st.session_state["_aviso_criaturas"] = (
+        f"{novas} criaturas novas." if novas else "Não achei mais criaturas com números."
+    )
+    st.rerun()
+
+
 def _analises_lido() -> None:
     s = sistema_lido()
     st.title(f"Análises · {s.nome}")
@@ -1450,12 +1488,39 @@ def _analises_lido() -> None:
         mostrar_achados(analisar_grupo_lido(s, grupo))
 
     st.subheader("Encontro")
-    fontes = ["Inimigos montados com as regras do livro"]
+    if "_aviso_criaturas" in st.session_state:
+        st.success(st.session_state.pop("_aviso_criaturas"), icon=":material/check_circle:")
+    fontes = ["Sugestão do Oráculo", "Inimigos montados com as regras do livro"]
     if s.criaturas:
-        fontes.insert(0, "Criaturas do livro")
+        fontes.insert(1, "Criaturas do livro")
     fonte = st.radio("Inimigos", fontes, horizontal=True, key="lido_fonte")
     criaturas = []
-    if fonte == "Criaturas do livro":
+    if fonte == "Sugestão do Oráculo":
+        dificuldade = st.select_slider(
+            "Dificuldade desejada", list(ALVOS_DIFICULDADE), value="equilibrado", key="lido_dific"
+        )
+        sugestao = sugerir_encontro(s, grupo, dificuldade)
+        if sugestao is None:
+            st.info(
+                "O livro não deu os números para estimar (vida e dano dos personagens e dos "
+                "inimigos). Corrija a leitura no resumo do sistema ou monte o encontro à mão.",
+                icon=":material/info:",
+            )
+            _mais_criaturas(s)
+            return
+        criaturas = sugestao.criaturas
+        de_onde = (
+            "criaturas do próprio livro"
+            if sugestao.origem == "livro"
+            else "inimigos montados com as regras do livro (ele não traz criaturas com números)"
+        )
+        st.markdown(
+            "**Encontro sugerido:** "
+            + ", ".join(f"{n}× {c.nome}" for c, n in criaturas)
+            + f". Vem de {de_onde}."
+        )
+        _tabela_criaturas([c for c, _ in criaturas])
+    elif fonte == "Criaturas do livro":
         rotulos = {f"{c.nome}" + (f" ({c.ameaca})" if c.ameaca else ""): c for c in s.criaturas}
         escolhidos = st.multiselect(
             "Criaturas", list(rotulos), default=list(rotulos)[:1], key="lido_criaturas"
@@ -1500,6 +1565,7 @@ def _analises_lido() -> None:
         "—" if resumo.rodadas_para_perder is None else f"{resumo.rodadas_para_perder:.1f}",
     )
     mostrar_achados(achados)
+    _mais_criaturas(s)
 
 
 # --------------------------------------------------------------------------- roteiro

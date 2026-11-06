@@ -667,3 +667,47 @@ def detalhar_opcao(
     if cache is not None:
         cache.gravar(livro, "opcao", chave, VERSAO_LEITURA, json.dumps(dados))
     return o
+
+
+# --------------------------------------------------------------------------- mais criaturas
+def ler_mais_criaturas(
+    s: SistemaLido,
+    paginas: list[str],
+    cliente: ClienteLLM,
+    cache: CacheLeituras | None = None,
+) -> int:
+    """Lê o próximo lote de páginas de criaturas ainda não lidas. Devolve quantas são novas."""
+    limpas = [limpar_texto_pdf(p) for p in paginas]
+    indice = IndiceLivro(limpas)
+    lidas = {p - 1 for p in s.paginas_fonte.get("criaturas", [])}
+    achadas = [i for i in indice.buscar(CONSULTAS["criaturas"], k=len(limpas)) if i not in lidas]
+    if not achadas:
+        return 0
+    lote = indice.com_vizinhas(achadas[:40], ORCAMENTO["criaturas"])
+    lote = [i for i in lote if i not in lidas]
+    if not lote:
+        return 0
+    livro = hash_livro(limpas)
+    chave = ",".join(map(str, lote))
+    dados = None
+    if cache is not None:
+        guardado = cache.ler(livro, "criaturas", chave, VERSAO_LEITURA)
+        dados = json.loads(guardado) if guardado else None
+    if dados is None:
+        try:
+            dados = _pedir(cliente, PROMPT_CRIATURAS, _trechos(limpas, lote), 10000)
+        except (ValueError, json.JSONDecodeError) as e:
+            raise ErroLeitura("a leitura de criaturas não voltou em JSON válido") from e
+        if cache is not None:
+            cache.gravar(livro, "criaturas", chave, VERSAO_LEITURA, json.dumps(dados))
+    conhecidas = {normalizar_id(c.nome) for c in s.criaturas}
+    novas = [
+        c
+        for c in _itens(Criatura, dados.get("criaturas"), "Criatura", s.avisos)
+        if normalizar_id(c.nome) not in conhecidas
+    ]
+    s.criaturas += novas
+    s.paginas_fonte["criaturas"] = sorted(lidas | set(lote))
+    s.paginas_fonte["criaturas"] = [i + 1 for i in s.paginas_fonte["criaturas"]]
+    normalizar(s)
+    return len(novas)
