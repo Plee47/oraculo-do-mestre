@@ -353,6 +353,27 @@ def test_ficha_oferece_pdf_em_qualquer_sistema(sistema):
     assert "Baixar ficha em PDF" in rotulos and "Baixar em JSON" in rotulos
 
 
+@pytest.mark.parametrize("sistema", ["dnd5e", "fm", "lido"])
+@pytest.mark.parametrize("pagina", ["Gerador de fichas", "Ficha rápida"])
+def test_paginas_de_ficha_exportam_preenchida_e_em_branco(sistema, pagina):
+    at = ir(abrir(sistema), pagina)
+    rotulos = [b.proto.label for b in at.get("download_button")]
+    assert {"Baixar ficha em PDF", "Ficha em branco", "Baixar em JSON"} <= set(rotulos)
+
+
+@pytest.mark.parametrize(("sistema", "rotulo"), [("dnd5e", "Classe"), ("fm", "Especialização")])
+def test_ficha_rapida_exporta_em_toda_classe(sistema, rotulo):
+    # O PDF é montado a cada execução: uma classe sem algum valor derrubaria a página.
+    at = ir(abrir(sistema), "Ficha rápida")
+    if sistema == "fm":
+        at = ir(at, "Ficha rápida")
+    seletor = next(s for s in at.selectbox if s.label == rotulo)
+    for classe in seletor.options:
+        seletor.set_value(classe).run()
+        assert not at.exception, classe
+        seletor = next(s for s in at.selectbox if s.label == rotulo)
+
+
 def test_dnd_mostra_a_subclasse_quando_o_nivel_permite():
     at = ir(abrir("dnd5e"), "Gerador de fichas")
     at.selectbox[1].set_value("Guerreiro").run()

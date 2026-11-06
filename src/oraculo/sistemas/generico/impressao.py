@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from oraculo.fichas_pdf import FichaImpressa, Tema, ValorImpresso, tema_para
+from oraculo.fichas_pdf import FichaImpressa, Tema, ValorImpresso, atributo_em_branco, tema_para
 from oraculo.nucleo.ficha import Ficha
 from oraculo.sistemas.generico.gerador import calcular_derivados
 from oraculo.sistemas.generico.modelo import SistemaLido
@@ -48,12 +48,7 @@ def ficha_impressa(s: SistemaLido, ficha: Ficha) -> FichaImpressa:
         secoes.append(("Perícias", [", ".join(ficha.pericias)]))
     if ficha.equipamento:
         secoes.append(("Equipamento", [", ".join(ficha.equipamento)]))
-    regras = [
-        x for x in (s.mecanica.resolucao, s.mecanica.criticos, s.mecanica.dano_explicacao) if x
-    ]
-    if regras:
-        secoes.append(("Como jogar", regras))
-    autoria = f" ({s.autores})" if s.autores else ""
+    secoes.append(("Como jogar", _como_jogar(s)))
     return FichaImpressa(
         nome=ficha.nome,
         sistema=s.nome,
@@ -62,5 +57,57 @@ def ficha_impressa(s: SistemaLido, ficha: Ficha) -> FichaImpressa:
         valores=valores,
         secoes=secoes,
         narrativa=dict(ficha.narrativa),
-        credito=f"Regras de {s.nome}{autoria}",
+        credito=_credito(s),
     )
+
+
+def ficha_em_branco(s: SistemaLido) -> FichaImpressa:
+    """A ficha deste sistema para preencher à mão, com as contas e as opções lidas do livro."""
+    escolhas = [e for e in s.etapas if e.tipo == "escolha"]
+    campos = ["Nome", "Jogador", *(e.nome for e in escolhas)]
+    if not escolhas and s.arquetipos:
+        campos.append(s.nome_arquetipo.capitalize())
+    if s.niveis.usa_niveis:
+        campos.append(s.niveis.nome.capitalize())
+    contas = [
+        f"{d.nome}: {d.explicacao or d.formula}" for d in s.derivados if d.explicacao or d.formula
+    ]
+    if s.modificador:
+        contas.insert(0, f"Modificador de atributo: {s.modificador}")
+    opcoes = []
+    for e in escolhas:
+        nomes = [f"{o.nome} (p. {o.pagina})" if o.pagina else o.nome for o in e.opcoes]
+        if nomes:
+            opcoes.append(f"{e.nome}: {', '.join(nomes)}")
+    if not escolhas and s.arquetipos:
+        opcoes.append(f"{s.nome_arquetipo.capitalize()}: {', '.join(a.nome for a in s.arquetipos)}")
+    com_modificador = s.modificador_de(10) is not None
+    return FichaImpressa(
+        nome="",
+        sistema=s.nome,
+        subtitulo="Ficha em branco",
+        atributos=[atributo_em_branco(a.sigla or a.nome, com_modificador) for a in s.atributos],
+        valores=[ValorImpresso(d.nome, anotar=d.tipo in ("vida", "recurso")) for d in s.derivados],
+        campos=campos,
+        pautadas=[
+            ("Habilidades e poderes", 6),
+            ("Perícias", 3),
+            ("Equipamento", 4),
+            ("Aparência e história", 4),
+        ],
+        secoes=[
+            ("Como calcular", contas),
+            ("Opções do livro", opcoes),
+            ("Como jogar", _como_jogar(s)),
+        ],
+        credito=_credito(s),
+    )
+
+
+def _como_jogar(s: SistemaLido) -> list[str]:
+    return [x for x in (s.mecanica.resolucao, s.mecanica.criticos, s.mecanica.dano_explicacao) if x]
+
+
+def _credito(s: SistemaLido) -> str:
+    autoria = f" ({s.autores})" if s.autores else ""
+    return f"Regras de {s.nome}{autoria}"

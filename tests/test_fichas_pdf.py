@@ -9,12 +9,13 @@ from oraculo.fichas_pdf import (
     TEMAS,
     FichaImpressa,
     ValorImpresso,
+    atributo_em_branco,
     gerar_pdf,
     tema_para,
     texto_seguro,
 )
 from oraculo.sistemas.generico.gerador import gerar_ficha
-from oraculo.sistemas.generico.impressao import ficha_impressa, tema_do_sistema
+from oraculo.sistemas.generico.impressao import ficha_em_branco, ficha_impressa, tema_do_sistema
 from oraculo.sistemas.generico.modelo import SistemaLido, normalizar
 
 
@@ -120,3 +121,78 @@ def test_ficha_de_sistema_lido():
     for trecho in ("Faro: Acha pistas. (p. 12)", "Investigar", "Lupa", "Role abaixo", "Sanidade"):
         assert trecho in texto
     assert "Golpe Final" not in texto  # habilidade de nível acima do personagem
+
+
+def test_secao_so_com_linha_vazia_nao_aparece():
+    # A ficha rápida não tem perícias nem poderes: "".join([]) não pode virar um título solto.
+    assert "Sem nada" not in _texto(
+        gerar_pdf(_ficha(secoes=[("Sem nada", ["", " "])]), TEMAS["padrao"])
+    )
+
+
+def test_carimbo_do_dossie_fica_so_na_primeira_pagina():
+    linhas = [f"Habilidade {i}: " + "palavra " * 40 for i in range(60)]
+    paginas = PdfReader(
+        io.BytesIO(gerar_pdf(_ficha(secoes=[("H", linhas)]), TEMAS["horror"]))
+    ).pages
+    assert len(paginas) >= 2
+    assert "FICHA" in paginas[0].extract_text()
+    assert "FICHA" not in paginas[1].extract_text()
+
+
+@pytest.mark.parametrize("tema", list(TEMAS))
+def test_ficha_em_branco_tem_espaco_para_escrever_em_qualquer_tema(tema):
+    branca = FichaImpressa(
+        nome="",
+        sistema="Jogo de Testes",
+        subtitulo="Ficha em branco",
+        atributos=[atributo_em_branco("FOR", True), atributo_em_branco("DES", True)],
+        valores=[ValorImpresso("Vitalidade", anotar=True), ValorImpresso("Defesa")],
+        campos=["Nome", "Jogador", "Clã"],
+        pautadas=[("Equipamento", 4)],
+    )
+    texto = _texto(gerar_pdf(branca, TEMAS[tema]))
+    for trecho in ("Jogo de Testes", "Ficha em branco", "Jogador", "Clã", "FOR", "Vitalidade",
+                   "Máximo", "Atual", "Equipamento", "Anotações"):  # fmt: skip
+        assert trecho in texto, (tema, trecho)
+
+
+def test_ficha_em_branco_de_sistema_lido_usa_o_que_o_livro_diz():
+    s = normalizar(SistemaLido.model_validate({
+        "nome": "Horror d100",
+        "genero": "horror cósmico",
+        "mecanica": {"resolucao": "Role abaixo do valor."},
+        "modificador": "piso((valor-10)/2)",
+        "niveis": {"usa_niveis": True, "nome": "Rank"},
+        "atributos": [{"id": "pod", "nome": "Poder", "sigla": "POD"}],
+        "derivados": [
+            {"nome": "Sanidade", "formula": "pod", "tipo": "vida"},
+            {"nome": "Sorte", "formula": "", "explicacao": "Role 3d6 e multiplique por 5."},
+        ],
+        "etapas": [{"id": "ocup", "nome": "Ocupação", "tipo": "escolha", "principal": True,
+                    "opcoes": [{"nome": "Detetive", "pagina": 12}, {"nome": "Médica"}]}],
+    }))  # fmt: skip
+    branca = ficha_em_branco(s)
+    assert branca.campos == ["Nome", "Jogador", "Ocupação", "Rank"]
+    assert branca.atributos == [("POD", None, 0)]
+    assert [(v.nome, v.valor, v.anotar) for v in branca.valores] == [
+        ("Sanidade", "", True),
+        ("Sorte", "", True),  # sem fórmula, mas é um campo que a ficha do livro tem
+    ]
+    texto = _texto(gerar_pdf(branca, tema_do_sistema(s)))
+    for trecho in ("Sanidade: pod", "Sorte: Role 3d6", "Modificador de atributo",
+                   "Ocupação: Detetive (p. 12), Médica", "Role abaixo do valor"):  # fmt: skip
+        assert trecho in texto, trecho
+
+
+def test_ficha_em_branco_sem_etapas_nem_modificador():
+    s = normalizar(SistemaLido.model_validate({
+        "nome": "Simples",
+        "nome_arquetipo": "clã",
+        "atributos": [{"id": "forca", "nome": "Força"}],
+        "arquetipos": [{"nome": "Lobo"}],
+    }))  # fmt: skip
+    branca = ficha_em_branco(s)
+    assert "Clã" in branca.campos
+    assert branca.atributos == [("Força", None, None)]
+    assert gerar_pdf(branca, tema_do_sistema(s)).startswith(b"%PDF")

@@ -39,7 +39,7 @@ de dados, machine learning, LLMs avaliados e uma interface pronta para uso.
 | **Recuperação de informação** | Busca BM25 em Python puro e híbrida com embeddings, comparadas com repetições no MLflow; a melhor virou o padrão do site |
 | **LLM em produção, com validação** | Leitura de qualquer livro em três partes paralelas, saída validada item a item, fórmulas calculadas por um avaliador seguro (sem `eval`) e correções determinísticas para os erros recorrentes do modelo |
 | **Análise de dados aplicada** | Tabelas gold que viram regras: ex. 48% dos monstros de CR 11–16 resistem a dano físico não mágico, e isso muda o peso das dicas |
-| **MLOps e engenharia de software** | Databricks Asset Bundles (dev/prod), GitHub Actions, 360 testes com pytest, pre-commit, ADRs e Conventional Commits |
+| **MLOps e engenharia de software** | Databricks Asset Bundles (dev/prod), GitHub Actions, 378 testes com pytest, pre-commit, ADRs e Conventional Commits |
 | **Governança de dados** | Política de conteúdo automatizada: o "guardião" bloqueia no CI qualquer livro ou dado sem licença aberta; livros privados nunca saem do workspace |
 
 ## Resultados
@@ -67,7 +67,8 @@ de dados, machine learning, LLMs avaliados e uma interface pronta para uso.
 4. **Ficha por etapas:** raça, classe, subclasse no nível certo, clã... As opções escolhidas são
    lidas a fundo: habilidades por nível **com a página do livro**, bônus, fórmulas e poderes.
 5. **Sugestão criativa e PDF:** aparência, personalidade, história e poder de assinatura coerentes
-   com o livro, marcados como sugestão, e a **ficha em PDF com o tema visual do sistema**.
+   com o livro, marcados como sugestão. A **ficha sai em PDF com o tema visual do sistema**,
+   preenchida ou em branco, para imprimir e preencher à mão.
 6. **Encontros:** sugestão pela dificuldade pedida, com as criaturas do livro ou, se ele não tiver
    bestiário, inimigos montados pelas regras dele. Cada dica cita a regra: **não há caixa-preta**.
 
@@ -234,7 +235,7 @@ flowchart LR
 | `generico/gerador.py` | Fichas pelas etapas do livro e pelo método dele (rolagem por atributo, valores fixos, compra de pontos) |
 | `generico/analise.py` | Fraquezas do grupo, encontros e sugestão por dificuldade: dano médio × chance de acerto × multiplicador de dano |
 | `generico/narrativa.py` | Aparência, personalidade, história e poder de assinatura, marcados como sugestão |
-| `fichas_pdf.py` | Ficha em PDF com seis temas visuais escolhidos pelo gênero do jogo |
+| `fichas_pdf.py` | Ficha em PDF, preenchida ou em branco, com seis temas escolhidos pelo gênero do jogo |
 
 **Como a leitura gasta pouco** ([ADR 0009](docs/decisoes/0009-leitura-profunda-e-livro-primeiro.md)):
 

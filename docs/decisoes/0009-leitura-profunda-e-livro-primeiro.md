@@ -30,8 +30,9 @@ muitos minutos.
    escolhas, os atributos e trechos do livro, com o modelo pequeno, só quando pedido. O site marca
    como sugestão e o prompt proíbe copiar personagens da obra.
 8. **PDF com a identidade do sistema:** seis temas escolhidos pelo gênero lido do livro (paleta,
-   tipografia, ornamento), sem copiar arte. Fundo claro para imprimir e espaço para anotar valores
-   atuais.
+   tipografia, ornamento, forma das caixas e dos títulos), sem copiar arte. Fundo claro para
+   imprimir e espaço para anotar valores atuais. Toda página de ficha exporta a ficha preenchida e
+   a ficha em branco do sistema, com os campos e as fórmulas lidas do livro.
 9. **O livro em primeiro lugar:** um livro enviado é lido pela IA por padrão, mesmo de D&D 5e ou
    F&M. As regras escritas à mão ficam como reserva, opção rápida, demonstração e gabarito.
 
@@ -40,7 +41,10 @@ muitos minutos.
 - O custo acompanha o uso: a primeira leitura faz de 4 a 5 pedidos, e cada opção nova faz mais um.
 - A leitura varia entre execuções e ainda erra. Por isso cada opção cita a página, o resumo mostra
   o que não foi lido e qualquer número pode ser corrigido à mão.
-- O layout do PDF é o mesmo em todos os temas: muda a identidade visual, não a estrutura. A ficha
-  não copia a ficha oficial de cada livro.
+- A ordem dos blocos do PDF é a mesma em todos os temas: muda a identidade visual, não a estrutura.
+  A ficha não copia a ficha oficial de cada livro.
+- A ficha em branco de F&M traz só os campos, sem fórmulas, para não publicar regras de um livro
+  protegido. A de D&D traz as contas do SRD, de licença aberta. A de um livro lido mostra as contas
+  lidas, só para quem enviou o livro.
 - As fontes do PDF são as embutidas em todo leitor de PDF (cobrem o português), para não baixar nem
   distribuir arquivos de fonte.
