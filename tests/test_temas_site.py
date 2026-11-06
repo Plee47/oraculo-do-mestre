@@ -131,3 +131,10 @@ def test_d20_da_capa_vai_como_imagem_no_css_com_a_cor_do_tema():
     assert "data:image/svg+xml," in capa
     assert "%237a1f24" in capa  # o "#" precisa ir codificado no endereço
     assert '"' not in capa.split('url("')[1].split('")')[0]  # as aspas não fecham o url() antes
+
+
+def test_emenda_da_capa_fica_no_centro_da_tela():
+    # O dado e o título ficam nos 50%. Com folhas mais largas, a linha sairia do centro.
+    estilo = (PASTA.parent / "estilo.css").read_text(encoding="utf-8")
+    folha = re.search(r"\.cortina \.folha \{(.*?)\}", estilo, re.S).group(1)
+    assert "width: 50%" in folha and "box-sizing: border-box" in folha

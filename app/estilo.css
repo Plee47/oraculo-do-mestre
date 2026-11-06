@@ -183,11 +183,11 @@ h2 { color: var(--titulo); }
 /* ------------------------------------------------------------ troca de visual: a capa se abre */
 .cortina { position: fixed; inset: 0; z-index: 1000010; pointer-events: none; overflow: hidden; animation: cortina-some 1600ms linear forwards; }
 .cortina .folha {
-  position: absolute; top: 0; bottom: 0; width: 50.5%; background: var(--papel-3, var(--papel));
+  position: absolute; top: 0; bottom: 0; width: 50%; box-sizing: border-box; background: var(--papel-3, var(--papel));
   will-change: transform; animation: 720ms var(--ease-in-out) 880ms forwards;
 }
-.cortina .esquerda { left: 0; border-right: 2px solid var(--ouro); animation-name: folha-esquerda; }
-.cortina .direita { right: 0; border-left: 2px solid var(--ouro); animation-name: folha-direita; }
+.cortina .esquerda { left: 0; border-right: 1px solid var(--ouro); animation-name: folha-esquerda; }
+.cortina .direita { right: 0; border-left: 1px solid var(--ouro); animation-name: folha-direita; }
 .cortina .selo {
   position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem;
   animation: selo-aparece 1000ms var(--ease-out) forwards;
