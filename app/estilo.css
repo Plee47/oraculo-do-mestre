@@ -1,0 +1,128 @@
+/* Oráculo do Mestre — camada visual sobre o tema do Streamlit (.streamlit/config.toml).
+   Cores repetidas aqui são as mesmas do tema. */
+:root {
+  --papel: #f7f2e8;
+  --papel-2: #efe7d8;
+  --tinta: #221d17;
+  --tinta-suave: #6b5f50;
+  --linha: #dccfb9;
+  --brasa: #b5452b;
+  --brasa-escura: #9c3a24;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+/* ------------------------------------------------------------ superfícies do navegador */
+::selection { background: #ebc3b4; color: var(--tinta); }
+html { caret-color: var(--brasa); scrollbar-color: #cdbd9f var(--papel); }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--papel); }
+::-webkit-scrollbar-thumb { background: #cdbd9f; border-radius: 10px; border: 2px solid var(--papel); }
+:focus-visible { outline: 2px solid var(--brasa); outline-offset: 2px; }
+a { text-underline-offset: 0.2em; }
+[data-testid="stMetricValue"], [data-testid="stDataFrame"], .num { font-variant-numeric: tabular-nums; }
+
+/* ------------------------------------------------------------ tipografia */
+h1, h2, h3 { letter-spacing: -0.02em; text-wrap: balance; }
+[data-testid="stMarkdownContainer"] p { max-width: 75ch; }
+[data-testid="stCaptionContainer"], [data-testid="stCaptionContainer"] p {
+  color: var(--tinta-suave) !important; opacity: 1;
+}
+
+/* ------------------------------------------------------------ botões (Emil: resposta ao toque) */
+.stButton > button, .stDownloadButton > button, [data-testid="stBaseButton-secondary"],
+[data-testid="stBaseButton-primary"] {
+  transition: transform 160ms var(--ease-out), background-color 160ms ease,
+    border-color 160ms ease, box-shadow 160ms ease;
+}
+.stButton > button:active, .stDownloadButton > button:active { transform: scale(0.97); }
+@media (hover: hover) and (pointer: fine) {
+  .stButton > button:hover, .stDownloadButton > button:hover {
+    box-shadow: 0 2px 8px rgba(34, 29, 23, 0.08);
+  }
+}
+
+/* ------------------------------------------------------------ vitrine do início */
+.vitrine { padding: 0.5rem 0 0.25rem; }
+.vitrine h1 {
+  font-family: "Fraunces", serif;
+  font-size: clamp(2.4rem, 4.6vw, 4rem);
+  line-height: 1.04;
+  letter-spacing: -0.03em;
+  margin: 0 0 1rem;
+  padding: 0;
+}
+.vitrine h1 em { font-style: italic; color: var(--brasa); }
+.vitrine p.lead { font-size: 1.15rem; line-height: 1.55; color: var(--tinta-suave); max-width: 52ch; margin: 0; }
+.vitrine p.lead strong { color: var(--tinta); font-weight: 600; }
+
+.fluxo { display: flex; gap: 1.5rem; margin: 1.5rem 0 0; padding: 0 !important; list-style: none; flex-wrap: wrap; }
+.fluxo li { margin: 0 !important; padding: 0 !important; }
+.fluxo li { display: flex; gap: 0.6rem; align-items: baseline; color: var(--tinta-suave); font-size: 0.95rem; }
+.fluxo li b { color: var(--tinta); font-weight: 600; }
+.fluxo li .n {
+  font-family: "Fraunces", serif; font-weight: 600; color: var(--brasa);
+  font-size: 1.1rem; font-variant-numeric: lining-nums;
+}
+
+/* Pipeline do Databricks: um diagrama, não uma grade de cards. */
+.pipeline { margin: 0.5rem 0 0.25rem; }
+.pipeline ol {
+  list-style: none; margin: 0; padding: 0;
+  display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0;
+  border-top: 1px solid var(--linha);
+}
+.pipeline li { position: relative; padding: 1.1rem 1.25rem 0.25rem 0; }
+.pipeline li::before {
+  content: ""; position: absolute; top: -5px; left: 0;
+  width: 9px; height: 9px; border-radius: 50%;
+  background: var(--papel); border: 2px solid var(--brasa);
+}
+.pipeline li:first-child::before { background: var(--brasa); }
+.pipeline .etapa { font-family: "Fraunces", serif; font-weight: 600; font-size: 1.1rem; color: var(--tinta); }
+.pipeline .tec { font-family: "JetBrains Mono", monospace; font-size: 0.75rem; color: var(--brasa-escura); margin: 0.15rem 0 0.45rem; }
+.pipeline .feito { font-size: 0.9rem; line-height: 1.45; color: var(--tinta-suave); }
+.pipeline .feito b { color: var(--tinta); font-weight: 600; font-variant-numeric: tabular-nums; }
+@media (max-width: 900px) {
+  .pipeline ol { grid-template-columns: 1fr; border-top: 0; border-left: 1px solid var(--linha); }
+  .pipeline li { padding: 0 0 1.1rem 1.25rem; }
+  .pipeline li::before { top: 4px; left: -5px; }
+}
+
+/* ------------------------------------------------------------ ficha */
+.atributos {
+  display: grid; grid-template-columns: repeat(6, minmax(0, 1fr));
+  border: 1px solid var(--linha); border-radius: 0.5rem; background: var(--papel-2);
+  margin: 0.25rem 0 1rem;
+}
+.atributos > div { padding: 0.75rem 0.5rem; text-align: center; }
+.atributos > div + div { border-left: 1px solid var(--linha); }
+.atributos .sigla { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.08em; color: var(--tinta-suave); }
+.atributos .valor {
+  font-family: "Fraunces", serif; font-size: 2rem; font-weight: 600; line-height: 1.1;
+  color: var(--tinta); font-variant-numeric: tabular-nums lining-nums;
+}
+.atributos .mod { font-size: 0.9rem; color: var(--brasa-escura); font-variant-numeric: tabular-nums; }
+@media (max-width: 640px) {
+  .atributos { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .atributos > div:nth-child(4) { border-left: 0; }
+  .atributos > div:nth-child(n + 4) { border-top: 1px solid var(--linha); }
+}
+
+.itens { margin: 0.25rem 0 0.75rem; padding: 0; list-style: none; }
+.itens li { padding: 0.35rem 0; border-bottom: 1px solid var(--linha); display: flex; justify-content: space-between; gap: 1rem; }
+.itens li:last-child { border-bottom: 0; }
+.itens li span { color: var(--tinta-suave); font-variant-numeric: tabular-nums; }
+
+/* ------------------------------------------------------------ barra lateral */
+.livro-atual { border: 1px solid #d3c4aa; border-radius: 0.5rem; padding: 0.75rem 0.9rem; background: var(--papel); }
+.livro-atual .rotulo { font-size: 0.75rem; color: var(--tinta-suave); }
+.livro-atual .nome { font-family: "Fraunces", serif; font-weight: 600; font-size: 1.05rem; line-height: 1.25; margin: 0.1rem 0; overflow-wrap: anywhere; }
+.livro-atual .sistema { font-size: 0.85rem; color: var(--brasa-escura); font-weight: 500; }
+.marca { font-family: "Fraunces", serif; font-weight: 600; font-size: 1.35rem; letter-spacing: -0.02em; color: var(--tinta); margin: 0 0 0.25rem; }
+.marca span { color: var(--brasa); }
+
+/* ------------------------------------------------------------ movimento reduzido */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 0ms !important; animation-duration: 0ms !important; }
+}

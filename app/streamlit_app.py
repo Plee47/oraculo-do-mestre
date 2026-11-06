@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import html
 import io
 import json
 import sys
@@ -40,7 +41,11 @@ from oraculo.sistemas.fm import analise as fm_analise
 from oraculo.sistemas.fm import custo_compra_pontos as fm_custo
 from oraculo.sistemas.fm import gerador as fm_gerador
 
-st.set_page_config(page_title="Oráculo do Mestre", page_icon="🔮", layout="wide")
+st.set_page_config(
+    page_title="Oráculo do Mestre", page_icon=":material/auto_stories:", layout="wide"
+)
+# Camada visual sobre o tema de .streamlit/config.toml (ver README, seção Design).
+st.html(f"<style>{(Path(__file__).parent / 'estilo.css').read_text(encoding='utf-8')}</style>")
 
 CATALOGO_DND5E = Path(__file__).parents[1] / "dados" / "publicos" / "dnd5e" / "catalogo.json"
 MODELO_DETECTOR = Path(__file__).parents[1] / "dados" / "publicos" / "modelos" / "detector_rpg.json"
@@ -56,6 +61,7 @@ ROTEIRO = "Roteiro"
 CONTEUDO = "Conteúdo e licenças"
 LIMITE_PAGINAS = 200
 NOMES_SISTEMAS = {"dnd5e": "D&D 5e", "fm": "Feiticeiros & Maldições", "tagmar": "Tagmar"}
+REPOSITORIO = "https://github.com/Plee47/oraculo-do-mestre"
 CREDITO_FM = (
     "Mecânicas resumidas do Livro de Regras v2.5 de Feiticeiros & Maldições (Setsugiri, Parker "
     "e equipe — projeto de fãs gratuito). Nenhum texto do livro é publicado aqui."
@@ -108,39 +114,42 @@ def _trocar_livro() -> None:
 
 
 # --------------------------------------------------------------------------- início
-def pagina_inicio() -> None:
-    st.title("🔮 Oráculo do Mestre")
-    st.subheader("Conheceu um sistema de RPG? Envie o livro e crie fichas dentro das regras dele.")
-    passos = st.columns(3)
-    passos[0].markdown("**1 · Envie o livro**  \nO PDF do livro de regras, ou um trecho colado.")
-    passos[1].markdown(
-        "**2 · O porteiro valida**  \nConfere se é mesmo RPG e de qual sistema. Um romance ou "
-        "um manual não viram ficha."
+def _pipeline_html() -> str:
+    r = catalogo_dnd5e().resumo()
+    leitor = "o LLM escolhido"
+    if AVALIACAO_LEITOR.exists():
+        dados = json.loads(AVALIACAO_LEITOR.read_text(encoding="utf-8"))
+        melhor = max(dados["modelos"], key=lambda m: m["nota_geral"])
+        nome = html.escape(melhor["modelo"].removeprefix("databricks-"))
+        nota = f"{melhor['nota_geral']:.2f}".replace(".", ",")
+        leitor = f"<b>{nome}</b> tirou nota <b>{nota}</b> contra o gabarito"
+    etapas = [
+        ("Ingestão", "Auto Loader · Unity Catalog",
+         "PDFs e a API do SRD entram como tabelas <b>bronze</b> num volume do workspace."),
+        ("Medalhão", "Delta · bronze → silver → gold",
+         f"<b>{r['magias']}</b> magias e <b>{r['monstros']}</b> monstros limpos, validados e "
+         "exportados."),
+        ("Detector", "scikit-learn · MLflow",
+         "Regressão logística com 6 sinais explicáveis: <b>12 de 12</b> livros certos em "
+         "leave-one-book-out."),
+        ("Leitor", "ai_query · 3 LLMs comparados", f"{leitor} do SRD 5.1."),
+        ("Produto", "Asset Bundle · CI/CD · Streamlit",
+         "Regras em Python transformam os dados em fichas e análises explicáveis."),
+    ]  # fmt: skip
+    itens = "".join(
+        f'<li><div class="etapa">{e}</div><div class="tec">{tec}</div>'
+        f'<div class="feito">{feito}</div></li>'
+        for e, tec, feito in etapas
     )
-    passos[2].markdown(
-        "**3 · Crie e analise**  \nGerador de fichas, ficha rápida e análises, todos nas "
-        "regras do sistema validado."
-    )
-    st.divider()
+    return f'<div class="pipeline"><ol>{itens}</ol></div>'
 
-    livro = livro_atual()
-    if livro:
-        origem = "modo demonstração" if livro["demo"] else f"nota {livro['nota']:.0%}"
-        st.success(
-            f"Livro validado: **{livro['nome']}** · sistema "
-            f"**{SISTEMAS_SUPORTADOS[livro['sistema']]}** ({origem}).",
-            icon="✅",
-        )
-        b1, b2, _ = st.columns([1, 1, 2])
-        b1.button("🎲 Criar uma ficha", on_click=_ir_para, args=(GERADOR,), type="primary")
-        b2.button("📚 Enviar outro livro", on_click=_trocar_livro)
-        return
 
-    aba_pdf, aba_texto = st.tabs(["📄 Enviar PDF", "📝 Colar texto"])
+def _envio_do_livro() -> None:
+    aba_pdf, aba_texto = st.tabs(["Enviar PDF", "Colar texto"])
     paginas: list[str] = []
     nome = ""
     with aba_pdf:
-        arquivo = st.file_uploader("PDF", type=["pdf"], label_visibility="collapsed")
+        arquivo = st.file_uploader("PDF do livro de regras", type=["pdf"])
         if arquivo is not None:
             paginas, total = paginas_do_pdf(arquivo.getvalue())
             nome = Path(arquivo.name).stem
@@ -148,9 +157,8 @@ def pagina_inicio() -> None:
                 st.caption(f"Analisando as primeiras {LIMITE_PAGINAS} de {total} páginas.")
     with aba_texto:
         texto = st.text_area(
-            "Texto",
-            height=160,
-            label_visibility="collapsed",
+            "Trecho do livro",
+            height=140,
             placeholder=f"Cole pelo menos {MINIMO_CARACTERES} caracteres de um livro…",
         )
         if not paginas and texto.strip():
@@ -161,15 +169,14 @@ def pagina_inicio() -> None:
     )
 
     if not paginas:
-        st.markdown("**Sem um livro à mão?** Experimente com um sistema que o Oráculo já conhece:")
-        for col, (sid, nome_sistema) in zip(
-            st.columns(len(SISTEMAS_SUPORTADOS)), SISTEMAS_SUPORTADOS.items(), strict=True
-        ):
-            col.button(
-                f"Demonstração: {nome_sistema}",
+        st.markdown("**Sem um livro à mão?** Teste com um sistema que o Oráculo já conhece.")
+        for sid, nome_sistema in SISTEMAS_SUPORTADOS.items():
+            st.button(
+                f"Testar com {nome_sistema}",
                 key=f"demo_{sid}",
+                icon=":material/play_arrow:",
                 on_click=_usar_livro,
-                args=(sid, f"demonstração de {nome_sistema}", None, True),
+                args=(sid, f"Demonstração de {nome_sistema}", None, True),
                 use_container_width=True,
             )
         return
@@ -180,11 +187,64 @@ def pagina_inicio() -> None:
     mostrar_veredito(v, decisao, paginas, modelo)
     if decisao.aceito:
         st.button(
-            f"✅ Usar este livro e criar fichas de {SISTEMAS_SUPORTADOS[v.sistema]}",
+            f"Usar este livro e criar fichas de {SISTEMAS_SUPORTADOS[v.sistema]}",
             type="primary",
+            icon=":material/arrow_forward:",
             on_click=_usar_livro,
             args=(v.sistema, nome, v.nota),
         )
+
+
+def pagina_inicio() -> None:
+    texto, envio = st.columns([1.1, 1], gap="large", vertical_alignment="center")
+    with texto:
+        st.html(
+            '<div class="vitrine">'
+            "<h1>Conheceu um sistema de RPG? <em>Envie o livro.</em></h1>"
+            '<p class="lead">O Oráculo confere se o PDF é mesmo um livro de RPG, descobre de qual '
+            "sistema ele é e libera <strong>gerador de fichas e análises de grupo dentro das "
+            "regras dele</strong>. Por trás, um pipeline de dados e modelos no Databricks.</p>"
+            '<ul class="fluxo">'
+            '<li><span class="n">1</span><span><b>Envie</b> o PDF</span></li>'
+            '<li><span class="n">2</span><span><b>O porteiro</b> valida</span></li>'
+            '<li><span class="n">3</span><span><b>Crie</b> e analise</span></li>'
+            "</ul></div>"
+        )
+    with envio:
+        livro = livro_atual()
+        if livro:
+            origem = "modo demonstração" if livro["demo"] else f"nota {livro['nota']:.0%}"
+            st.success(
+                f"Livro validado: **{livro['nome']}** · sistema "
+                f"**{SISTEMAS_SUPORTADOS[livro['sistema']]}** ({origem}).",
+                icon=":material/check_circle:",
+            )
+            b1, b2 = st.columns(2)
+            b1.button(
+                "Criar uma ficha",
+                icon=":material/person_add:",
+                on_click=_ir_para,
+                args=(GERADOR,),
+                type="primary",
+                use_container_width=True,
+            )
+            b2.button(
+                "Enviar outro livro",
+                icon=":material/upload_file:",
+                on_click=_trocar_livro,
+                use_container_width=True,
+            )
+        else:
+            with st.container(border=True):
+                _envio_do_livro()
+
+    st.html('<div style="height: 2.5rem"></div>')
+    st.header("Por dentro: um pipeline de dados no Databricks")
+    st.caption(
+        "Cada número abaixo foi produzido pelo pipeline e vem dos dados exportados para este "
+        f"repositório. Código, notebooks e decisões de arquitetura: [GitHub]({REPOSITORIO})."
+    )
+    st.html(_pipeline_html())
 
 
 # --------------------------------------------------------------------------- gerador
@@ -212,7 +272,7 @@ def _dnd_gerador() -> None:
 
     if "semente" not in st.session_state:
         st.session_state.semente = 1
-    if st.button("🎲 Gerar outra"):
+    if st.button("Gerar outra", icon=":material/casino:"):
         st.session_state.semente += 1
 
     ficha = gerar_ficha(
@@ -249,23 +309,22 @@ def mostrar_ficha(ficha: Ficha, cat: Catalogo) -> None:
     m[3].metric("Proficiência", f"+{d['proficiencia']}")
     m[4].metric("CD de magia", d.get("cd_magia", "—"))
 
-    cols = st.columns(6)
-    for col, attr in zip(cols, defn.atributos, strict=True):
-        valor = ficha.atributos[attr.id]
-        col.markdown(f"**{attr.abrev}**  \n### {valor}  \n{modificador(valor):+d}")
+    st.html(atributos_html({a.abrev: ficha.atributos[a.id] for a in defn.atributos}, modificador))
 
     e1, e2 = st.columns(2)
     with e1:
         st.markdown("**Perícias**")
         st.write(", ".join(cat.pericia(p).nome for p in ficha.pericias))
         st.markdown("**Equipamento**")
+        itens = []
         for item_id in ficha.equipamento:
             if item_id in armas:
                 a = armas[item_id]
-                st.write(f"⚔️ {a.nome} — {a.dano} {a.tipo_dano}")
+                itens.append((a.nome, f"{a.dano} {a.tipo_dano}"))
             else:
                 a = armaduras[item_id]
-                st.write(f"🛡️ {a.nome} — CA {'+' if a.categoria == 'escudo' else ''}{a.ca_base}")
+                itens.append((a.nome, f"CA {'+' if a.categoria == 'escudo' else ''}{a.ca_base}"))
+        st.html(itens_html(itens))
     with e2:
         if ficha.poderes:
             magias = {m.id: m for m in cat.magias}
@@ -277,7 +336,7 @@ def mostrar_ficha(ficha: Ficha, cat: Catalogo) -> None:
                 rotulo = "Truques" if circulo == 0 else f"{circulo}º círculo"
                 st.write(f"**{rotulo}:** {', '.join(nomes)}")
 
-    with st.expander("🔮 Por que essas escolhas?", expanded=True):
+    with st.expander("Por que essas escolhas?", expanded=True, icon=":material/lightbulb:"):
         for e in ficha.explicacoes:
             st.write(f"- {e}")
 
@@ -295,12 +354,35 @@ def mostrar_ficha(ficha: Ficha, cat: Catalogo) -> None:
 
 # --------------------------------------------------------------------------- análise
 _ESTILO = {"alerta": st.error, "atencao": st.warning, "info": st.info, "ok": st.success}
-_ICONE = {"alerta": "🔴", "atencao": "🟠", "info": "🔵", "ok": "🟢"}
+_ICONE = {
+    "alerta": ":material/error:",
+    "atencao": ":material/warning:",
+    "info": ":material/info:",
+    "ok": ":material/check_circle:",
+}
+
+
+def atributos_html(valores: dict[str, int], mod) -> str:
+    """Bloco de atributos: sigla, valor e modificador (sem títulos Markdown com âncora)."""
+    celulas = "".join(
+        f'<div><div class="sigla">{html.escape(sigla)}</div><div class="valor">{v}</div>'
+        f'<div class="mod">{mod(v):+d}</div></div>'
+        for sigla, v in valores.items()
+    )
+    return f'<div class="atributos">{celulas}</div>'
+
+
+def itens_html(itens: list[tuple[str, str]]) -> str:
+    linhas = "".join(
+        f"<li>{html.escape(nome)}<span>{html.escape(detalhe)}</span></li>"
+        for nome, detalhe in itens
+    )
+    return f'<ul class="itens">{linhas}</ul>'
 
 
 def mostrar_achados(achados: list[Achado]) -> None:
     if not achados:
-        st.success("Nenhum problema encontrado.", icon="🟢")
+        st.success("Nenhum problema encontrado.", icon=":material/check_circle:")
     for a in achados:
         linhas = [f"**{a.titulo}**", a.detalhe, f"*Regra:* {a.regra}"]
         if a.sugestao:
@@ -392,18 +474,18 @@ def mostrar_veredito(
         )
         return
     if decisao.aceito:
-        st.success(f"**Livro aceito pelo porteiro:** {decisao.motivo}.", icon="✅")
+        st.success(f"**Livro aceito pelo porteiro:** {decisao.motivo}.", icon=":material/verified:")
     elif v.e_rpg:
         st.warning(
             f"**É um livro de RPG, mas o Oráculo ainda não conhece este sistema** "
             f"({NOMES_SISTEMAS.get(v.sistema, 'não identificado')}). Hoje as fichas e análises "
             f"existem para: {', '.join(SISTEMAS_SUPORTADOS.values())}.",
-            icon="🧩",
+            icon=":material/extension:",
         )
     else:
         st.info(
             f"**Não parece um livro de RPG** (nota {v.nota:.0%}), então não vira ficha.",
-            icon="📚",
+            icon=":material/menu_book:",
         )
     with st.expander("Por que o porteiro decidiu assim?"):
         m = st.columns(3)
@@ -529,7 +611,7 @@ def _dnd_ficha() -> None:
     st.divider()
     problemas = regras.validar(ficha)
     if not problemas:
-        st.success("Ficha válida pelas regras do SRD 5.1.", icon="✅")
+        st.success("Ficha válida pelas regras do SRD 5.1.", icon=":material/check_circle:")
     for p in problemas:
         (st.error if p.gravidade == "erro" else st.warning)(p.mensagem)
 
@@ -549,9 +631,8 @@ def _fm_resumo(ficha: Ficha) -> None:
     chaves = ("pv_maximo", "defesa", energia, "cd_especializacao", "atencao")
     for col, chave in zip(st.columns(5), chaves, strict=True):
         col.metric(_ROTULOS_FM[chave], d.get(chave, "—"))
-    for col, attr in zip(st.columns(6), defn.atributos, strict=True):
-        valor = ficha.atributos.get(attr.id, 10)
-        col.markdown(f"**{attr.abrev}**  \n### {valor}  \n{d[f'mod_{attr.id}']:+d}")
+    valores = {a.abrev: ficha.atributos.get(a.id, 10) for a in defn.atributos}
+    st.html(atributos_html(valores, lambda v: (v - 10) // 2))
     res = defn.extras["resistencias"]
     st.markdown(
         "**Testes de resistência:** "
@@ -581,7 +662,7 @@ def _fm_gerador(regras) -> None:
     origem = opcoes_origem[c4.selectbox("Origem", list(opcoes_origem), key="fm_origem")]
     if "fm_semente" not in st.session_state:
         st.session_state.fm_semente = 1
-    if st.button("🎲 Gerar outra", key="fm_gerar"):
+    if st.button("Gerar outra", key="fm_gerar", icon=":material/casino:"):
         st.session_state.fm_semente += 1
     try:
         ficha = fm_gerador.gerar_ficha(
@@ -604,7 +685,7 @@ def _fm_gerador(regras) -> None:
     e1.markdown(f"**Equipamento**  \n{', '.join(ficha.equipamento)}")
     if ficha.poderes:
         e2.markdown(f"**Técnica e feitiços**  \n{', '.join(ficha.poderes)}")
-    with st.expander("🔮 Por que essas escolhas?", expanded=True):
+    with st.expander("Por que essas escolhas?", expanded=True, icon=":material/lightbulb:"):
         for e in ficha.explicacoes:
             st.write(f"- {e}")
     for p in regras.validar(ficha):
@@ -657,7 +738,9 @@ def _fm_ficha_rapida(regras) -> None:
     _fm_resumo(ficha)
     problemas = regras.validar(ficha)
     if not problemas:
-        st.success("Ficha válida pelas regras de Feiticeiros & Maldições.", icon="✅")
+        st.success(
+            "Ficha válida pelas regras de Feiticeiros & Maldições.", icon=":material/check_circle:"
+        )
     for p in problemas:
         (st.error if p.gravidade == "erro" else st.warning)(p.mensagem)
 
@@ -685,7 +768,9 @@ def _fm_grupo(regras) -> None:
         energia = f"{p.energia} {'PE' if p.tipo_energia == 'pe' else 'estamina'}"
         linhas.append({
             "PJ": p.nome, "PV": p.pv, "Defesa": p.defesa, "Energia": energia,
-            "Resistências treinadas": ", ".join(sorted(p.treinado_em)),
+            "Resistências treinadas": ", ".join(
+                sorted(defn.extras["resistencias"][r]["nome"] for r in p.treinado_em)
+            ),
         })  # fmt: skip
     st.dataframe(linhas, hide_index=True, use_container_width=True)
     mostrar_achados(fm_analise.analisar_grupo(grupo))
@@ -716,7 +801,7 @@ def pagina_analises() -> None:
         st.info(
             "Análise de encontro: o livro base de Feiticeiros & Maldições não tem bestiário, "
             "então ainda não há maldições para comparar com o grupo.",
-            icon="🧭",
+            icon=":material/explore:",
         )
     else:
         _dnd_analise()
@@ -729,12 +814,12 @@ def pagina_roteiro() -> None:
         """
 | Fase | Entrega | Status |
 |---|---|---|
-| 0 · Fundação | Motor genérico de fichas, D&D 5e, site no ar, CI/CD | ✅ |
-| 1 · D&D SRD | Pipeline no Databricks com o SRD → tabelas gold → gerador de fichas | ✅ |
-| 2 · Análises | Fraquezas do grupo, desequilíbrio de encontros, dicas explicáveis | ✅ |
-| 3a · Detector de livros | "É livro de RPG?" com modelo explicável, avaliado no MLflow | ✅ |
-| 3b · Leitor de livros | Porteiro + extração com LLM avaliada contra o gabarito do SRD | ✅ |
-| 4 · Feiticeiros & Maldições | Segundo sistema: fichas, análise de grupo e porteiro | ✅ |
+| 0 · Fundação | Motor genérico de fichas, D&D 5e, site no ar, CI/CD | Feito |
+| 1 · D&D SRD | Pipeline no Databricks com o SRD → tabelas gold → gerador de fichas | Feito |
+| 2 · Análises | Fraquezas do grupo, desequilíbrio de encontros, dicas explicáveis | Feito |
+| 3a · Detector de livros | "É livro de RPG?" com modelo explicável, avaliado no MLflow | Feito |
+| 3b · Leitor de livros | Porteiro + extração com LLM avaliada contra o gabarito do SRD | Feito |
+| 4 · Feiticeiros & Maldições | Segundo sistema: fichas, análise de grupo e porteiro | Feito |
 | 5 · Polimento | Resultados, vídeo de demonstração | ⏳ |
 """
     )
@@ -764,15 +849,26 @@ livro = livro_atual()
 paginas = [INICIO, *([GERADOR, FICHA, ANALISES] if livro else []), BASTIDORES, ROTEIRO, CONTEUDO]
 if st.session_state.get("pagina") not in paginas:
     st.session_state.pagina = INICIO
+st.sidebar.html('<div class="marca">Oráculo <span>do Mestre</span></div>')
 if livro:
-    st.sidebar.success(
-        f"📖 **{livro['nome']}**  \nSistema: {SISTEMAS_SUPORTADOS[livro['sistema']]}", icon="✅"
+    st.sidebar.html(
+        '<div class="livro-atual"><div class="rotulo">Livro em uso</div>'
+        f'<div class="nome">{html.escape(livro["nome"])}</div>'
+        f'<div class="sistema">{SISTEMAS_SUPORTADOS[livro["sistema"]]}</div></div>'
     )
-    st.sidebar.button("Trocar de livro", on_click=_trocar_livro, use_container_width=True)
+    st.sidebar.button(
+        "Trocar de livro",
+        icon=":material/swap_horiz:",
+        on_click=_trocar_livro,
+        use_container_width=True,
+    )
 else:
-    st.sidebar.info("Envie um livro no **Início** para liberar o gerador e as análises.")
+    st.sidebar.caption("Envie um livro no **Início** para liberar o gerador e as análises.")
 st.sidebar.radio("Navegação", paginas, key="pagina")
-st.sidebar.caption("Projeto de portfólio · Python + Databricks + GitHub")
+st.sidebar.caption(
+    f"Projeto de portfólio de ciência de dados · Python, Databricks e GitHub · "
+    f"[código]({REPOSITORIO})"
+)
 
 {
     INICIO: pagina_inicio,

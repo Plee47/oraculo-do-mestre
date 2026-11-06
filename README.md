@@ -1,32 +1,49 @@
-# 🔮 Oráculo do Mestre
+# Oráculo do Mestre
 
-**Lê livros de RPG, monta fichas válidas e aponta o que está desequilibrado na sua mesa.**
-Projeto de portfólio de ciência de dados com **Python + Databricks + GitHub**, 100% gratuito.
+**Envie o livro de um sistema de RPG; o Oráculo confere se é mesmo RPG, descobre o sistema e
+monta fichas e análises dentro das regras dele.** Projeto de portfólio de **ciência de dados e
+engenharia de dados com Databricks**: pipeline medalhão, modelo de classificação avaliado sem
+vazamento, avaliação de LLMs contra gabarito e MLOps de ponta a ponta, tudo gratuito.
 
 [![CI/CD](https://github.com/Plee47/oraculo-do-mestre/actions/workflows/ci.yml/badge.svg)](https://github.com/Plee47/oraculo-do-mestre/actions/workflows/ci.yml)
 [![Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://oraculo-do-mestre.streamlit.app/)
 
-> 🌐 **Demo online:** <https://oraculo-do-mestre.streamlit.app/>
-> (se o site estiver "dormindo", clique em *Yes, get this app back up!* e aguarde uns segundos)
+**Site:** <https://oraculo-do-mestre.streamlit.app/> (se estiver "dormindo", clique em *Yes, get
+this app back up!* e aguarde alguns segundos)
 
-## O que faz
+![Início do site: envio do livro e o pipeline de dados no Databricks](docs/imagens/inicio.png)
 
-**O site começa pelo livro:** você envia o PDF do sistema que acabou de conhecer, o porteiro
-confere se é mesmo um livro de RPG e de qual sistema, e só então liberam o gerador de fichas,
-a ficha rápida e as análises, todos nas regras desse sistema. Um romance ou um manual não viram
-ficha; um RPG de sistema ainda não suportado recebe a explicação do porquê. Quem não tem um
-livro à mão pode usar o modo demonstração de cada sistema.
+## O que este projeto demonstra
 
-| Função | Exemplo |
+| Competência | Onde está a prova |
 |---|---|
-| **Detector de livros** | "Este PDF é um livro de RPG (97%), sistema D&D 5e, tipo bestiário" |
-| **Leitor de livros** | Extrai classes, magias, técnicas e criaturas para tabelas estruturadas |
-| **Gerador de fichas** | Personagens e NPCs válidos pelas regras, com as escolhas explicadas |
-| **Análise do grupo** | "Ninguém do grupo é bom em resistência de Sabedoria e o chefe usa Medo" |
-| **Análise de encontro** | "3 dos 4 inimigos são imunes a veneno, e o dano do seu ladino depende disso" |
+| **Engenharia de dados no Databricks** | Pipeline medalhão (bronze → silver → gold) em Delta, com Auto Loader, Unity Catalog e volumes; expectativas de qualidade que **derrubam o job** se o catálogo vier errado |
+| **Machine learning com avaliação honesta** | Classificador "é livro de RPG?" com *feature engineering* explicável e validação **leave-one-book-out**, para não vazar estilo do mesmo livro entre treino e teste |
+| **MLflow e registro de modelos** | Experimentos versionados, modelo no Unity Catalog com alias `champion` e **portão de qualidade** que só promove versões que acertam todos os livros |
+| **Avaliação de LLMs** | Três LLMs do Databricks (`ai_query` em lote no Spark) medidos em precisão, recall e acerto por campo contra um **gabarito** oficial, com um run do MLflow por modelo |
+| **Análise de dados aplicada** | Tabelas gold que viram regras: ex. 48% dos monstros de CR 11–16 resistem a dano físico não mágico, e isso muda o peso das dicas |
+| **MLOps e engenharia de software** | Databricks Asset Bundles (dev/prod), GitHub Actions, 247 testes com pytest, pre-commit, ADRs e Conventional Commits |
+| **Governança de dados** | Política de conteúdo automatizada: o "guardião" bloqueia no CI qualquer livro ou dado sem licença aberta; livros privados nunca saem do workspace |
 
-As dicas vêm de um **motor de regras explicável**: cada dica diz qual mecânica do sistema a
-gerou. O LLM só é usado para ler os livros e para escrever as dicas em linguagem natural.
+## Resultados
+
+| Peça | Número |
+|---|---|
+| Detector de livros (leave-one-book-out) | **F1 0,957** por página · **12 de 12** livros certos, incluindo romances de fantasia e um livro de xadrez |
+| Leitor com LLM (gpt-oss-120b, escolhido entre 3) | nota **0,90** · **98% / 99%** dos campos de magias / monstros certos |
+| Livro inteiro (SRD 5.1, 313 páginas) | **100%** das magias e **98,7%** dos monstros encontrados, zero erros de API |
+| Catálogo processado | **319** magias · **334** monstros · 12 classes, idêntico no Databricks e localmente |
+| Generalização | Livro real de *Feiticeiros & Maldições* (368 páginas) reconhecido com **nota 86%** sem retreinar o detector |
+
+## Como funciona
+
+1. **Envie o livro** (PDF ou trecho colado). O arquivo é lido só em memória.
+2. **O porteiro valida:** o detector diz se é RPG e de qual sistema. Um romance não vira ficha;
+   um RPG de sistema não suportado recebe o motivo.
+3. **Crie e analise:** gerador de fichas, ficha rápida e análises de grupo e encontro, todos
+   nas regras do sistema validado. Cada dica cita a regra que a gerou: **não há caixa-preta**.
+
+![Análise de grupo de D&D 5e com dicas que citam a regra](docs/imagens/analises.png)
 
 **Sistemas:** D&D 5ª edição (SRD 5.1) · Feiticeiros & Maldições (v2.5)
 
@@ -57,95 +74,7 @@ flowchart LR
 
 Por que essa divisão: [ADR 0001](docs/decisoes/0001-databricks-fabrica-streamlit-vitrine.md).
 
-## Roteiro
-
-- [x] **Fase 0 · Fundação:** ficha genérica, D&D 5e, site no ar, CI/CD e guardião de conteúdo
-- [x] **Fase 1 · D&D SRD:** pipeline medalhão no Databricks com o SRD e gerador de fichas
-- [x] **Fase 2 · Análises:** fraquezas do grupo, desequilíbrio de encontros, dicas explicáveis
-- [x] **Fase 3a · Detector de livros:** "é livro de RPG?" com modelo explicável avaliado no MLflow
-- [x] **Fase 3b · Leitor de livros:** porteiro + extração com LLM (modelos do Databricks) avaliada contra o SRD
-- [x] **Fase 4 · Feiticeiros & Maldições:** segundo sistema (fichas, análise de grupo, porteiro)
-- [ ] **Fase 5 · Polimento:** resultados, vídeo de demonstração
-
-## Pipeline de dados (Fase 1)
-
-```mermaid
-flowchart LR
-    API[(dnd5eapi.co<br/>SRD 5.1)] -->|download| V[/volume livros_abertos/]
-    V -->|Auto Loader| B[bronze_srd<br/>~600 JSONs]
-    B -->|parse + expectativas| S[silver_dnd5e_*<br/>racas · classes · magias<br/>armas · armaduras · pericias · monstros]
-    S --> G1[gold_dnd5e_magias_por_classe]
-    S --> G2[gold_dnd5e_monstros_defesas]
-    S -->|só se licença aberta| E[/exportacao/dnd5e/catalogo.json/]
-    E -->|scripts/sincronizar_dados.py| R[dados/publicos/ no repo]
-    R --> SITE[Gerador de fichas no site]
-```
-
-| Camada | Tabela | O que garante |
-|---|---|---|
-| Bronze | `bronze_srd` | JSON exatamente como veio da API, ingestão incremental (Auto Loader) |
-| Silver | `silver_dnd5e_*` | Uma tabela por entidade, colunas planas para SQL + `dados_json` completo |
-| Gold | `gold_dnd5e_magias_por_classe` | Funções das magias (dano, controle, cura, utilidade) por classe e círculo |
-| Gold | `gold_dnd5e_monstros_defesas` | Defesas dos monstros por faixa de CR (base numérica das dicas) |
-| Exportação | `catalogo.json` | Só sai se o sistema estiver marcado como público (ADR 0002) |
-
-O job **falha** se o catálogo não passar nas expectativas de qualidade: 12 classes com os 20
-níveis completos, 300 ou mais magias, nenhuma magia apontando para uma classe inexistente…
-O parsing usa as mesmas funções puras testadas no CI, e o catálogo gerado no Databricks é
-idêntico ao gerado localmente.
-
-### Gerador de fichas
-
-Dado nível e papel (defensor, atacante, conjurador ou suporte), o gerador monta a ficha e
-explica cada escolha:
-
-1. **Classe** do papel pedido.
-2. **Atributos** pelo conjunto padrão, na ordem de prioridade da classe.
-3. **Raça** cujos bônus mais combinam com essa prioridade.
-4. **Melhorias de atributo** de acordo com a tabela de níveis do SRD.
-5. **Perícias** ligadas aos atributos mais altos.
-6. **Armadura** de maior CA permitida (respeitando FOR mínima e "druida não usa metal").
-7. **Arma** coerente com o estilo (acuidade com DES, sem arma de duas mãos com escudo).
-8. **Magias** pela função do papel, evitando acumular magias de concentração.
-
-**Limitações conhecidas:** o equipamento ignora o custo em ouro (um guerreiro de nível 1 pode
-sair de armadura completa), não há subclasses nem talentos, e os nomes de magias e itens ficam
-em inglês, como no SRD.
-
-## Análises e dicas (Fase 2)
-
-Monte o grupo, escolha os monstros, e o Oráculo aponta o que está desequilibrado. **Cada dica
-diz qual regra a gerou**, então não há caixa-preta.
-
-| Análise | Exemplo real (grupo de nível 5: guerreiro, clérigo, ladino, mago) |
-|---|---|
-| Papéis e cura | Grupo só de combatentes: "Ninguém do grupo cura" |
-| Testes de resistência | "Resistência de SAB fraca (média +1.2), ninguém proficiente" |
-| Tipos de dano | "Todo o dano do grupo é físico e não mágico" |
-| Defesas dos monstros | "Gargoyle reduz à metade o dano do guerreiro e do ladino" |
-| Vulnerabilidades | "O guerreiro (martelo) causa dano dobrado em Skeleton" |
-| Efeitos que exploram fraquezas | "Frightful Presence (Adult Red Dragon): o grupo falha 74% das vezes" |
-| Risco de queda | "Adult Red Dragon pode derrubar todo o grupo num único turno (sopro, 63 de dano)" |
-| Economia de ações | "Ogre sozinho age 1 vez para cada 4 do grupo" |
-| Balanço | Rodadas para vencer × rodadas até o grupo cair, por dano esperado |
-
-**O que os dados mostram** (`gold_dnd5e_monstros_defesas`, calculada no Databricks):
-
-| Faixa de CR | Monstros | Resistem a físico não mágico | Voam | Ações lendárias |
-|---|---:|---:|---:|---:|
-| 0 a 1/2 | 113 | 2% | 22% | 0% |
-| 1 a 4 | 105 | 23% | 24% | 0% |
-| 5 a 10 | 67 | 34% | 30% | 3% |
-| 11 a 16 | 29 | 48% | 62% | 45% |
-| 17+ | 20 | 35% | 80% | 85% |
-
-Por isso a dica "todo o dano é físico" pesa mais conforme o grupo sobe de nível, e "ninguém
-ataca à distância" vira alerta contra monstros de CR alto.
-
-**Limitações:** as estimativas usam dano médio esperado, sem posicionamento, terreno ou
-magias de controle; magias de monstros conjuradores (ex.: lich) não entram no dano por turno.
-
-## Detector de livros de RPG (Fase 3a)
+## Detector de livros de RPG: ML com avaliação sem vazamento
 
 Antes de gastar chamadas de LLM lendo um PDF, o Oráculo verifica: **isto é um livro de RPG?
 De qual sistema?**
@@ -195,7 +124,7 @@ de qualidade só promove versões que acertam **todos** os livros.
 (2 sistemas). O sistema provável (D&D 5e, Tagmar, Feiticeiros & Maldições) vem de palavras
 assinatura, não de um modelo treinado.
 
-## Leitor de livros com LLM (Fase 3b)
+## Leitor de livros: LLMs avaliados contra gabarito
 
 ```mermaid
 flowchart LR
@@ -246,7 +175,85 @@ oraculo_dev → livros_privados → *Upload*) e rode o job. O porteiro decide, e
 extraído fica nas tabelas com `privado = true`, que **nunca são exportadas**
 ([ADR 0005](docs/decisoes/0005-leitor-de-livros-com-llm.md)).
 
-## Feiticeiros & Maldições (Fase 4)
+## Pipeline medalhão no Databricks
+
+```mermaid
+flowchart LR
+    API[(dnd5eapi.co<br/>SRD 5.1)] -->|download| V[/volume livros_abertos/]
+    V -->|Auto Loader| B[bronze_srd<br/>~600 JSONs]
+    B -->|parse + expectativas| S[silver_dnd5e_*<br/>racas · classes · magias<br/>armas · armaduras · pericias · monstros]
+    S --> G1[gold_dnd5e_magias_por_classe]
+    S --> G2[gold_dnd5e_monstros_defesas]
+    S -->|só se licença aberta| E[/exportacao/dnd5e/catalogo.json/]
+    E -->|scripts/sincronizar_dados.py| R[dados/publicos/ no repo]
+    R --> SITE[Gerador de fichas no site]
+```
+
+| Camada | Tabela | O que garante |
+|---|---|---|
+| Bronze | `bronze_srd` | JSON exatamente como veio da API, ingestão incremental (Auto Loader) |
+| Silver | `silver_dnd5e_*` | Uma tabela por entidade, colunas planas para SQL + `dados_json` completo |
+| Gold | `gold_dnd5e_magias_por_classe` | Funções das magias (dano, controle, cura, utilidade) por classe e círculo |
+| Gold | `gold_dnd5e_monstros_defesas` | Defesas dos monstros por faixa de CR (base numérica das dicas) |
+| Exportação | `catalogo.json` | Só sai se o sistema estiver marcado como público (ADR 0002) |
+
+O job **falha** se o catálogo não passar nas expectativas de qualidade: 12 classes com os 20
+níveis completos, 300 ou mais magias, nenhuma magia apontando para uma classe inexistente…
+O parsing usa as mesmas funções puras testadas no CI, e o catálogo gerado no Databricks é
+idêntico ao gerado localmente.
+
+### Gerador de fichas
+
+Dado nível e papel (defensor, atacante, conjurador ou suporte), o gerador monta a ficha e
+explica cada escolha:
+
+1. **Classe** do papel pedido.
+2. **Atributos** pelo conjunto padrão, na ordem de prioridade da classe.
+3. **Raça** cujos bônus mais combinam com essa prioridade.
+4. **Melhorias de atributo** de acordo com a tabela de níveis do SRD.
+5. **Perícias** ligadas aos atributos mais altos.
+6. **Armadura** de maior CA permitida (respeitando FOR mínima e "druida não usa metal").
+7. **Arma** coerente com o estilo (acuidade com DES, sem arma de duas mãos com escudo).
+8. **Magias** pela função do papel, evitando acumular magias de concentração.
+
+**Limitações conhecidas:** o equipamento ignora o custo em ouro (um guerreiro de nível 1 pode
+sair de armadura completa), não há subclasses nem talentos, e os nomes de magias e itens ficam
+em inglês, como no SRD.
+
+## Análises e dicas explicáveis
+
+Monte o grupo, escolha os monstros, e o Oráculo aponta o que está desequilibrado. **Cada dica
+diz qual regra a gerou**, então não há caixa-preta.
+
+| Análise | Exemplo real (grupo de nível 5: guerreiro, clérigo, ladino, mago) |
+|---|---|
+| Papéis e cura | Grupo só de combatentes: "Ninguém do grupo cura" |
+| Testes de resistência | "Resistência de SAB fraca (média +1.2), ninguém proficiente" |
+| Tipos de dano | "Todo o dano do grupo é físico e não mágico" |
+| Defesas dos monstros | "Gargoyle reduz à metade o dano do guerreiro e do ladino" |
+| Vulnerabilidades | "O guerreiro (martelo) causa dano dobrado em Skeleton" |
+| Efeitos que exploram fraquezas | "Frightful Presence (Adult Red Dragon): o grupo falha 74% das vezes" |
+| Risco de queda | "Adult Red Dragon pode derrubar todo o grupo num único turno (sopro, 63 de dano)" |
+| Economia de ações | "Ogre sozinho age 1 vez para cada 4 do grupo" |
+| Balanço | Rodadas para vencer × rodadas até o grupo cair, por dano esperado |
+
+**O que os dados mostram** (`gold_dnd5e_monstros_defesas`, calculada no Databricks):
+
+| Faixa de CR | Monstros | Resistem a físico não mágico | Voam | Ações lendárias |
+|---|---:|---:|---:|---:|
+| 0 a 1/2 | 113 | 2% | 22% | 0% |
+| 1 a 4 | 105 | 23% | 24% | 0% |
+| 5 a 10 | 67 | 34% | 30% | 3% |
+| 11 a 16 | 29 | 48% | 62% | 45% |
+| 17+ | 20 | 35% | 80% | 85% |
+
+Por isso a dica "todo o dano é físico" pesa mais conforme o grupo sobe de nível, e "ninguém
+ataca à distância" vira alerta contra monstros de CR alto.
+
+**Limitações:** as estimativas usam dano médio esperado, sem posicionamento, terreno ou
+magias de controle; magias de monstros conjuradores (ex.: lich) não entram no dano por turno.
+
+## Segundo sistema: Feiticeiros & Maldições
 
 Segundo sistema, para provar que o motor é genérico: adicionar um sistema é uma pasta nova
 em `src/oraculo/sistemas/` com um `sistema.yaml` (dados) e as regras em Python (fórmulas).
@@ -272,6 +279,33 @@ autores. Aqui ficam só as fórmulas, resumidas à mão; nada do texto do livro 
 repositório, e `conteudo_publico: false` faz o guardião bloquear qualquer dado extraído dele
 ([ADR 0006](docs/decisoes/0006-feiticeiros-e-maldicoes.md)).
 
+## Design do site
+
+A parte visual foi construída com três guias de design (*skills*) de referência, aplicados
+sobre o tema do Streamlit (`.streamlit/config.toml`) e uma camada de CSS (`app/estilo.css`):
+
+| Guia | O que trouxe |
+|---|---|
+| [**Impeccable**](https://github.com/pbakaus/impeccable) (Paul Bakaus) | Direção por "modo" da tela: o início é vitrine, as ferramentas são de operação, com precisão e contenção. Também o piso de qualidade: contraste, seleção de texto, foco, barra de rolagem e números tabulares tematizados, e nada de emoji no lugar de ícones |
+| [**Taste Skill**](https://github.com/leonxlnx/taste-skill) | Um único sistema visual (uma paleta, um estilo de botão e de borda), texto direto que diz o que o produto faz, o produto real na tela e nada de violeta genérico |
+| [**Design Engineering de Emil Kowalski**](https://github.com/emilkowalski/skills) | Micro-interações: botões que afundam ao clique (`scale(0.97)`), curvas de animação próprias abaixo de 300 ms, hover só em dispositivos com mouse e respeito a movimento reduzido |
+
+O resultado é a identidade **"grimório de dados"**: papel quente, tinta escura e um único
+destaque cor de brasa. Os títulos usam Fraunces (serifa que lembra livro de regras), o texto
+usa Inter e os dados usam JetBrains Mono. O pipeline do Databricks aparece no início como uma
+linha do tempo, não como uma grade de cards.
+
+## Roteiro
+
+- [x] **Fase 0 · Fundação:** ficha genérica, D&D 5e, site no ar, CI/CD e guardião de conteúdo
+- [x] **Fase 1 · D&D SRD:** pipeline medalhão no Databricks com o SRD e gerador de fichas
+- [x] **Fase 2 · Análises:** fraquezas do grupo, desequilíbrio de encontros, dicas explicáveis
+- [x] **Fase 3a · Detector de livros:** "é livro de RPG?" com modelo explicável avaliado no MLflow
+- [x] **Fase 3b · Leitor de livros:** porteiro + extração com LLM (modelos do Databricks) avaliada contra o SRD
+- [x] **Fase 4 · Feiticeiros & Maldições:** segundo sistema (fichas, análise de grupo, porteiro)
+- [x] **Fase 5a · Vitrine:** site que começa pelo livro, design e README de portfólio
+- [ ] **Fase 5b · Demonstração:** vídeo curto do fluxo completo
+
 ## Estrutura
 
 ```
@@ -286,7 +320,8 @@ repositório, e `conteudo_publico: false` faz o guardião bloquear qualquer dado
 │   ├── deploy.py           # deploy no Databricks: código no volume + bundle (ADR 0004)
 │   ├── carregar_srd.py     # plano B: baixa o SRD localmente e envia ao volume
 │   └── sincronizar_dados.py# traz o catálogo exportado para dados/publicos/
-├── app/                    # site Streamlit
+├── app/                    # site Streamlit (estilo.css: camada visual)
+├── .streamlit/            # tema do site
 ├── pipelines/              # notebooks e jobs do Databricks
 ├── databricks.yml          # Asset Bundle (targets dev/prod)
 ├── docs/decisoes/          # registros de decisões de arquitetura (ADRs)
