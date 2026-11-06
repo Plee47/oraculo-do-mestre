@@ -333,3 +333,9 @@ def test_dnd_mostra_a_subclasse_quando_o_nivel_permite():
     assert "(Champion)" in at.subheader[0].value
     at.slider[0].set_value(2).run()
     assert "(Champion)" not in at.subheader[0].value
+
+
+def test_bastidores_mostra_a_comparacao_das_buscas():
+    at = ir(abrir(), "Bastidores do leitor")
+    assert len(at.dataframe) == 2
+    assert any("páginas certas" in s.value for s in at.subheader)
