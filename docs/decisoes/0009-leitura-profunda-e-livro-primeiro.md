@@ -29,9 +29,12 @@ muitos minutos.
 7. **Narrativa como sugestão:** aparência, personalidade, história e poder de assinatura usam as
    escolhas, os atributos e trechos do livro, com o modelo pequeno, só quando pedido. O site marca
    como sugestão e o prompt proíbe copiar personagens da obra.
-8. **PDF com a identidade do sistema:** seis temas escolhidos pelo gênero lido do livro (paleta,
-   tipografia, ornamento), sem copiar arte. Fundo claro para imprimir e espaço para anotar valores
-   atuais.
+8. **Ficha do jogador em PDF, com a identidade do sistema:** a leitura entende o que o livro manda
+   anotar (por exemplo, o "Perfil Amaldiçoado" de F&M) e a ficha segue isso; um campo só entra se o
+   nome aparecer no texto do livro. Seis temas escolhidos pelo gênero lido (paleta, tipografia,
+   ornamento, forma das caixas e dos títulos), sem copiar arte. Toda página de ficha exporta a ficha
+   gerada e a ficha em branco. Os espaços de escrever são campos do PDF, para digitar no leitor ou
+   imprimir e usar a lápis.
 9. **O livro em primeiro lugar:** um livro enviado é lido pela IA por padrão, mesmo de D&D 5e ou
    F&M. As regras escritas à mão ficam como reserva, opção rápida, demonstração e gabarito.
 
@@ -40,7 +43,12 @@ muitos minutos.
 - O custo acompanha o uso: a primeira leitura faz de 4 a 5 pedidos, e cada opção nova faz mais um.
 - A leitura varia entre execuções e ainda erra. Por isso cada opção cita a página, o resumo mostra
   o que não foi lido e qualquer número pode ser corrigido à mão.
-- O layout do PDF é o mesmo em todos os temas: muda a identidade visual, não a estrutura. A ficha
-  não copia a ficha oficial de cada livro.
+- A ordem dos blocos do PDF é a mesma em todos os temas: muda a identidade visual, não a estrutura.
+  A ficha não copia a ficha oficial de cada livro.
+- A ficha vem da leitura do livro enviado, inclusive a de F&M, e o resultado fica só com quem o
+  enviou. A demonstração sem livro usa só os campos das regras prontas: nome de perícias e
+  resistências, sem fórmulas.
+- Valores já impressos na ficha gerada não são editáveis no leitor de PDF; o que muda em jogo (valor
+  atual, perícias, anotações) é.
 - As fontes do PDF são as embutidas em todo leitor de PDF (cobrem o português), para não baixar nem
   distribuir arquivos de fonte.

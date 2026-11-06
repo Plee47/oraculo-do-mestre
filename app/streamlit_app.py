@@ -25,7 +25,16 @@ if recarregar_se_mudou([RAIZ / "src", RAIZ / "dados"]):
     st.cache_resource.clear()
     st.cache_data.clear()
 
-from oraculo.fichas_pdf import TEMAS, FichaImpressa, Tema, ValorImpresso, gerar_pdf, tema_para
+from oraculo.fichas_pdf import (
+    TEMAS,
+    BlocoImpresso,
+    FichaImpressa,
+    Tema,
+    ValorImpresso,
+    atributo_em_branco,
+    gerar_pdf,
+    tema_para,
+)
 from oraculo.leitor.cache import cache_configurado
 from oraculo.leitor.detector import (
     MINIMO_CARACTERES,
@@ -54,7 +63,7 @@ from oraculo.sistemas.generico.gerador import calcular_derivados as calcular_der
 from oraculo.sistemas.generico.gerador import gerar_ficha as gerar_ficha_lida
 from oraculo.sistemas.generico.gerador import limites as limites_lido
 from oraculo.sistemas.generico.gerador import validar as validar_lido
-from oraculo.sistemas.generico.impressao import ficha_impressa, tema_do_sistema
+from oraculo.sistemas.generico.impressao import ficha_em_branco, ficha_impressa, tema_do_sistema
 from oraculo.sistemas.generico.leitura import (
     ErroLeitura,
     detalhar_opcao,
@@ -131,9 +140,46 @@ def _ir_para(pagina: str) -> None:
     st.session_state.pagina = pagina
 
 
-def _acoes_da_ficha(ficha: Ficha, ctx: ContextoFicha, montar_pdf, tema: Tema) -> None:
-    """Sugestão criativa e downloads: iguais para qualquer sistema. `montar_pdf(ficha)` devolve
-    a ficha impressa, já com a narrativa, se houver."""
+def _downloads_da_ficha(ficha: Ficha, montar_pdf, tema: Tema, em_branco: FichaImpressa) -> None:
+    """Ficha preenchida em PDF, ficha em branco do sistema e JSON. `montar_pdf(ficha)` devolve a
+    ficha impressa, já com a narrativa, se houver."""
+    chave = hashlib.sha256(ficha.model_dump_json().encode()).hexdigest()[:12]
+    col_pdf, col_branco, col_json, _ = st.columns([1, 1, 1, 1])
+    col_pdf.download_button(
+        "Baixar ficha em PDF",
+        gerar_pdf(montar_pdf(ficha), tema),
+        file_name=f"{normalizar_id(ficha.nome)}.pdf",
+        mime="application/pdf",
+        icon=":material/picture_as_pdf:",
+        type="primary",
+        key=f"pdf_{chave}",
+        width="stretch",
+    )
+    col_branco.download_button(
+        "Ficha em branco",
+        gerar_pdf(em_branco, tema),
+        file_name=f"ficha_em_branco_{normalizar_id(em_branco.sistema)}.pdf",
+        mime="application/pdf",
+        icon=":material/edit_document:",
+        help="Para preencher no leitor de PDF ou imprimir, com os campos deste sistema.",
+        key=f"branca_{chave}",
+        width="stretch",
+    )
+    col_json.download_button(
+        "Baixar em JSON",
+        ficha.model_dump_json(indent=2),
+        file_name=f"{normalizar_id(ficha.nome)}.json",
+        mime="application/json",
+        icon=":material/data_object:",
+        key=f"baixar_{chave}",
+        width="stretch",
+    )
+
+
+def _acoes_da_ficha(
+    ficha: Ficha, ctx: ContextoFicha, montar_pdf, tema: Tema, em_branco: FichaImpressa
+) -> None:
+    """Sugestão criativa e downloads: iguais para qualquer sistema."""
     chave = hashlib.sha256(ficha.model_dump_json().encode()).hexdigest()
     guardadas = st.session_state.setdefault("_narrativas", {})
     cliente = cliente_llm()
@@ -159,26 +205,7 @@ def _acoes_da_ficha(ficha: Ficha, ctx: ContextoFicha, montar_pdf, tema: Tema) ->
             )
             for rotulo, texto in ficha.narrativa.items():
                 st.markdown(f"**{rotulo}.** {texto}")
-    col_pdf, col_json, _ = st.columns([1, 1, 2])
-    col_pdf.download_button(
-        "Baixar ficha em PDF",
-        gerar_pdf(montar_pdf(ficha), tema),
-        file_name=f"{normalizar_id(ficha.nome)}.pdf",
-        mime="application/pdf",
-        icon=":material/picture_as_pdf:",
-        type="primary",
-        key=f"pdf_{chave[:12]}",
-        width="stretch",
-    )
-    col_json.download_button(
-        "Baixar em JSON",
-        ficha.model_dump_json(indent=2),
-        file_name=f"{normalizar_id(ficha.nome)}.json",
-        mime="application/json",
-        icon=":material/data_object:",
-        key=f"baixar_{chave[:12]}",
-        width="stretch",
-    )
+    _downloads_da_ficha(ficha, montar_pdf, tema, em_branco)
 
 
 def _usar_livro(sistema: str, nome: str, nota: float | None = None, demo: bool = False) -> None:
@@ -466,7 +493,11 @@ def mostrar_ficha(ficha: Ficha, cat: Catalogo) -> None:
         ),
         lambda f: _impressa_dnd(f, cat),
         TEMAS["fantasia"],
+        _branca_dnd(),
     )
+
+
+_CREDITO_DND = "SRD 5.1, Wizards of the Coast LLC, CC BY 4.0"
 
 
 def _impressa_dnd(ficha: Ficha, cat: Catalogo) -> FichaImpressa:
@@ -500,8 +531,13 @@ def _impressa_dnd(ficha: Ficha, cat: Catalogo) -> FichaImpressa:
     for mid in ficha.poderes:
         if mid in magias:
             por_circulo.setdefault(magias[mid].circulo, []).append(magias[mid].nome)
+    resistencias = " · ".join(
+        f"{a.abrev} {d.get(f'resistencia_{a.id}', d[f'mod_{a.id}']):+d}" for a in defn.atributos
+    )
+    treinadas = set(ficha.pericias)
+    pericias = [ValorImpresso(p.nome, marcado=p.id in treinadas) for p in cat.pericias]
     secoes = [
-        ("Perícias", [", ".join(cat.pericia(p).nome for p in ficha.pericias)]),
+        ("Testes de resistência", [resistencias]),
         ("Equipamento", equipamento),
         ("Magias", [
             f"{'Truques' if c == 0 else f'{c}º círculo'}: {', '.join(nomes)}"
@@ -514,15 +550,59 @@ def _impressa_dnd(ficha: Ficha, cat: Catalogo) -> FichaImpressa:
         nome=ficha.nome,
         sistema=SISTEMAS_SUPORTADOS["dnd5e"],
         subtitulo=(
-            f"{raca} {classe.nome}"
+            f"{raca} {classe.nome}".strip()
             + (f" ({ficha.escolhas['subclasse']})" if "subclasse" in ficha.escolhas else "")
             + f" de nível {ficha.nivel}"
         ),
         atributos=[(a.abrev, ficha.atributos[a.id], d[f"mod_{a.id}"]) for a in defn.atributos],
         valores=valores,
         secoes=secoes,
+        blocos=[BlocoImpresso("Perícias", "marcas", pericias)],
         narrativa=dict(ficha.narrativa),
-        credito="SRD 5.1, Wizards of the Coast LLC, CC BY 4.0",
+        credito=_CREDITO_DND,
+    )
+
+
+def _branca_dnd() -> FichaImpressa:
+    defn = obter_regras("dnd5e").definicao
+    nomes = ["Pontos de Vida", "Classe de Armadura", "Iniciativa", "Proficiência", "CD de magia"]
+    return FichaImpressa(
+        nome="",
+        sistema=SISTEMAS_SUPORTADOS["dnd5e"],
+        subtitulo="Ficha em branco",
+        atributos=[atributo_em_branco(a.abrev, True) for a in defn.atributos],
+        valores=[ValorImpresso(n, anotar=n == "Pontos de Vida") for n in nomes],
+        campos=["Nome", "Jogador", "Raça", "Classe", "Subclasse", "Nível"],
+        blocos=[
+            BlocoImpresso(
+                "Testes de resistência",
+                "valores",
+                [ValorImpresso(a.nome) for a in defn.atributos],
+            ),
+            BlocoImpresso(
+                "Perícias",
+                "marcas",
+                [ValorImpresso(p.nome) for p in catalogo_dnd5e().pericias],
+            ),
+            BlocoImpresso("Ataques e magias", linhas=6),
+            BlocoImpresso("Equipamento", linhas=4),
+            BlocoImpresso("Aparência e história", linhas=4),
+        ],
+        secoes=[
+            (
+                "Como calcular",
+                [
+                    "Modificador: (atributo - 10) / 2, arredondado para baixo.",
+                    "Pontos de Vida no nível 1: maior valor do dado de vida da classe + "
+                    "modificador de Constituição.",
+                    "Classe de Armadura sem armadura: 10 + modificador de Destreza.",
+                    "Iniciativa: modificador de Destreza.",
+                    "Proficiência: +2 nos níveis 1 a 4, e +1 a cada quatro níveis depois disso.",
+                    "CD de magia: 8 + proficiência + modificador do atributo de conjuração.",
+                ],
+            ),
+        ],  # fmt: skip
+        credito=_CREDITO_DND,
     )
 
 
@@ -822,6 +902,9 @@ def _dnd_ficha() -> None:
         st.success("Ficha válida pelas regras do SRD 5.1.", icon=":material/check_circle:")
     for p in problemas:
         (st.error if p.gravidade == "erro" else st.warning)(p.mensagem)
+    _downloads_da_ficha(
+        ficha, lambda f: _impressa_dnd(f, catalogo_dnd5e()), TEMAS["fantasia"], _branca_dnd()
+    )
 
 
 # --------------------------------------------------------------------------- F&M
@@ -909,8 +992,13 @@ def _fm_gerador(regras) -> None:
             valores=[("Pontos de Vida", d["pv_maximo"])],
         ),
         lambda f: _impressa_fm(f, regras),
-        tema_para("sobrenatural"),
+        _TEMA_FM,
+        _branca_fm(regras),
     )
+
+
+_TEMA_FM = tema_para("sobrenatural")
+_CREDITO_FM = "Feiticeiros & Maldições v2.5, de Setsugiri, Parker e equipe"
 
 
 def _impressa_fm(ficha: Ficha, regras) -> FichaImpressa:
@@ -932,9 +1020,10 @@ def _impressa_fm(ficha: Ficha, regras) -> FichaImpressa:
     resistencias = " · ".join(
         f"{r['nome']} {d[f'resistencia_{rid}']:+d}" for rid, r in extras["resistencias"].items()
     )
-    pericias = ", ".join(
-        extras["pericias"][p]["nome"] for p in ficha.pericias if p in extras["pericias"]
-    )
+    treinadas = set(ficha.pericias)
+    pericias = [
+        ValorImpresso(p["nome"], marcado=pid in treinadas) for pid, p in extras["pericias"].items()
+    ]
     return FichaImpressa(
         nome=ficha.nome,
         sistema=SISTEMAS_SUPORTADOS["fm"],
@@ -946,18 +1035,49 @@ def _impressa_fm(ficha: Ficha, regras) -> FichaImpressa:
         valores=valores,
         secoes=[
             ("Testes de resistência", [resistencias]),
-            ("Perícias treinadas", [pericias]),
             ("Técnica e feitiços", [", ".join(ficha.poderes)]),
             ("Equipamento", [", ".join(ficha.equipamento)]),
         ],
+        blocos=[BlocoImpresso("Perícias", "marcas", pericias)],
         narrativa=dict(ficha.narrativa),
-        credito="Feiticeiros & Maldições v2.5, de Setsugiri, Parker e equipe",
+        credito=_CREDITO_FM,
+    )
+
+
+def _branca_fm(regras) -> FichaImpressa:
+    extras = regras.definicao.extras
+    nomes = ["Pontos de Vida", "PE ou Estamina", "Defesa", "CD de especialização", "Atenção",
+             "Iniciativa", "Deslocamento", "CD de técnica"]  # fmt: skip
+    return FichaImpressa(
+        nome="",
+        sistema=SISTEMAS_SUPORTADOS["fm"],
+        subtitulo="Ficha em branco",
+        atributos=[atributo_em_branco(a.abrev, True) for a in regras.definicao.atributos],
+        valores=[ValorImpresso(n, anotar=i < 2) for i, n in enumerate(nomes)],
+        campos=["Nome", "Jogador", "Origem", "Especialização", "Nível"],
+        blocos=[
+            BlocoImpresso(
+                "Testes de resistência",
+                "valores",
+                [ValorImpresso(r["nome"]) for r in extras["resistencias"].values()],
+            ),
+            BlocoImpresso(
+                "Perícias",
+                "marcas",
+                [ValorImpresso(p["nome"]) for p in extras["pericias"].values()],
+            ),
+            BlocoImpresso("Técnica e feitiços", linhas=6),
+            BlocoImpresso("Equipamento", linhas=4),
+            BlocoImpresso("Aparência e história", linhas=4),
+        ],
+        credito=_CREDITO_FM,
     )
 
 
 def _fm_ficha_rapida(regras) -> None:
     defn = regras.definicao
     origens = defn.extras["origens"]
+    nome = st.text_input("Nome", "Feiticeira", key="fm_r_nome")
     c1, c2, c3 = st.columns([2, 2, 1])
     classes = {c.nome: c.id for c in defn.classes}
     classe_nome = c1.selectbox("Especialização", list(classes), key="fm_r_classe")
@@ -983,7 +1103,7 @@ def _fm_ficha_rapida(regras) -> None:
             progresso = max(0.0, min(custo / orcamento, 1.0))
             st.progress(progresso, text=f"Pontos gastos: {custo} / {orcamento}")
     ficha = Ficha(
-        nome="Ficha rápida",
+        nome=nome or "Sem nome",
         sistema="fm",
         nivel=int(nivel),
         classe=classes[classe_nome],
@@ -999,6 +1119,7 @@ def _fm_ficha_rapida(regras) -> None:
         )
     for p in problemas:
         (st.error if p.gravidade == "erro" else st.warning)(p.mensagem)
+    _downloads_da_ficha(ficha, lambda f: _impressa_fm(f, regras), _TEMA_FM, _branca_fm(regras))
 
 
 def _fm_grupo(regras) -> None:
@@ -1554,7 +1675,11 @@ def _gerador_lido() -> None:
     for p in validar_lido(s, ficha):
         (st.error if p.gravidade == "erro" else st.warning)(p.mensagem)
     _acoes_da_ficha(
-        ficha, contexto_lido(s, ficha), lambda f: ficha_impressa(s, f), tema_do_sistema(s)
+        ficha,
+        contexto_lido(s, ficha),
+        lambda f: ficha_impressa(s, f),
+        tema_do_sistema(s),
+        ficha_em_branco(s),
     )
 
 
@@ -1562,6 +1687,7 @@ def _ficha_rapida_lida() -> None:
     s = sistema_lido()
     st.title(f"Ficha rápida · {s.nome}")
     st.caption("Digite os atributos e veja os valores calculados pelas fórmulas do livro.")
+    nome = st.text_input("Nome", "Personagem", key="lido_r_nome")
     c1, c2 = st.columns(2)
     arquetipos = ["—", *(a.nome for a in s.arquetipos)]
     arq = c1.selectbox(s.nome_arquetipo.capitalize(), arquetipos, key="lido_r_arq")
@@ -1587,7 +1713,7 @@ def _ficha_rapida_lida() -> None:
             )
         )
     ficha = Ficha(
-        nome="Ficha rápida",
+        nome=nome or "Sem nome",
         sistema=SISTEMA_LIDO,
         nivel=nivel,
         atributos=atributos,
@@ -1600,6 +1726,9 @@ def _ficha_rapida_lida() -> None:
         st.success("Ficha dentro das regras lidas do livro.", icon=":material/check_circle:")
     for p in problemas:
         (st.error if p.gravidade == "erro" else st.warning)(p.mensagem)
+    _downloads_da_ficha(
+        ficha, lambda f: ficha_impressa(s, f), tema_do_sistema(s), ficha_em_branco(s)
+    )
 
 
 def _tabela_criaturas(criaturas: list) -> None:

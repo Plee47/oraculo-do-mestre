@@ -31,6 +31,7 @@ from oraculo.sistemas.generico.formulas import (
 from oraculo.sistemas.generico.gerador import calcular_derivados, gerar_ficha, validar
 from oraculo.sistemas.generico.leitura import (
     ErroLeitura,
+    _ler_ficha,
     detalhar_opcao,
     extrair_json,
     ler_mais_criaturas,
@@ -1139,3 +1140,55 @@ def test_sorteio_repetido_nao_muda_com_opcoes_novas():
     repetida = gerar_ficha(s, nivel=3, seed=4, sorteadas=primeira.escolhas)
     assert repetida.escolhas == primeira.escolhas
     assert any("sorteada" in e for e in repetida.explicacoes)  # não diz que foi escolha do jogador
+
+
+class _LLMFicha:
+    def __init__(self, resposta: str):
+        self.resposta, self.prompt = resposta, ""
+
+    def completar(self, sistema, usuario, max_tokens=6000, pequeno=False):
+        self.prompt = usuario
+        return self.resposta
+
+
+def _ler_ficha_de(blocos: list[dict]) -> tuple[SistemaLido, _LLMFicha]:
+    s = SistemaLido.model_validate({
+        "nome": "Jogo",
+        "atributos": [{"id": "for", "nome": "Força"}],
+        "derivados": [{"nome": "Defesa", "formula": "10"}],
+        "pericias": [{"nome": "Atletismo"}],
+    })  # fmt: skip
+    llm = _LLMFicha(json.dumps({"blocos": blocos}))
+    limpas = ["Na ficha anote Fortitude, Vontade, Defesa, Atletismo e o Perfil Oculto."]
+    _ler_ficha(s, limpas, llm, {})
+    return s, llm
+
+
+def test_ficha_lida_entra_com_os_nomes_do_livro():
+    s, llm = _ler_ficha_de([
+        {"titulo": "Testes", "tipo": "valores", "itens": ["Fortitude", "Vontade"], "pagina": 3},
+        {"titulo": "Perfil Oculto", "tipo": "texto", "itens": []},
+    ])  # fmt: skip
+    assert [(b.titulo, b.tipo, b.itens) for b in s.ficha] == [
+        ("Testes", "valores", ["Fortitude", "Vontade"]),
+        ("Perfil Oculto", "texto", []),
+    ]
+    assert "Força, Defesa, Atletismo" in llm.prompt  # o que a ficha já tem vai no pedido
+
+
+def test_ficha_lida_nao_aceita_campo_inventado_nem_repetido():
+    s, _ = _ler_ficha_de([
+        {"titulo": "Testes", "tipo": "valores", "itens": ["Fortitude", "Carisma Cósmico", "Defesa"]},  # noqa: E501
+        {"titulo": "Só Inventado", "tipo": "valores", "itens": ["Carisma Cósmico"]},
+        {"titulo": "Título Inventado", "tipo": "texto", "itens": []},
+        {"titulo": "Perícias", "tipo": "valores", "itens": ["Fortitude"]},
+    ])  # fmt: skip
+    assert [(b.titulo, b.itens) for b in s.ficha] == [("Testes", ["Fortitude"])]
+    assert any("Carisma Cósmico" in a for a in s.avisos)
+
+
+def test_ficha_lida_que_falha_nao_derruba_a_leitura():
+    s = SistemaLido(nome="Jogo")
+    _ler_ficha(s, ["A ficha do jogo tem muita coisa para anotar."], _LLMFicha("não é json"), {})
+    assert s.ficha == []
+    assert any("ficha de personagem" in a for a in s.avisos)
