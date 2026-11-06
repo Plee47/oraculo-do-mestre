@@ -1523,6 +1523,13 @@ def _gerador_lido() -> None:
         "seed": st.session_state.lido_semente,
         "escolhas": pedidas,
     }
+    # O sorteio fica fixo até "Gerar outra": a leitura a fundo pode revelar novas opções, e a
+    # ficha não pode mudar sozinha entre uma interação e outra.
+    fixas = st.session_state.setdefault("_sorteios", {})
+    chave_sorteio = (args["seed"], args["nivel"], args["arquetipo"], tuple(sorted(pedidas.items())))
+    if chave_sorteio not in fixas:
+        fixas[chave_sorteio] = gerar_ficha_lida(s, **args).escolhas
+    args["sorteadas"] = fixas[chave_sorteio]
     ficha = gerar_ficha_lida(s, **args)
     if _ler_a_fundo(s, ficha):  # a leitura a fundo pode mudar atributos-chave, bônus e fórmulas
         s = sistema_lido()

@@ -82,6 +82,7 @@ ETAPAS_2D8 = [
     },
 ]
 DETALHE = {
+    "subopcoes": [{"nome": "Novo Estilo", "descricao": "Revelado na leitura a fundo."}],
     "descricao": "Clã de guerreiros.",
     "equipamento": ["Kunai"],
     "habilidades": [{"nome": "Golpe da Folha", "resumo": "Dano extra.", "nivel": 1, "pagina": 1}],
@@ -91,7 +92,9 @@ DETALHE = {
 class LLMFalso:
     """Responde como o LLM do Databricks, sem rede (usado só nos testes)."""
 
-    def completar(self, sistema: str, usuario: str, max_tokens: int = 6000) -> str:
+    def completar(self, sistema: str, usuario: str, max_tokens: int = 6000, pequeno=False) -> str:
+        if "dar vida" in sistema:  # narrativa
+            return json.dumps({"aparencia": "Alta e calada."})
         if "ESTRUTURA" in usuario:
             return json.dumps({"nome_arquetipo": "clã", "etapas": ETAPAS_2D8})
         if "da decisão" in usuario:
@@ -213,7 +216,8 @@ def test_ficha_por_etapas_com_leitura_a_fundo():
     at.selectbox(key="lido_etapa_cla").set_value("Clã da Folha").run()
     assert not at.exception
     # a etapa filha só oferece as opções do clã escolhido
-    assert at.selectbox(key="lido_etapa_estilo").options == ["Automático", "Punho Leve"]
+    opcoes_estilo = at.selectbox(key="lido_etapa_estilo").options
+    assert "Punho Leve" in opcoes_estilo and "Bruma Densa" not in opcoes_estilo
     assert "Clã da Folha" in at.subheader[0].value
     # a leitura a fundo entrou na ficha e ficou guardada no livro da sessão
     opcoes = at.session_state.livro["lido"]["etapas"][0]["opcoes"]
@@ -235,6 +239,25 @@ def test_sugestao_criativa_em_qualquer_sistema(sistema):
     assert not at.exception
     assert any("Alta e calada." in m.value for m in at.markdown)
     assert any("Sugestão criativa" in c.value for c in at.caption)
+
+
+def test_ficha_automatica_nao_muda_sozinha_e_o_clique_nao_se_perde():
+    """Regressão do teste no navegador: a leitura a fundo revelava opções, o sorteio mudava e o
+    botão clicado sumia da página."""
+    at = abrir(llm=LLMFalso())
+    at.text_area[0].set_value(TRECHO_RPG).run()
+    next(b for b in at.button if b.label.startswith("Ler o livro")).click().run()
+    ir(at, "Gerador de fichas")
+    titulo = at.subheader[0].value
+    for _ in range(3):
+        at.run()
+        assert at.subheader[0].value == titulo
+    next(b for b in at.button if b.label.startswith("Sugerir aparência")).click().run()
+    assert not at.exception
+    assert any("Alta e calada." in m.value for m in at.markdown)
+    assert at.subheader[0].value == titulo
+    at.button(key="lido_gerar").click().run()  # "Gerar outra" continua sorteando
+    assert not at.exception
 
 
 def test_sem_credencial_a_leitura_explica_o_motivo(monkeypatch):

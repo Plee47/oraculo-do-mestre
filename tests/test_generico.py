@@ -38,7 +38,7 @@ from oraculo.sistemas.generico.leitura import (
     mapa_do_livro,
     selecionar_paginas,
 )
-from oraculo.sistemas.generico.modelo import SistemaLido, normalizar
+from oraculo.sistemas.generico.modelo import Opcao, SistemaLido, normalizar
 from oraculo.sistemas.generico.narrativa import (
     Narrativa,
     contexto_lido,
@@ -432,7 +432,7 @@ class LLMFalso:
         self.ruim_primeiro = ruim_primeiro
         self.criacao = 0
 
-    def completar(self, sistema: str, usuario: str, max_tokens: int = 6000) -> str:
+    def completar(self, sistema: str, usuario: str, max_tokens: int = 6000, pequeno=False) -> str:
         self.chamadas.append(usuario)
         if "Trechos do início" in usuario:
             return json.dumps(
@@ -1129,3 +1129,13 @@ def test_comentario_do_llm_sai_da_formula():
     )
     assert s.mecanica.dano_basico == "(Força ÷ 2) + 1"
     assert media("nivel // 2", {"nivel": 5}) == 2  # divisão inteira continua funcionando
+
+
+def test_sorteio_repetido_nao_muda_com_opcoes_novas():
+    s = sistema(FANTASIA)
+    primeira = gerar_ficha(s, nivel=3, seed=4)
+    s.etapa("sub").opcoes.insert(0, Opcao(nome="Novata"))  # a leitura a fundo revelou uma opção
+    s.etapa("raca").opcoes.insert(0, Opcao(nome="Humano"))
+    repetida = gerar_ficha(s, nivel=3, seed=4, sorteadas=primeira.escolhas)
+    assert repetida.escolhas == primeira.escolhas
+    assert any("sorteada" in e for e in repetida.explicacoes)  # não diz que foi escolha do jogador

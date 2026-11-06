@@ -208,8 +208,13 @@ def escolher_opcoes(
     nivel: int,
     rng: random.Random,
     expl: list[str],
+    sorteadas: dict[str, str] | None = None,
 ) -> dict[str, Opcao]:
-    """Percorre as etapas do livro: usa o que o jogador pediu e sorteia o resto."""
+    """Percorre as etapas do livro: usa o que o jogador pediu e sorteia o resto.
+
+    `sorteadas` repete um sorteio anterior: a ficha não muda quando a leitura a fundo revela
+    novas opções.
+    """
     feitas: dict[str, Opcao] = {}
     for e in s.etapas_de_escolha(nivel):
         pai = feitas[e.depende_de].nome if e.depende_de in feitas else None
@@ -224,7 +229,12 @@ def escolher_opcoes(
             ),
             None,
         )
-        o = pedida or rng.choice(opcoes)
+        repetida = next(
+            (o for o in opcoes
+             if normalizar_id(o.nome) == normalizar_id((sorteadas or {}).get(e.id, ""))),
+            None,
+        )  # fmt: skip
+        o = pedida or repetida or rng.choice(opcoes)
         feitas[e.id] = o
         pagina = f" (p. {o.pagina})" if o.pagina else ""
         como = "escolha" if pedida else "sorteada entre as opções do livro"
@@ -240,6 +250,7 @@ def gerar_ficha(
     nome: str | None = None,
     seed: int | None = None,
     escolhas: dict[str, str] | None = None,
+    sorteadas: dict[str, str] | None = None,
 ) -> Ficha:
     rng = random.Random(seed)
     expl: list[str] = []
@@ -256,7 +267,7 @@ def gerar_ficha(
         if principal.opcao(arquetipo) is None:
             raise ValueError(f"{s.nome_arquetipo} desconhecido: {arquetipo!r}")
         pedidas[principal.id] = arquetipo
-    feitas = escolher_opcoes(s, pedidas, nivel_final, rng, expl) if s.etapas else {}
+    feitas = escolher_opcoes(s, pedidas, nivel_final, rng, expl, sorteadas) if s.etapas else {}
 
     arq = feitas.get(principal.id) if principal else None
     if arq is None:
