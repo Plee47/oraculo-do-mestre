@@ -31,14 +31,16 @@ dbutils.widgets.text("catalogo", "workspace")
 dbutils.widgets.text("schema", "oraculo_dev")
 dbutils.widgets.text("estrategias", "palavras,bm25,hibrida")
 dbutils.widgets.text("repeticoes", "3")
+dbutils.widgets.text("pausa_segundos", "90")
 CATALOGO = dbutils.widgets.get("catalogo")
 SCHEMA = dbutils.widgets.get("schema")
 ESTRATEGIAS = [e.strip() for e in dbutils.widgets.get("estrategias").split(",") if e.strip()]
 REPETICOES = int(dbutils.widgets.get("repeticoes"))
+PAUSA = int(dbutils.widgets.get("pausa_segundos"))  # respeita o limite de uso do plano gratuito
 sys.path.insert(0, f"/Volumes/{CATALOGO}/{SCHEMA}/codigo/src")
 
 from oraculo.leitor.avaliacao_generica import avaliar_leitura
-from oraculo.leitor.llm import ClienteDatabricks
+from oraculo.leitor.llm import ClienteDatabricks, ErroLLM
 from oraculo.sistemas.dnd5e.tabelas import TABELAS, linhas_para_catalogo
 from oraculo.sistemas.generico.leitura import VERSAO_LEITURA, ler_sistema
 
@@ -78,15 +80,24 @@ for estrategia in ESTRATEGIAS:
             {"estrategia": estrategia, "repeticoes": REPETICOES, "versao": VERSAO_LEITURA}
         )
         for i in range(REPETICOES):
+            time.sleep(PAUSA)
             inicio = time.time()
-            leitura = ler_sistema(paginas, cliente, "srd51", estrategia=estrategia)
+            try:
+                leitura = ler_sistema(paginas, cliente, "srd51", estrategia=estrategia)
+            except ErroLLM as erro:  # limite de uso: a rodada fica de fora, com registro
+                print(f"{estrategia}, rodada {i}: {erro}")
+                continue
             metricas = avaliar_leitura(leitura.sistema, gabarito)
             metricas["segundos"] = time.time() - inicio
             rodadas.append(metricas)
             mlflow.log_metrics(metricas, step=i)
+        if not rodadas:
+            print(f"{estrategia}: nenhuma rodada completa")
+            continue
         medias = {f"media_{k}": statistics.mean(r[k] for r in rodadas) for k in rodadas[0]}
+        medias["rodadas"] = len(rodadas)
         medias["desvio_nota_geral"] = (
-            statistics.stdev(r["nota_geral"] for r in rodadas) if REPETICOES > 1 else 0.0
+            statistics.stdev(r["nota_geral"] for r in rodadas) if len(rodadas) > 1 else 0.0
         )
         mlflow.log_metrics(medias)
     resumo.append({"estrategia": estrategia, **medias})
