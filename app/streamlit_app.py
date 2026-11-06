@@ -687,8 +687,9 @@ nenhuma página dele. Resultado: **12 de 12 livros certos**, incluindo romances 
 livro de regras de xadrez.
 
 **A leitura com IA** seleciona, sem LLM, as páginas de visão geral, mecânica, criação de
-personagem e criaturas (palavras-chave e o sumário do livro) e faz três leituras em paralelo
-com o LLM do Databricks. A saída vira uma especificação validada: fórmulas passam por um
+personagem e criaturas (busca híbrida, sumário e o mapa de títulos do livro) e faz as leituras em
+paralelo com o LLM do Databricks. Cada opção só é lida a fundo quando entra numa ficha, e o que já
+foi lido fica guardado. A saída vira uma especificação validada: fórmulas passam por um
 avaliador seguro (nada de `eval`), itens malformados viram aviso, e você pode corrigir qualquer
 número no resumo do sistema.
 
@@ -1724,6 +1725,11 @@ def _analises_lido() -> None:
             + f". Vem de {de_onde}."
         )
         _tabela_criaturas([c for c, _ in criaturas])
+        if sugestao.resumo.veredito != dificuldade:
+            st.caption(
+                f'O mais perto de "{dificuldade}" com as opções lidas até agora. Ler mais '
+                "criaturas do livro pode aproximar."
+            )
     elif fonte == "Criaturas do livro":
         rotulos = {f"{c.nome}" + (f" ({c.ameaca})" if c.ameaca else ""): c for c in s.criaturas}
         escolhidos = st.multiselect(
@@ -1787,6 +1793,7 @@ def pagina_roteiro() -> None:
 | 4 · Feiticeiros & Maldições | Segundo sistema: fichas, análise de grupo e porteiro | Feito |
 | 5a · Vitrine | Site que começa pelo livro, design de portfólio | Feito |
 | 6 · Qualquer livro | Leitura com IA: resumo, fichas e encontros de qualquer sistema | Feito |
+| 7 · Leitura profunda | Etapas de criação, leitura a fundo, narrativa e PDF com tema | Feito |
 | 5b · Demonstração | Vídeo curto do fluxo completo | ⏳ |
 """
     )
