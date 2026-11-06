@@ -1,13 +1,11 @@
 """Smoke tests do site: o fluxo começa pelo livro, e as ferramentas seguem o sistema validado."""
 
 import json
+import sys
 from pathlib import Path
 
 import pytest
 from streamlit.testing.v1 import AppTest
-
-from oraculo.leitor.cache import CacheMemoria
-from oraculo.sistemas.generico.leitura import ler_sistema
 
 APP = str(Path(__file__).parents[1] / "app" / "streamlit_app.py")
 # Trecho de RPG genérico (sem as classes do D&D): vai para a leitura com IA.
@@ -154,6 +152,12 @@ def test_qualquer_rpg_e_lido_pela_ia_e_libera_as_ferramentas():
 
 
 def test_livro_ja_lido_vem_do_cache_sem_gastar_llm():
+    # Importa aqui: o job "só requirements.txt" prova que o site acha o código sozinho, sem o pacote
+    # instalado, então este arquivo não pode depender dele logo ao ser carregado.
+    sys.path.insert(0, str(Path(__file__).parents[1] / "src"))
+    from oraculo.leitor.cache import CacheMemoria
+    from oraculo.sistemas.generico.leitura import ler_sistema
+
     class LLMProibido:
         def completar(self, *a, **k):
             raise AssertionError("não devia chamar o LLM")
