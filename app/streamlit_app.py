@@ -2406,7 +2406,7 @@ if livro:
 else:
     st.sidebar.caption("Entregue um livro no **Início** para liberar o gerador e as análises.")
 st.sidebar.toggle(
-    "Visual do livro",
+    "Visual do livro (Beta)",
     value=True,
     key="visual_do_livro",
     disabled=not livro,
