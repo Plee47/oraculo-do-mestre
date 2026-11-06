@@ -1,0 +1,13 @@
+/* O visual padrão: as cores são as do tema do Streamlit (.streamlit/config.toml) e as de estilo.css.
+   Este arquivo só guarda as cores que o código precisa ler, como as dos gráficos. */
+:root {
+  --papel: #14211d;
+  --tinta: #ece3cf;
+  --tinta-suave: #c9bfa8;
+  --acento: #e0c07a;
+  --acento-tinta: #14211d;
+  --ouro: #e0c07a;
+  --barra-neutra: #7d8f84;
+  --grade: #2c3b35;
+  --eixo: #46503f;
+}

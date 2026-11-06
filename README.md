@@ -40,7 +40,7 @@ de dados, machine learning, LLMs avaliados e uma interface pronta para uso.
 | **Recuperação de informação** | Busca BM25 em Python puro e híbrida com embeddings, comparadas com repetições no MLflow; a melhor virou o padrão do site |
 | **LLM em produção, com validação** | Leitura de qualquer livro em três partes paralelas, saída validada item a item, fórmulas calculadas por um avaliador seguro (sem `eval`) e correções determinísticas para os erros recorrentes do modelo |
 | **Análise de dados aplicada** | Tabelas gold que viram regras: ex. 48% dos monstros de CR 11–16 resistem a dano físico não mágico, e isso muda o peso das dicas |
-| **MLOps e engenharia de software** | Databricks Asset Bundles (dev/prod), GitHub Actions, 529 testes com pytest, pre-commit, ADRs e Conventional Commits |
+| **MLOps e engenharia de software** | Databricks Asset Bundles (dev/prod), GitHub Actions, 575 testes com pytest, pre-commit, ADRs e Conventional Commits |
 | **Governança de dados** | Política de conteúdo automatizada: o "guardião" bloqueia no CI qualquer livro ou dado sem licença aberta; livros privados nunca saem do workspace |
 
 ## Resultados
@@ -73,7 +73,9 @@ de dados, machine learning, LLMs avaliados e uma interface pronta para uso.
    de PDF ou imprimir e jogar.
 6. **Encontros:** sugestão pela dificuldade pedida, com as criaturas do livro ou, se ele não tiver
    bestiário, inimigos montados pelas regras dele. Cada dica cita a regra: **não há caixa-preta**.
-7. **Extras:** rolador de dados com notação completa, chance de atingir um alvo e comparação de
+7. **Visual do livro (opcional):** o site inteiro muda para o tema do gênero do livro, com uma
+   capa que se abre na troca. Desligado, fica o grimório.
+8. **Extras:** rolador de dados com notação completa, chance de atingir um alvo e comparação de
    rolagens, com conta exata sempre que possível. Funciona com qualquer sistema, mesmo sem livro.
 
 ![Análise de grupo de D&D 5e com dicas que citam a regra](docs/imagens/analises.png)
@@ -239,6 +241,7 @@ flowchart LR
 | `generico/gerador.py` | Fichas pelas etapas do livro e pelo método dele (rolagem por atributo, valores fixos, compra de pontos) |
 | `generico/analise.py` | Fraquezas do grupo, encontros e sugestão por dificuldade: dano médio × chance de acerto × multiplicador de dano |
 | `generico/narrativa.py` | Aparência, personalidade, história e poder de assinatura, marcados como sugestão |
+| `temas_site.py` | Visual do site pelo gênero do livro, por sessão, com a transição entre temas |
 | `rolagens.py` | Rolador de dados com notação completa (sem `eval`) e distribuição exata de probabilidades |
 | `fichas_pdf.py` | Ficha do jogador em PDF preenchível, gerada ou em branco, com seis temas escolhidos pelo gênero do jogo |
 
@@ -413,6 +416,11 @@ destaque dourado. Os títulos usam Cinzel (capitulares de inscrição), o texto 
 antigo), os dados usam JetBrains Mono e o nome do site vem em letra gótica. O estilo foi escolhido
 entre quatro protótipos da página inicial.
 
+**Visual do livro:** com a opção ligada, o site inteiro assume o tema do gênero do livro: fantasia,
+horror, gótico, oriental ou ficção científica, os mesmos das fichas em PDF. Uma capa com um d20 cobre
+a troca e se abre em duas folhas, usando só `transform` e `opacity`. Quem pede menos movimento no
+sistema não vê a animação ([ADR 0010](docs/decisoes/0010-visual-do-livro.md)).
+
 ## Roteiro
 
 - [x] **Fase 0 · Fundação:** ficha genérica, D&D 5e, site no ar, CI/CD e guardião de conteúdo
@@ -425,6 +433,7 @@ entre quatro protótipos da página inicial.
 - [x] **Fase 6 · Qualquer livro:** leitura com IA, resumo do sistema, fichas e encontros de qualquer RPG
 - [x] **Fase 7 · Leitura profunda:** etapas de criação, leitura a fundo sob demanda, narrativa sugerida, PDF com tema do sistema e o livro em primeiro lugar
 - [x] **Fase 8 · Extras:** rolador de dados com notação completa, chance de atingir um alvo e comparação de rolagens
+- [x] **Fase 9 · Visual do livro:** o site inteiro muda com o gênero do livro, por sessão, com uma transição; desligado, fica o grimório
 - [ ] **Fase 5b · Demonstração:** vídeo curto do fluxo completo
 
 ## Estrutura

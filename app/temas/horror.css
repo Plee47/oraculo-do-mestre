@@ -1,0 +1,58 @@
+/* Horror: dossiê de investigação, com letra de máquina, abas de pasta e carimbo. */
+@import url("https://fonts.googleapis.com/css2?family=Special+Elite&family=PT+Serif:ital,wght@0,400;0,700;1,400&display=swap");
+:root {
+  --papel: #efe9da;
+  --papel-2: #f7f3e8;
+  --papel-3: #dfd6bf;
+  --tinta: #262420;
+  --tinta-suave: #575247;
+  --titulo: #262420;
+  --linha: #a59d88;
+  --ouro: #3c5040;
+  --ouro-suave: #3c5040;
+  --ouro-fundo: #a59d88;
+  --link: #3c5040;
+  --acento: #262420;
+  --acento-tinta: #f7f3e8;
+  --tag-tinta: #262420;
+  --barra-neutra: #94907f;
+  --grade: #dcd4bf;
+  --eixo: #a59d88;
+  --info: #2e5a75;
+  --ok: #3c5e41;
+  --aviso: #9a6a20;
+  --erro: #8f2e24;
+  --fonte-titulo: "Special Elite", "Courier New", monospace;
+  --fonte-corpo: "PT Serif", Georgia, serif;
+  --fonte-marca: "Special Elite", "Courier New", monospace;
+  --filtro-tabela: invert(0.92) hue-rotate(195deg) sepia(0.18);
+}
+
+/* Linha dupla de margem, como a de uma pasta de arquivo. */
+.stApp [data-testid="stMain"] {
+  background-image: linear-gradient(var(--ouro), var(--ouro)), linear-gradient(var(--ouro), var(--ouro)) !important;
+  background-size: 1px 100%, 1px 100% !important; background-position: 28px 0, 32px 0 !important; background-repeat: no-repeat !important;
+}
+/* O carimbo do dossiê, no canto da janela. */
+.stApp::after {
+  content: "FICHA"; position: fixed; top: 14px; right: 34px;
+  width: 66px; height: 66px; display: flex; align-items: center; justify-content: center;
+  border: 3px double var(--ouro); border-radius: 50%; transform: rotate(14deg);
+  font-family: var(--fonte-titulo); font-size: 0.85rem; color: var(--ouro);
+}
+/* Títulos de seção como a aba de uma pasta, com o fio até o fim da linha. */
+.stApp [data-testid="stHeadingWithActionElements"]:has(h2) { border-bottom: 2px solid var(--tinta); margin-bottom: 0.6rem; }
+.stApp h2 {
+  display: inline-block !important; background: var(--tinta); padding: 0.35rem 1.9rem 0.25rem 0.8rem !important;
+  clip-path: polygon(0 0, calc(100% - 0.9rem) 0, 100% 100%, 0 100%); margin-bottom: -1px;
+}
+.stApp h2, .stApp h2 span { color: var(--papel-2) !important; }
+.stApp h2 a, .stApp h2 svg { display: none !important; }
+.atributos, .livro-atual, .rolagem { border-color: var(--tinta) !important; border-radius: 0 !important; }
+.atributos .sigla { background: var(--papel-3); margin: -0.75rem -0.5rem 0.4rem; padding: 0.25rem 0; color: var(--tinta) !important; }
+.st-key-oferenda { border-color: var(--tinta) !important; outline-color: var(--linha) !important; background: var(--papel-2) !important; }
+.oferenda-titulo { color: var(--tinta) !important; }
+.livro-atual { background: var(--papel-2) !important; }
+@media (max-width: 640px) { .stApp::after { display: none; } }
+/* No celular, a linha de margem passaria por cima do texto. */
+@media (max-width: 640px) { .stApp [data-testid="stMain"] { background-image: none !important; } }

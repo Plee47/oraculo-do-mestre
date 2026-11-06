@@ -1,0 +1,49 @@
+/* Gótico: vinho e sangue, com a faixa em ponta (a lâmina) da ficha em PDF. */
+@import url("https://fonts.googleapis.com/css2?family=Pirata+One&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap");
+:root {
+  --papel: #17090d;
+  --papel-2: #241117;
+  --papel-3: #0e0507;
+  --tinta: #f1e6e1;
+  --tinta-suave: #c9b4ae;
+  --titulo: #f7efeb;
+  --linha: #55323a;
+  --ouro: #ef6a7c;
+  --ouro-suave: #ef6a7c;
+  --ouro-fundo: #55323a;
+  --link: #f08a98;
+  --acento: #a8182c;
+  --acento-tinta: #ffffff;
+  --tag-tinta: #f7efeb;
+  --barra-neutra: #8b6a70;
+  --grade: #33191f;
+  --eixo: #55323a;
+  --info: #6f9fc4;
+  --ok: #7fa86a;
+  --aviso: #d9a257;
+  --erro: #e0566a;
+  --fonte-titulo: "Pirata One", Georgia, serif;
+  --fonte-corpo: "Crimson Pro", Georgia, serif;
+  --fonte-marca: "Pirata One", Georgia, serif;
+  --filtro-tabela: hue-rotate(187deg) saturate(1.5);
+}
+
+/* A lâmina: faixa no topo com ponta no meio. */
+.stApp::after {
+  content: ""; position: fixed; top: 0; left: 0; right: 0; height: 16px;
+  background: var(--acento); clip-path: polygon(0 0, 100% 0, 100% 40%, 50% 100%, 0 40%);
+}
+.stApp h1, .stApp h1 span { letter-spacing: 0.02em; }
+/* Títulos de seção em faixa cheia. */
+.stApp [data-testid="stHeadingWithActionElements"]:has(h2) { background: var(--acento); padding: 0.3rem 0.8rem; margin-bottom: 0.6rem; }
+.stApp h2, .stApp h2 span { color: #ffffff !important; }
+.stApp h2 { padding: 0 !important; }
+.stApp h2 a, .stApp h2 svg { display: none !important; }
+.atributos .sigla { color: var(--ouro) !important; }
+.st-key-oferenda { border-color: var(--acento) !important; outline-color: var(--linha) !important; background: var(--papel-2) !important; }
+.livro-atual { border-color: var(--acento) !important; background: var(--papel) !important; }
+.rolagem .dado.sucesso { background: var(--acento) !important; border-color: var(--acento) !important; color: #ffffff !important; }
+.pipeline li::before { background: var(--papel) !important; }
+.pipeline li:first-child::before { background: var(--ouro) !important; }
+.stApp .livro-atual .nome, .stApp .pipeline .etapa, .stApp .oferenda-titulo { font-family: var(--fonte-corpo); font-weight: 600; }
+.stApp [data-testid="stMetricValue"], .stApp [data-testid="stMetricValue"] * { font-family: var(--fonte-corpo); }

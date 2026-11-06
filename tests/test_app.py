@@ -495,3 +495,73 @@ def test_extras_oferece_o_dado_do_livro():
     _botao(at, "rolar_livro").click().run()
     assert not at.exception
     assert "2d8" in _texto_html(at)
+
+
+# --------------------------------------------------------------------------- visual do livro
+def _html_da_pagina(at: AppTest) -> str:
+    return "".join(h.proto.body for h in at.get("html"))
+
+
+def test_sem_livro_fica_o_grimorio_e_nao_toca_a_capa():
+    at = abrir()
+    assert at.session_state["_tema_do_site"] == "grimorio"
+    assert "--papel: #f7efdc" not in _html_da_pagina(at)  # nada do tema de fantasia
+    assert 'class="cortina"' not in _html_da_pagina(at)
+    assert next(t for t in at.toggle if t.key == "visual_do_livro").disabled
+
+
+@pytest.mark.parametrize(
+    ("sistema", "tema"), [("dnd5e", "fantasia"), ("fm", "horror"), ("lido", "oriental")]
+)
+def test_livro_define_o_tema(sistema, tema):
+    at = abrir(sistema)
+    assert not at.exception
+    assert at.session_state["_tema_do_site"] == tema
+
+
+def test_troca_de_tema_toca_a_capa_uma_vez_e_navegar_nao_repete():
+    at = abrir()
+    next(b for b in at.button if b.label == "Testar com D&D 5e").click().run()
+    assert at.session_state["_tema_do_site"] == "fantasia"
+    assert at.session_state["_trocas_de_tema"] == 1
+    assert 'data-troca="1"' in _html_da_pagina(at)
+    at = ir(at, "Extras")
+    assert at.session_state["_trocas_de_tema"] == 1
+    assert 'data-troca="1"' in _html_da_pagina(at)
+
+
+def test_desligar_volta_ao_grimorio_e_ligar_volta_ao_tema():
+    at = abrir("dnd5e")
+    assert "--papel: #f7efdc" in _html_da_pagina(at)
+    next(t for t in at.toggle if t.key == "visual_do_livro").set_value(False).run()
+    assert not at.exception
+    assert at.session_state["_tema_do_site"] == "grimorio"
+    assert "--papel: #f7efdc" not in _html_da_pagina(at)
+    assert at.session_state["_trocas_de_tema"] == 1
+    next(t for t in at.toggle if t.key == "visual_do_livro").set_value(True).run()
+    assert at.session_state["_tema_do_site"] == "fantasia"
+    assert at.session_state["_trocas_de_tema"] == 2
+
+
+def test_opcao_desligada_vale_para_o_proximo_livro():
+    at = abrir("dnd5e")
+    next(t for t in at.toggle if t.key == "visual_do_livro").set_value(False).run()
+    at = ir(at, "Extras")
+    assert at.session_state["_tema_do_site"] == "grimorio"
+
+
+def test_trocar_de_livro_volta_ao_grimorio():
+    at = abrir("dnd5e")
+    next(b for b in at.button if b.label == "Trocar de livro").click().run()
+    assert not at.exception
+    assert at.session_state["_tema_do_site"] == "grimorio"
+
+
+def test_inicio_nao_quebra_com_sistema_salvo_sem_nota():
+    at = AppTest.from_file(APP, default_timeout=60)
+    at.session_state["livro"] = {
+        "sistema": "lido", "nome": "salvo", "nota": None, "demo": False, "lido": SISTEMA_2D8,
+    }  # fmt: skip
+    at = at.run()
+    assert not at.exception
+    assert any("sistema salvo" in s.value for s in at.success)
