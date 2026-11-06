@@ -17,6 +17,7 @@ from oraculo.sistemas.generico.analise import (
     analisar_encontro,
     analisar_grupo,
     criatura_de_ficha,
+    perfil,
     sugerir_encontro,
 )
 from oraculo.sistemas.generico.formulas import (
@@ -235,6 +236,7 @@ def test_formulas_com_dados_e_nomes():
     assert media("10 + 3x vigor + 5x nc", v) == 36  # notação "3x Vigor" do próprio livro
     assert media("min(for, 2) + teto(for/2)", v) == 4
     assert media("forca_de_vontade + 1", v) == 6  # nomes com acento e espaço viram id
+    assert media("(for ÷ 2) × 2 − 1", {**v, "mod_for": 1}) == 2  # símbolos do livro
     r = random.Random(1)
     rolagens = [avaliar("4d6kh3", rng=r) for _ in range(200)]
     assert min(rolagens) >= 3 and max(rolagens) <= 18
@@ -1089,3 +1091,41 @@ def test_completar_opcoes_so_aceita_nomes_que_estao_no_livro():
     assert sub.opcao("Champion").pai == "Fighter"
     assert any("Classe Inventada" in a and "não aparece" in a for a in s.avisos)
     assert [a.nome for a in s.arquetipos] == ["Fighter", "Paladin"]  # a lista da ficha acompanha
+
+
+def test_em_sistema_sem_modificador_mod_e_o_proprio_atributo():
+    """Regressão do livro real: teto(mod_forca/2) + dano_arma virava constante 0."""
+    s = sistema(
+        {
+            "nome": "x",
+            "atributos": [{"id": "for", "nome": "Força", "maximo": 4}],
+            "mecanica": {"dado_base": "2d8", "dano_basico": "teto(mod_forca/2) + dano_arma"},
+        }
+    )
+    assert s.modificador == ""  # não inventa modificador d20 numa escala de 0 a 4
+    assert "mod_forca" in s.mecanica.dano_basico and "dano_arma" not in s.mecanica.dano_basico
+    f = gerar_ficha(s, seed=1)
+    f.atributos["for"] = 3
+    assert perfil(s, f).dano == 2
+
+
+def test_dano_constante_zero_e_descartado():
+    s = sistema({"nome": "x", "mecanica": {"dano_basico": "dano_arma + 0"}})
+    assert s.mecanica.dano_basico == ""
+    assert any("vale sempre 0" in a for a in s.avisos)
+    com_dado = sistema({"nome": "x", "mecanica": {"dano_basico": "1d6"}})
+    assert com_dado.mecanica.dano_basico == "1d6"
+
+
+def test_comentario_do_llm_sai_da_formula():
+    s = sistema(
+        {
+            "nome": "x",
+            "atributos": [{"id": "for", "nome": "Força"}],
+            "mecanica": {
+                "dano_basico": "(Força ÷ 2) + 1  // para ataques corporais; (Destreza ÷ 2) ao longe"
+            },
+        }
+    )
+    assert s.mecanica.dano_basico == "(Força ÷ 2) + 1"
+    assert media("nivel // 2", {"nivel": 5}) == 2  # divisão inteira continua funcionando

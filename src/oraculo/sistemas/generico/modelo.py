@@ -8,6 +8,7 @@ registrando cada descarte em `avisos`. Nada aqui é específico de um dado: serv
 
 from __future__ import annotations
 
+import re
 from typing import Literal
 
 from pydantic import BaseModel, Field, field_validator, model_validator
@@ -17,6 +18,7 @@ from oraculo.sistemas.generico.formulas import (
     avaliar,
     nomes_desconhecidos,
     normalizar_id,
+    tem_dado,
     zerar_nomes,
 )
 
@@ -415,15 +417,15 @@ class SistemaLido(_Base):
             mod = self.modificador_de(valores[a.id])
             for nome in {normalizar_id(x) for x in (a.id, a.sigla, a.nome) if x}:
                 v[nome] = valores[a.id]
-                if mod is not None:
-                    for alias in (
-                        f"mod_{nome}",
-                        f"{nome}_mod",
-                        f"modificador_de_{nome}",
-                        f"modificador_{nome}",
-                        f"mod{nome}",
-                    ):
-                        v[alias] = mod
+                # Sem modificador no sistema, "mod_força" só pode ser o próprio atributo.
+                for alias in (
+                    f"mod_{nome}",
+                    f"{nome}_mod",
+                    f"modificador_de_{nome}",
+                    f"modificador_{nome}",
+                    f"mod{nome}",
+                ):
+                    v[alias] = valores[a.id] if mod is None else mod
         if valores:  # "atributo-chave": o melhor deles (calcular() usa os do arquétipo)
             melhor = max(valores.values())
             v["atributo_chave"] = melhor
@@ -502,6 +504,11 @@ def _tipo_pelo_nome(nome: str) -> str | None:
         if chave in nomes or any(chave.startswith(n + " ") for n in nomes if len(n) > 3):
             return tipo
     return None
+
+
+def _sem_comentario(formula: str) -> str:
+    """Tira comentários que o LLM põe na fórmula ("x + 1 // para ataques corporais; ...")."""
+    return re.sub(r"\s*//\s*[^\W\d_]{2,}\s+[^\W\d_].*$", "", formula or "", flags=re.S).strip()
 
 
 def normalizar_opcao(s: SistemaLido, o: Opcao, avisos: list[str], calculavel) -> None:
@@ -680,7 +687,7 @@ def normalizar(s: SistemaLido) -> SistemaLido:
         n.lower().startswith(("mod_", "modificador")) or n.lower().endswith("_mod")
         for f in formulas
         if f
-        for n in nomes_desconhecidos(f, teste)
+        for n in nomes_desconhecidos(f, {})
     )
     escala_d20 = "20" in s.mecanica.dado_base or any((a.maximo or 0) >= 18 for a in s.atributos)
     if usa_mod and not s.modificador and escala_d20:
@@ -734,6 +741,7 @@ def normalizar(s: SistemaLido) -> SistemaLido:
             g.rolagem = None
         grupos.append(g)
     s.geracao.grupos = grupos
+    s.mecanica.dano_basico = _sem_comentario(s.mecanica.dano_basico)
     if s.mecanica.dano_basico and calculavel(s.mecanica.dano_basico):
         faltam = nomes_desconhecidos(s.mecanica.dano_basico, teste)
         sem_eles = zerar_nomes(s.mecanica.dano_basico, faltam) if faltam else ""
@@ -749,6 +757,13 @@ def normalizar(s: SistemaLido) -> SistemaLido:
             s.mecanica.dano_explicacao or f"Regra do livro: {s.mecanica.dano_basico}"
         )
         s.mecanica.dano_basico = ""
+    if s.mecanica.dano_basico and not nomes_desconhecidos(s.mecanica.dano_basico, {}):
+        try:  # sem atributo nenhum e valendo 0: isso não é regra de dano
+            if not tem_dado(s.mecanica.dano_basico) and avaliar(s.mecanica.dano_basico) <= 0:
+                avisos.append(f"Dano básico descartado: {s.mecanica.dano_basico} vale sempre 0.")
+                s.mecanica.dano_basico = ""
+        except ErroFormula:
+            s.mecanica.dano_basico = ""
 
     for d in s.derivados:
         tipo = _tipo_pelo_nome(d.nome)

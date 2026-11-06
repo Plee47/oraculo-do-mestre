@@ -73,6 +73,7 @@ def test_caracteres_fora_da_fonte_nao_quebram():
     assert texto_seguro("a → b — c “d” ≥ 3") == 'a -> b - c "d" >= 3'
     assert texto_seguro("ação ñ ç") == "ação ñ ç"
     assert texto_seguro("日本") == "??"
+    assert texto_seguro("10\u202fm e 2\u2009m") == "10 m e 2 m"  # espaços Unicode do LLM
     pdf = gerar_pdf(
         _ficha(nome="日本 → Nome", secoes=[("Título — 🎲", ["x " * 50])]), TEMAS["padrao"]
     )

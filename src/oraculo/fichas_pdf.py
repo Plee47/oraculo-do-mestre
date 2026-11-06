@@ -7,6 +7,7 @@ para anotar o valor atual a lápis. Usa as fontes embutidas de todo PDF, que cob
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 
 from fpdf import FPDF
@@ -87,7 +88,7 @@ _TROCAS = {
 
 def texto_seguro(texto: object) -> str:
     """As fontes embutidas cobrem latin-1 (todo o português): troca o resto por equivalentes."""
-    saida = str(texto)
+    saida = re.sub(r"[^\S\n]", " ", str(texto))  # todo espaço Unicode vira espaço comum
     for velho, novo in _TROCAS.items():
         saida = saida.replace(velho, novo)
     return saida.encode("latin-1", "replace").decode("latin-1")

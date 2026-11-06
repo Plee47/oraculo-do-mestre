@@ -88,7 +88,7 @@ _RE_LINHA_SUMARIO = re.compile(r"(\.{3,}|\s)\s*\d{1,3}\s*$", re.M)
 _RE_NUMERO = re.compile(r"\b\d{1,3}\b")
 
 # Mudou um prompt, o modelo ou a seleção de páginas? Mude a versão: o cache antigo deixa de valer.
-VERSAO_LEITURA = "2026-11-06.7"
+VERSAO_LEITURA = "2026-11-06.8"
 VERSAO_VETORES = "qwen3-0.6b-1200c"
 ESTRATEGIAS = ("palavras", "bm25", "hibrida")
 # Estratégia do site, escolhida pela avaliação contra o gabarito do SRD (notebook 23).
