@@ -11,6 +11,12 @@ Projeto de portfólio de ciência de dados com **Python + Databricks + GitHub**,
 
 ## O que faz
 
+**O site começa pelo livro:** você envia o PDF do sistema que acabou de conhecer, o porteiro
+confere se é mesmo um livro de RPG e de qual sistema, e só então liberam o gerador de fichas,
+a ficha rápida e as análises, todos nas regras desse sistema. Um romance ou um manual não viram
+ficha; um RPG de sistema ainda não suportado recebe a explicação do porquê. Quem não tem um
+livro à mão pode usar o modo demonstração de cada sistema.
+
 | Função | Exemplo |
 |---|---|
 | **Detector de livros** | "Este PDF é um livro de RPG (97%), sistema D&D 5e, tipo bestiário" |
