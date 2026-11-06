@@ -10,7 +10,7 @@ PAGINAS = (
     "Início",
     "Gerador de fichas (D&D 5e)",
     "Análise de grupo e encontro (D&D 5e)",
-    "Detector de livros de RPG",
+    "Leitor de livros de RPG",
     "Ficha rápida (D&D 5e)",
     "Roteiro",
     "Conteúdo e licenças",
@@ -59,7 +59,7 @@ def test_analise_de_grupo_e_encontro():
 
 def test_detector_com_texto_colado():
     at = AppTest.from_file(APP, default_timeout=30).run()
-    at.sidebar.radio[0].set_value("Detector de livros de RPG").run()
+    at.sidebar.radio[0].set_value("Leitor de livros de RPG").run()
     assert not at.exception
     trecho = (
         "Armor Class 14, Hit Points 27 (5d8 + 5). STR 15 (+2) DEX 14 (+2). The target must "
@@ -68,3 +68,5 @@ def test_detector_com_texto_colado():
     at.text_area[0].set_value(trecho).run()
     assert not at.exception
     assert any("Parece um livro de RPG" in s.value for s in at.success)
+    assert any("Seguiria para a extração" in s.value for s in at.success)  # porteiro
+    assert at.dataframe  # tabela com a comparação dos LLMs

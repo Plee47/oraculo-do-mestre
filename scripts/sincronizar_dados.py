@@ -30,6 +30,15 @@ def _validar_detector(caminho: Path) -> list[str]:
     return []
 
 
+def _validar_avaliacao(caminho: Path) -> list[str]:
+    import json
+
+    dados = json.loads(caminho.read_text(encoding="utf-8"))
+    if not dados.get("modelos") or "modelo_escolhido" not in dados:
+        return ["avaliação do leitor: arquivo incompleto"]
+    return []
+
+
 # arquivo no volume `exportacao` -> (destino no repositório, validação)
 ARQUIVOS = {
     "dnd5e/catalogo.json": (
@@ -37,6 +46,10 @@ ARQUIVOS = {
         lambda c: validar_catalogo(Catalogo.carregar(c)),
     ),
     "modelos/detector_rpg.json": (PUBLICOS / "modelos" / "detector_rpg.json", _validar_detector),
+    "avaliacoes/leitor_srd51.json": (
+        PUBLICOS / "avaliacoes" / "leitor_srd51.json",
+        lambda c: _validar_avaliacao(c),
+    ),
 }
 
 

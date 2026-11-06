@@ -33,6 +33,8 @@ def test_caminho_windows():
     assert verificar(["livros\\phb.pdf"], PUBLICOS)
 
 
-def test_modelos_publicos_so_os_liberados():
+def test_arquivos_derivados_so_os_liberados():
     assert verificar(["dados/publicos/modelos/detector_rpg.json"], PUBLICOS) == []
+    assert verificar(["dados/publicos/avaliacoes/leitor_srd51.json"], PUBLICOS) == []
     assert verificar(["dados/publicos/modelos/modelo_misterioso.json"], PUBLICOS)
+    assert verificar(["dados/publicos/avaliacoes/extracao_do_meu_livro.json"], PUBLICOS)
