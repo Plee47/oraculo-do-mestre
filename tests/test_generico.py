@@ -10,6 +10,7 @@ from pathlib import Path
 
 import pytest
 
+from oraculo.leitor.cache import CacheMemoria
 from oraculo.sistemas.generico.analise import (
     analisar_encontro,
     analisar_grupo,
@@ -26,6 +27,7 @@ from oraculo.sistemas.generico.formulas import (
 from oraculo.sistemas.generico.gerador import calcular_derivados, gerar_ficha, validar
 from oraculo.sistemas.generico.leitura import (
     ErroLeitura,
+    detalhar_opcao,
     extrair_json,
     ler_sistema,
     selecionar_paginas,
@@ -462,7 +464,7 @@ def test_leitura_completa_com_llm_falso():
     llm = LLMFalso()
     leitura = ler_sistema(_paginas(), llm, "livro.pdf")
     s = leitura.sistema
-    assert leitura.e_rpg and s.nome == "Ninjas 2d8" and len(llm.chamadas) == 3
+    assert leitura.e_rpg and s.nome == "Ninjas 2d8" and len(llm.chamadas) == 4
     assert [a.nome for a in s.arquetipos] == ["Clã da Folha", "Clã da Névoa"]
     assert any("Arquétipo ignorado" in a for a in s.avisos)  # item malformado vira aviso
     assert s.criaturas[0].nome == "Lobo" and s.niveis.nivel_inicial == 4
@@ -471,7 +473,7 @@ def test_leitura_completa_com_llm_falso():
 def test_leitura_tenta_de_novo_quando_nao_vem_json():
     llm = LLMFalso(ruim_primeiro=True)
     s = ler_sistema(_paginas(), llm).sistema
-    assert len(llm.chamadas) == 4 and s.atributos
+    assert len(llm.chamadas) == 5 and s.atributos
 
 
 def test_leitura_sem_texto_falha_com_mensagem():
@@ -495,3 +497,133 @@ def test_codigo_sem_caracteres_de_controle():
         texto = arquivo.read_text(encoding="utf-8")
         ruins = {hex(ord(c)) for c in texto if ord(c) < 32 and c not in "\n\t\r"}
         assert not ruins, f"{arquivo}: {ruins}"
+
+
+# --------------------------------------------------------------------------- etapas de criação
+
+FANTASIA = {
+    **D20,
+    "etapas": [
+        {"id": "raca", "nome": "Raça", "tipo": "escolha", "opcoes": [
+            {"nome": "Anão", "pagina": 10, "bonus_atributos": {"Constituição": 2}},
+            {"nome": "Elfo", "pagina": 12, "bonus_atributos": {"DES": 2, "Inexistente": 5}},
+        ]},
+        {"id": "classe", "nome": "Classe", "tipo": "escolha", "principal": True, "opcoes": [
+            {"nome": "Guerreiro", "pagina": 30, "atributos_chave": ["Força", "CON"],
+             "papel": "combate", "formulas": {"pv": "10 + mod_con + (nivel-1)*(6+mod_con)"}},
+            {"nome": "Mago", "pagina": 50, "atributos_chave": ["Inteligência"], "papel": "magia",
+             "formulas": {"Pontos de Vida": "6 + mod_con"}},
+        ]},
+        {"id": "sub", "nome": "Subclasse", "tipo": "escolha", "depende_de": "classe",
+         "nivel_minimo": 3, "opcoes": [
+            {"nome": "Campeão", "pai": "Guerreiro"},
+            {"nome": "Evocador", "pai": "Mago"},
+            {"nome": "Perdida", "pai": "Classe Inventada"},
+        ]},
+        {"id": "atrib", "nome": "Atributos", "tipo": "atributos"},
+    ],
+}  # fmt: skip
+
+
+def test_etapas_normalizadas():
+    s = sistema(FANTASIA)
+    assert [e.id for e in s.etapas_de_escolha(1)] == ["raca", "classe"]
+    assert [e.id for e in s.etapas_de_escolha(3)] == ["raca", "classe", "sub"]
+    assert s.etapa_principal().id == "classe"
+    assert [a.nome for a in s.arquetipos] == ["Guerreiro", "Mago"]  # espelha a etapa principal
+    assert s.etapa("raca").opcao("Elfo").bonus_atributos == {"des": 2}  # atributo inexistente sai
+    assert s.etapa("classe").opcao("Mago").formulas == {"pv": "6 + mod_con"}  # nome vira id
+    assert s.etapa("sub").opcao("Perdida").pai == ""  # pai inexistente vira aviso
+    assert any("Classe Inventada" in a for a in s.avisos)
+    assert [o.nome for o in s.etapa("sub").opcoes_de("Mago")] == ["Evocador", "Perdida"]
+
+
+def test_principal_inferida_quando_o_llm_nao_marca():
+    dados = json.loads(json.dumps(FANTASIA))
+    dados["etapas"][1]["principal"] = False
+    dados["etapas"][0]["opcoes"].append({"nome": "Humano"})
+    assert sistema(dados).etapa_principal().id == "raca"  # a escolha livre com mais opções
+
+
+def test_ficha_segue_as_etapas_do_livro():
+    s = sistema(FANTASIA)
+    f = gerar_ficha(s, nivel=3, seed=1, escolhas={"classe": "Guerreiro", "raca": "Anão"})
+    assert f.classe == "Guerreiro"
+    assert f.escolhas["raca"] == "Anão" and f.escolhas["sub"] in ("Campeão", "Perdida")
+    assert any("Raça: Anão (p. 10), escolha." in e for e in f.explicacoes)
+    assert any("Bônus de Anão: +2" in e for e in f.explicacoes)
+    assert sum(f.atributos.values()) == sum((15, 14, 13, 12, 10, 8)) + 2
+    n1 = gerar_ficha(s, nivel=1, seed=1, escolhas={"classe": "Mago"})
+    assert "sub" not in n1.escolhas  # subclasse só a partir do nível 3
+    assert f.escolhas != n1.escolhas
+    assert not [p for p in validar(s, f) if p.gravidade == "erro"]
+
+
+def test_opcao_filha_respeita_a_opcao_pai():
+    s = sistema(FANTASIA)
+    for seed in range(15):
+        f = gerar_ficha(s, nivel=3, seed=seed, escolhas={"classe": "Mago"})
+        assert f.escolhas["sub"] in ("Evocador", "Perdida")
+
+
+def test_pedido_invalido_para_a_classe_e_sorteado_de_novo():
+    s = sistema(FANTASIA)
+    f = gerar_ficha(s, nivel=3, seed=2, escolhas={"classe": "Mago", "sub": "Campeão"})
+    assert f.escolhas["sub"] != "Campeão"
+
+
+class LLMDetalhe:
+    def __init__(self):
+        self.prompts = []
+
+    def completar(self, sistema, usuario, max_tokens=6000, pequeno=False):
+        self.prompts.append(usuario)
+        return json.dumps({
+            "descricao": "Combatente treinado.",
+            "atributos_chave": ["Destreza"],
+            "bonus_atributos": {"Força": 1},
+            "pericias": ["Atletismo"],
+            "equipamento": ["Espada"],
+            "dano_tipico": "1d8+mod_for",
+            "habilidades": [
+                {"nome": "Retomar o Fôlego", "resumo": "Recupera PV.", "nivel": 1, "pagina": 31},
+                {"nome": "Ataque Extra", "nivel": 5, "pagina": 32},
+                {"sem_nome": True},
+            ],
+            "poderes": ["Golpe"],
+            "subopcoes": [{"nome": "Mestre de Batalha", "descricao": "Táticas."}],
+        })  # fmt: skip
+
+
+def _livro_fantasia() -> list[str]:
+    paginas = [f"Página {i}. " + "texto corrido de ambientação " * 30 for i in range(40)]
+    paginas[29] = "Guerreiro: classe de combate. Guerreiro usa armas e armaduras. " * 20
+    return paginas
+
+
+def test_leitura_a_fundo_de_uma_opcao():
+    s = sistema(FANTASIA)
+    llm, cache = LLMDetalhe(), CacheMemoria()
+    o = detalhar_opcao(s, "classe", "Guerreiro", _livro_fantasia(), llm, cache)
+    assert o.detalhada and o.descricao == "Combatente treinado."
+    assert o.atributos_chave == ["des"] and o.bonus_atributos == {"for": 1}
+    assert [h.nome for h in o.habilidades_detalhe] == ["Retomar o Fôlego", "Ataque Extra"]
+    assert "=== PÁGINA 30 ===" in llm.prompts[0]  # a página citada na estrutura vai junto
+    assert s.etapa("sub").opcao("Mestre de Batalha").pai == "Guerreiro"  # subopção achada
+    assert s.arquetipo("Guerreiro").dano_tipico == "1d8+mod_for"
+    # segunda vez: já detalhada, nenhuma chamada
+    detalhar_opcao(s, "classe", "Guerreiro", _livro_fantasia(), llm, cache)
+    assert len(llm.prompts) == 1
+    # outra sessão, mesmo livro: vem do cache, nenhuma chamada
+    outra = sistema(FANTASIA)
+    detalhar_opcao(outra, "classe", "Guerreiro", _livro_fantasia(), llm, cache)
+    assert len(llm.prompts) == 1 and outra.etapa("classe").opcao("Guerreiro").detalhada
+    # a ficha passa a usar o que foi lido
+    f = gerar_ficha(s, seed=1, nivel=1, escolhas={"classe": "Guerreiro"})
+    assert "Espada" in f.equipamento and "Retomar o Fôlego" in f.poderes and "Golpe" in f.poderes
+    assert "Atletismo" in f.pericias
+
+
+def test_opcao_desconhecida_da_erro():
+    with pytest.raises(ValueError):
+        detalhar_opcao(sistema(FANTASIA), "classe", "Bardo", _livro_fantasia(), LLMDetalhe())

@@ -53,7 +53,12 @@ from oraculo.sistemas.generico.gerador import calcular_derivados as calcular_der
 from oraculo.sistemas.generico.gerador import gerar_ficha as gerar_ficha_lida
 from oraculo.sistemas.generico.gerador import limites as limites_lido
 from oraculo.sistemas.generico.gerador import validar as validar_lido
-from oraculo.sistemas.generico.leitura import ErroLeitura, leitura_guardada, ler_sistema
+from oraculo.sistemas.generico.leitura import (
+    ErroLeitura,
+    detalhar_opcao,
+    leitura_guardada,
+    ler_sistema,
+)
 from oraculo.sistemas.generico.modelo import SistemaLido, normalizar
 
 st.set_page_config(
@@ -126,6 +131,7 @@ def _usar_livro(sistema: str, nome: str, nota: float | None = None, demo: bool =
 
 def _trocar_livro() -> None:
     st.session_state.pop("livro", None)
+    st.session_state.pop("_paginas_livro", None)
     st.session_state.pagina = INICIO
 
 
@@ -871,6 +877,7 @@ def pagina_analises() -> None:
 # Qualquer livro de RPG: o LLM do Databricks lê o livro e devolve a especificação do sistema
 # (oraculo.sistemas.generico). Tudo abaixo usa só essa especificação.
 MAX_LEITURAS_POR_SESSAO = 3
+MAX_DETALHES_POR_SESSAO = 30  # leituras a fundo de opções (as já guardadas não contam)
 
 
 def cliente_llm():
@@ -919,6 +926,7 @@ def _usar_sistema_lido(s: SistemaLido, nome_arquivo: str, nota: float | None) ->
 
 def _ler_livro(paginas: list[str], nome: str, nota: float | None, incerto: bool) -> None:
     """Lê o livro com o LLM (uma vez por arquivo na sessão) e abre o resumo do sistema."""
+    st.session_state["_paginas_livro"] = paginas  # só em memória: para as leituras a fundo
     chave = hashlib.sha256("\n".join(paginas).encode()).hexdigest()
     lidos = st.session_state.setdefault("_lidos", {})
     if chave not in lidos:
@@ -1027,8 +1035,15 @@ def _resumo_lido() -> None:
         st.markdown(f"**Dano.** {m.dano_explicacao}{extra}")
 
     st.subheader("Criação de personagem")
+    if s.etapas:
+        for i, e in enumerate(s.etapas, 1):
+            quando = f" (a partir do nível {e.nivel_minimo})" if e.nivel_minimo > 1 else ""
+            st.markdown(f"**{i}. {e.nome}**{quando}. {e.instrucao}")
+            if e.opcoes:
+                nomes = ", ".join(o.nome for o in e.opcoes[:30])
+                st.caption(nomes + ("…" if len(e.opcoes) > 30 else ""))
     if s.geracao.explicacao:
-        st.markdown(s.geracao.explicacao)
+        st.markdown(f"**Atributos.** {s.geracao.explicacao}")
     for g in s.geracao.grupos:
         st.markdown(f"- **{g.nome or 'Grupo'}:** {g.explicacao or g.metodo}")
     if s.modificador:
@@ -1213,29 +1228,103 @@ def _ficha_lida_html(s: SistemaLido, ficha: Ficha) -> None:
         st.caption(f"Sem fórmula calculável no livro: {', '.join(sem_valor)} (veja o resumo).")
 
 
+def _colunas_de(n: int) -> list:
+    """Colunas para n controles, em linhas de no máximo 4."""
+    colunas = []
+    while len(colunas) < n:
+        colunas += st.columns(min(4, n - len(colunas)))
+    return colunas
+
+
+def _ler_a_fundo(s: SistemaLido, ficha: Ficha) -> bool:
+    """Lê a fundo as opções escolhidas nesta ficha que ainda não foram lidas (no máx. uma vez
+    cada: depois vêm do cache). Devolve True se algo mudou."""
+    pendentes = [
+        (e, e.opcao(ficha.escolhas[e.id]))
+        for e in s.etapas
+        if e.id in ficha.escolhas and e.opcao(ficha.escolhas[e.id])
+        and not e.opcao(ficha.escolhas[e.id]).detalhada
+    ]  # fmt: skip
+    paginas = st.session_state.get("_paginas_livro")
+    cliente = cliente_llm()
+    if not pendentes or not paginas or cliente is None:
+        return False
+    if not st.toggle("Ler a fundo as opções desta ficha", True, key="lido_fundo"):
+        return False
+    feitos = st.session_state.get("_detalhes", 0)
+    if feitos >= MAX_DETALHES_POR_SESSAO:
+        st.caption("Limite de leituras a fundo desta sessão atingido (a cota é compartilhada).")
+        return False
+    mudou = False
+    with st.status("Lendo no livro o que escolhemos…", expanded=True) as status:
+        for e, o in pendentes:
+            st.write(f"{e.nome}: {o.nome}")
+            try:
+                detalhar_opcao(s, e.id, o.nome, paginas, cliente, cache_leituras())
+                mudou = True
+            except (ErroLLM, ErroLeitura) as erro:
+                st.warning(f"Não consegui ler {o.nome} a fundo: {erro}")
+            st.session_state["_detalhes"] = feitos = feitos + 1
+        status.update(label="Leitura concluída.", state="complete", expanded=False)
+    if mudou:
+        st.session_state.livro["lido"] = json.loads(s.model_dump_json())
+    return mudou
+
+
+def _habilidades_da_ficha(s: SistemaLido, ficha: Ficha) -> None:
+    linhas = []
+    for e in s.etapas:
+        o = e.opcao(ficha.escolhas.get(e.id))
+        if not o:
+            continue
+        for h in o.habilidades_detalhe:
+            if h.nivel is None or h.nivel <= ficha.nivel:
+                linhas.append({
+                    "Vem de": o.nome, "Habilidade": h.nome, "Efeito": h.resumo,
+                    "Página": "—" if h.pagina is None else str(h.pagina),
+                })  # fmt: skip
+    if linhas:
+        st.markdown("**Habilidades deste nível, segundo o livro**")
+        st.dataframe(linhas, hide_index=True, use_container_width=True)
+
+
 def _gerador_lido() -> None:
     s = sistema_lido()
     st.title(f"Gerador de fichas · {s.nome}")
     st.caption("Fichas pelas regras lidas do seu livro, com cada escolha explicada.")
-    c1, c2 = st.columns(2)
-    opcoes = ["Automático", *(a.nome for a in s.arquetipos)]
-    escolha = c1.selectbox(s.nome_arquetipo.capitalize(), opcoes, key="lido_arq")
     nivel = None
     if s.niveis.usa_niveis:
         topo = s.niveis.nivel_maximo or max(20, s.niveis.nivel_inicial)
-        nivel = c2.slider(
+        nivel = st.slider(
             s.niveis.nome.capitalize(), 1, topo, s.niveis.nivel_inicial, key="lido_nivel"
         )
+    pedidas: dict[str, str] = {}
+    escolha = "Automático"
+    etapas = s.etapas_de_escolha(nivel or s.niveis.nivel_inicial)
+    if etapas:
+        for e, col in zip(etapas, _colunas_de(len(etapas)), strict=True):
+            opcoes = e.opcoes_de(pedidas.get(e.depende_de))
+            rotulos = ["Automático", *(o.nome for o in opcoes)]
+            valor = col.selectbox(e.nome, rotulos, key=f"lido_etapa_{e.id}")
+            if valor != "Automático":
+                pedidas[e.id] = valor
+    elif s.arquetipos:
+        rotulos = ["Automático", *(a.nome for a in s.arquetipos)]
+        escolha = st.selectbox(s.nome_arquetipo.capitalize(), rotulos, key="lido_arq")
     if "lido_semente" not in st.session_state:
         st.session_state.lido_semente = 1
     if st.button("Gerar outra", key="lido_gerar", icon=":material/casino:"):
         st.session_state.lido_semente += 1
-    ficha = gerar_ficha_lida(
-        s,
-        arquetipo=None if escolha == "Automático" else escolha,
-        nivel=nivel,
-        seed=st.session_state.lido_semente,
-    )
+    args = {
+        "arquetipo": None if escolha == "Automático" else escolha,
+        "nivel": nivel,
+        "seed": st.session_state.lido_semente,
+        "escolhas": pedidas,
+    }
+    ficha = gerar_ficha_lida(s, **args)
+    if _ler_a_fundo(s, ficha):  # a leitura a fundo pode mudar atributos-chave, bônus e fórmulas
+        s = sistema_lido()
+        ficha = gerar_ficha_lida(s, **args)
     titulo = " · ".join(x for x in (ficha.nome, ficha.classe) if x)
     if s.niveis.usa_niveis:
         titulo += f" · {s.niveis.nome} {ficha.nivel}"
@@ -1248,6 +1337,7 @@ def _gerador_lido() -> None:
         e1.markdown(f"**Equipamento**  \n{', '.join(ficha.equipamento)}")
     if ficha.poderes:
         e2.markdown(f"**Habilidades**  \n{', '.join(ficha.poderes)}")
+    _habilidades_da_ficha(s, ficha)
     with st.expander("Por que essas escolhas?", expanded=True, icon=":material/lightbulb:"):
         for e in ficha.explicacoes:
             st.write(f"- {e}")

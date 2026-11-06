@@ -161,6 +161,83 @@ class Arquetipo(_Base):
         return {str(k): str(f).strip() for k, f in v.items() if f not in (None, "")}
 
 
+class Habilidade(_Base):
+    nome: str
+    resumo: str = ""
+    nivel: int | None = None
+    pagina: int | None = None
+
+    @field_validator("nivel", "pagina", mode="before")
+    @classmethod
+    def _int(cls, v: object) -> int | None:
+        return _inteiro_ou_nada(v)
+
+
+class Opcao(Arquetipo):
+    """Uma opção de uma etapa de criação (uma raça, uma classe, uma subclasse...).
+
+    A estrutura vem da primeira leitura; `detalhada` fica verdadeiro depois da leitura a fundo
+    sob demanda (`leitura.detalhar_opcao`), que é guardada no cache.
+    """
+
+    pai: str = ""  # opção da etapa anterior à qual esta pertence (subclasse → classe)
+    pagina: int | None = None
+    bonus_atributos: dict[str, int] = Field(default_factory=dict)
+    habilidades_detalhe: list[Habilidade] = Field(default_factory=list)
+    poderes: list[str] = Field(default_factory=list)  # magias, técnicas, disciplinas iniciais
+    detalhada: bool = False
+
+    @field_validator("pagina", mode="before")
+    @classmethod
+    def _pag(cls, v: object) -> int | None:
+        return _inteiro_ou_nada(v)
+
+    @field_validator("bonus_atributos", mode="before")
+    @classmethod
+    def _bonus(cls, v: object) -> dict:
+        if not isinstance(v, dict):
+            return {}
+        saida = {str(k): _inteiro_ou_nada(x) for k, x in v.items()}
+        return {k: x for k, x in saida.items() if x}
+
+
+class Etapa(_Base):
+    """Uma decisão da criação de personagem, na ordem do livro."""
+
+    id: str = ""
+    nome: str
+    instrucao: str = ""
+    tipo: str = "outro"  # escolha | atributos | pericias | equipamento | poderes | outro
+    principal: bool = False  # a escolha que define o papel (classe, clã, especialização...)
+    nivel_minimo: int = 1
+    depende_de: str = ""  # etapa cuja escolha filtra as opções desta (subclasse → classe)
+    opcoes: list[Opcao] = Field(default_factory=list)
+
+    @field_validator("tipo", mode="before")
+    @classmethod
+    def _tipo(cls, v: object) -> str:
+        opcoes = ("escolha", "atributos", "pericias", "equipamento", "poderes", "outro")
+        return _opcao(v, opcoes, "outro")
+
+    @field_validator("nivel_minimo", mode="before")
+    @classmethod
+    def _nivel(cls, v: object) -> int:
+        return max(1, _inteiro_ou_nada(v) or 1)
+
+    def opcao(self, nome: str | None) -> Opcao | None:
+        if not nome:
+            return None
+        chave = normalizar_id(nome)
+        return next((o for o in self.opcoes if normalizar_id(o.nome) == chave), None)
+
+    def opcoes_de(self, pai: str | None) -> list[Opcao]:
+        """As opções que valem para a escolha feita na etapa de que esta depende."""
+        if not self.depende_de or not pai:
+            return list(self.opcoes)
+        chave = normalizar_id(pai)
+        return [o for o in self.opcoes if not o.pai or normalizar_id(o.pai) == chave]
+
+
 class Ataque(_Base):
     nome: str
     dano: str | None = None
@@ -273,6 +350,7 @@ class SistemaLido(_Base):
     derivados: list[Derivado] = Field(default_factory=list)
     pericias: list[Pericia] = Field(default_factory=list)
     arquetipos: list[Arquetipo] = Field(default_factory=list)
+    etapas: list[Etapa] = Field(default_factory=list)
     nome_arquetipo: str = "arquétipo"  # classe, clã, profissão, clã vampírico...
     criaturas: list[Criatura] = Field(default_factory=list)
     regras_encontro: str = ""
@@ -292,10 +370,26 @@ class SistemaLido(_Base):
                 return a
         return None
 
+    def etapa(self, etapa_id: str | None) -> Etapa | None:
+        return next((e for e in self.etapas if e.id == etapa_id), None)
+
+    def etapa_principal(self) -> Etapa | None:
+        return next((e for e in self.etapas if e.principal), None)
+
+    def etapas_de_escolha(self, nivel: int = 1) -> list[Etapa]:
+        """As escolhas disponíveis neste nível, na ordem do livro."""
+        return [e for e in self.etapas if e.tipo == "escolha" and e.opcoes
+                and e.nivel_minimo <= nivel]  # fmt: skip
+
     def arquetipo(self, nome: str | None) -> Arquetipo | None:
         if not nome:
             return None
         chave = normalizar_id(nome)
+        principal = self.etapa_principal()
+        if principal:  # a opção da etapa principal traz o que a leitura a fundo achou
+            achada = principal.opcao(nome)
+            if achada:
+                return achada
         return next((a for a in self.arquetipos if normalizar_id(a.nome) == chave), None)
 
     def modificador_de(self, valor: float) -> float | None:
@@ -389,6 +483,106 @@ def _tipo_pelo_nome(nome: str) -> str | None:
     return None
 
 
+def normalizar_opcao(s: SistemaLido, o: Opcao, avisos: list[str], calculavel) -> None:
+    """Atributos e fórmulas de uma opção apontando para o que existe na especificação."""
+    chaves = []
+    for ref in o.atributos_chave:
+        a = s.atributo(ref)
+        if a and a.id not in chaves:
+            chaves.append(a.id)
+    o.atributos_chave = chaves
+    bonus = {}
+    for ref, v in o.bonus_atributos.items():
+        a = s.atributo(ref)
+        if a:
+            bonus[a.id] = v
+    o.bonus_atributos = bonus
+    validas = {}
+    for chave, f in o.formulas.items():
+        alvo = next(
+            (d for d in s.derivados if normalizar_id(chave) in (d.id, normalizar_id(d.nome))), None
+        )
+        if alvo is not None and not calculavel(f):
+            validas[alvo.id] = f
+        else:
+            avisos.append(f"{o.nome}: fórmula de {chave} não aproveitada ({f}).")
+    o.formulas = validas
+    if o.dano_tipico and calculavel(o.dano_tipico):
+        avisos.append(f"Dano de {o.nome} não entendido ({o.dano_tipico}).")
+        o.dano_tipico = None
+
+
+def calculavel_em(s: SistemaLido):
+    """Função que diz por que uma fórmula não fecha nesta especificação (None se fecha)."""
+    teste = s.variaveis({a.id: 10 for a in s.atributos})
+    for d in s.derivados:
+        teste[normalizar_id(d.id)] = 10
+        teste[normalizar_id(d.nome)] = 10
+
+    def calculavel(formula: str | None) -> str | None:
+        if not formula:
+            return "sem fórmula"
+        try:
+            avaliar(formula, teste)
+        except ErroFormula as e:
+            return str(e)
+        return None
+
+    return calculavel
+
+
+def sincronizar_arquetipos(s: SistemaLido) -> None:
+    """`arquetipos` espelha as opções da etapa principal (análises e tabelas usam essa lista)."""
+    principal = s.etapa_principal()
+    if principal and principal.opcoes:
+        s.arquetipos = [
+            Arquetipo.model_validate(o.model_dump(include=set(Arquetipo.model_fields)))
+            for o in principal.opcoes
+        ]
+
+
+def _normalizar_etapas(s: SistemaLido, avisos: list[str], calculavel) -> None:
+    ids: set[str] = set()
+    etapas = []
+    for e in s.etapas:
+        e.id = normalizar_id(e.id or e.nome)
+        if e.id in ids:
+            continue
+        ids.add(e.id)
+        vistos: set[str] = set()
+        unicas = []
+        for o in e.opcoes:
+            chave = normalizar_id(o.nome)
+            if chave in vistos:
+                continue
+            vistos.add(chave)
+            normalizar_opcao(s, o, avisos, calculavel)
+            unicas.append(o)
+        e.opcoes = unicas
+        if e.opcoes and e.tipo == "outro":
+            e.tipo = "escolha"
+        etapas.append(e)
+    for e in etapas:
+        e.depende_de = normalizar_id(e.depende_de) if e.depende_de else ""
+        pai = next((x for x in etapas if x.id == e.depende_de and x is not e), None)
+        if pai is None:
+            e.depende_de = ""
+            continue
+        for o in e.opcoes:
+            if o.pai and pai.opcao(o.pai) is None:
+                avisos.append(f"{o.nome}: pertence a {o.pai}, que não está em {pai.nome}.")
+                o.pai = ""
+    s.etapas = etapas
+    escolhas = [e for e in etapas if e.tipo == "escolha" and e.opcoes]
+    marcadas = [e for e in escolhas if e.principal]
+    for extra in marcadas[1:]:
+        extra.principal = False
+    if escolhas and not marcadas:  # sem marca: a escolha independente com mais opções
+        livres = [e for e in escolhas if not e.depende_de] or escolhas
+        max(livres, key=lambda e: len(e.opcoes)).principal = True
+    sincronizar_arquetipos(s)
+
+
 # Marcadores que o LLM às vezes escreve nas fórmulas ("10 + mod_des + outros"): valem 0.
 MARCADORES = {
     "outros", "outros_bonus", "bonus", "bonus_diversos", "outros_modificadores", "misc",
@@ -423,6 +617,7 @@ def normalizar(s: SistemaLido) -> SistemaLido:
 
     formulas = [d.formula for d in s.derivados] + [s.mecanica.dano_basico]
     formulas += [f for arq in s.arquetipos for f in arq.formulas.values()]
+    formulas += [f for e in s.etapas for o in e.opcoes for f in o.formulas.values()]
     usa_mod = any(
         n.lower().startswith(("mod_", "modificador")) or n.lower().endswith("_mod")
         for f in formulas
@@ -459,7 +654,7 @@ def normalizar(s: SistemaLido) -> SistemaLido:
 
     for d in s.derivados:
         d.formula = sem_marcadores(d.formula, d.nome)
-    for arq in s.arquetipos:
+    for arq in [*s.arquetipos, *(o for e in s.etapas for o in e.opcoes)]:
         arq.formulas = {k: sem_marcadores(f, f"{k} ({arq.nome})") for k, f in arq.formulas.items()}
 
     for a in s.atributos:
@@ -559,6 +754,7 @@ def normalizar(s: SistemaLido) -> SistemaLido:
         if arq.dano_tipico and calculavel(arq.dano_tipico):
             avisos.append(f"Dano típico de {arq.nome} não entendido ({arq.dano_tipico}).")
             arq.dano_tipico = None
+    _normalizar_etapas(s, avisos, calculavel)
     for p in s.pericias:
         a = s.atributo(p.atributo)
         p.atributo = a.id if a else None
