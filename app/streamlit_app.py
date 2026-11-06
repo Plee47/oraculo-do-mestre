@@ -16,6 +16,7 @@ RAIZ = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(RAIZ / "src"))
 sys.path.insert(0, str(RAIZ / "app"))
 
+import altair as alt
 import streamlit as st
 from recarga import recarregar_se_mudou
 
@@ -46,6 +47,15 @@ from oraculo.leitor.llm import ErroLLM, cliente_configurado
 from oraculo.leitor.porteiro import SISTEMAS_SUPORTADOS, Decisao, decidir
 from oraculo.nucleo import Ficha, obter_regras
 from oraculo.nucleo.analise import Achado
+from oraculo.rolagens import (
+    LIMITE_TEXTO,
+    Distribuicao,
+    ErroRolagem,
+    distribuicao,
+    montar,
+)
+from oraculo.rolagens import ler as ler_rolagem
+from oraculo.rolagens import rolar as rolar_dados
 from oraculo.sistemas.dnd5e import ATRIBUTOS, custo_compra_pontos, modificador
 from oraculo.sistemas.dnd5e.analise import TIPOS_PT, analisar_encontro, analisar_grupo, perfil
 from oraculo.sistemas.dnd5e.catalogo import Catalogo
@@ -96,6 +106,7 @@ ANALISES = "Análises"
 BASTIDORES = "Bastidores do leitor"
 ROTEIRO = "Roteiro"
 CONTEUDO = "Conteúdo e licenças"
+EXTRAS = "Extras"
 LIMITE_PAGINAS = 600  # livros de regras inteiros (o bestiário costuma estar no fim)
 NOMES_SISTEMAS = {"dnd5e": "D&D 5e", "fm": "Feiticeiros & Maldições", "tagmar": "Tagmar"}
 REPOSITORIO = "https://github.com/Plee47/oraculo-do-mestre"
@@ -1923,12 +1934,366 @@ def pagina_roteiro() -> None:
 | 5a · Vitrine | Site que começa pelo livro, design de portfólio | Feito |
 | 6 · Qualquer livro | Leitura com IA: resumo, fichas e encontros de qualquer sistema | Feito |
 | 7 · Leitura profunda | Etapas de criação, leitura a fundo, narrativa e PDF com tema | Feito |
+| 8 · Extras | Rolador de dados, com probabilidades e comparação | Feito |
 | 5b · Demonstração | Vídeo curto do fluxo completo | ⏳ |
 """
     )
 
 
 # --------------------------------------------------------------------------- licenças
+# --------------------------------------------------------------------------- extras
+_FACES_RAPIDAS = (4, 6, 8, 10, 12, 20, 100, "F")
+_MAX_HISTORICO = 50
+_MODOS = {"Normal": "normal", "Vantagem": "vantagem", "Desvantagem": "desvantagem"}
+_MANUAL_DADOS = """
+| Escreva | O que faz |
+|---|---|
+| `2d6+3` | Soma, subtração, `*`, `/` (arredonda para baixo) e parênteses |
+| `d%` · `4dF` | Dado de 100 faces · dado Fudge (-1, 0, +1) |
+| `4d6kh3` · `2d20kl1` | Mantém os maiores · os menores |
+| `4d6dl1` · `4d6dh1` | Descarta os menores · os maiores |
+| `vant` · `desv` | Vantagem e desvantagem (`2d20kh1` e `2d20kl1`) |
+| `3d6!` · `3d6!>=5` | Explode no valor máximo · na condição |
+| `2d6r1` · `2d6rr<=2` | Rola de novo uma vez · até sair da condição |
+| `5d10>=8` · `5d10>=8f1` | Conta sucessos · e desconta as falhas |
+| `max(1,1d4-2)` · `teto(1d6/2)` | Também `min` e `piso` |
+| `1d20+5, 2d6+3` | Várias rolagens de uma vez, como ataque e dano |
+| `6#4d6kh3` | Repete a mesma rolagem |
+"""
+
+
+@st.cache_data(max_entries=64, show_spinner=False)
+def _distribuicao(expressao: str) -> Distribuicao:
+    return distribuicao(expressao)
+
+
+def _porcento(p: float) -> str:
+    if 0 < p < 0.001:
+        return "menos de 0,1%"
+    if 0.999 < p < 1:
+        return "mais de 99,9%"
+    return f"{p:.1%}".replace(".", ",")
+
+
+def _numero(v: float) -> str:
+    return f"{v:.2f}".replace(".", ",")
+
+
+def _dado_html(d) -> str:
+    classes = ["dado"]
+    titulo = []
+    if not d.mantido:
+        classes.append("fora")
+        titulo.append("descartado")
+    if d.extremo == "max":
+        classes.append("maximo")
+        titulo.append("valor máximo")
+    elif d.extremo == "min":
+        classes.append("minimo")
+        titulo.append("valor mínimo")
+    if d.resultado:
+        classes.append(d.resultado)
+        titulo.append(d.resultado)
+    if d.explosao:
+        titulo.append("veio de uma explosão")
+    if d.rerolado_de is not None:
+        titulo.append(f"rolado de novo, era {d.rerolado_de}")
+    marca = "!" if d.explosao else "↻" if d.rerolado_de is not None else ""
+    dica = html.escape(", ".join(titulo))
+    return f'<span class="{" ".join(classes)}" title="{dica}">{d.valor}{marca}</span>'
+
+
+def _rolagem_html(r) -> str:
+    grupos = "".join(
+        f'<div class="grupo"><span class="notacao">{html.escape(g.notacao)}</span>'
+        + "".join(_dado_html(d) for d in g.dados)
+        + "</div>"
+        for g in r.grupos
+    )
+    return (
+        '<div class="rolagem">'
+        f'<div class="topo"><span class="expressao">{html.escape(r.expressao)}</span>'
+        f'<span class="total">{r.total}</span></div>{grupos}'
+        f'<div class="conta">{html.escape(r.detalhe)} = {r.total}</div></div>'
+    )
+
+
+def _rolar_e_guardar(expressao: str) -> None:
+    try:
+        rolagens = rolar_dados(expressao)
+    except ErroRolagem as erro:
+        st.session_state["_erro_rolagem"] = str(erro)
+        return
+    st.session_state.pop("_erro_rolagem", None)
+    st.session_state["_rolagens"] = rolagens
+    historico = st.session_state.setdefault("_historico_dados", [])
+    historico[:0] = [
+        {"Rolagem": r.expressao, "Total": r.total, "Dados": r.detalhe} for r in reversed(rolagens)
+    ]
+    del historico[_MAX_HISTORICO:]
+
+
+def _guia_rolar() -> None:
+    c1, c2, c3 = st.columns([1, 1, 2])
+    quantidade = int(c1.number_input("Quantidade", 1, 100, 1, key="dados_qtd"))
+    modificador = int(c2.number_input("Modificador", -1000, 1000, 0, key="dados_mod"))
+    modo = _MODOS[c3.radio("Modo", list(_MODOS), horizontal=True, key="dados_modo")]
+    with st.container(horizontal=True):  # quebra a linha no celular, sem empilhar um por linha
+        for faces in _FACES_RAPIDAS:
+            rotulo = f"d{faces}"
+            if st.button(rotulo, key=f"rolar_{rotulo}", width="stretch"):
+                _rolar_e_guardar(montar(quantidade, faces, modificador, modo))
+    dado_do_livro = _dado_do_livro()
+    if dado_do_livro and st.button(
+        f"Dado do livro: {dado_do_livro}", icon=":material/menu_book:", key="rolar_livro"
+    ):
+        _rolar_e_guardar(dado_do_livro)
+
+    with st.form("form_rolagem", border=False):
+        c1, c2 = st.columns([5, 1], vertical_alignment="bottom")
+        expressao = c1.text_input(
+            "Ou escreva a rolagem", "1d20+5", key="dados_expressao", max_chars=LIMITE_TEXTO
+        )
+        if c2.form_submit_button(
+            "Rolar", type="primary", icon=":material/casino:", width="stretch"
+        ):
+            _rolar_e_guardar(expressao)
+    with st.expander("O que dá para escrever", icon=":material/help:"):
+        st.markdown(_MANUAL_DADOS)
+
+    if "_erro_rolagem" in st.session_state:
+        st.error(st.session_state["_erro_rolagem"], icon=":material/error:")
+    rolagens = st.session_state.get("_rolagens")
+    if rolagens:
+        st.html("".join(_rolagem_html(r) for r in rolagens))
+        if len(rolagens) > 1:
+            total = sum(r.total for r in rolagens)
+            st.caption(f"Soma de todas: **{total}**")
+        st.caption(
+            "Riscado (~ na conta): descartado. Borda cheia: valor máximo. Borda tracejada: valor "
+            "mínimo. ! explodiu. ↻ rolou de novo. Passe o mouse num dado para ver o motivo."
+        )
+
+    _rolagens_salvas()
+
+    historico = st.session_state.get("_historico_dados")
+    if historico:
+        st.subheader("Histórico")
+        st.dataframe(historico, hide_index=True, width="stretch")
+        if st.button("Limpar histórico", icon=":material/delete:", key="limpar_historico"):
+            st.session_state.pop("_historico_dados", None)
+            st.session_state.pop("_rolagens", None)
+            st.rerun()
+
+
+def _dado_do_livro() -> str | None:
+    """O dado principal do sistema lido, se ele for uma rolagem que dá para fazer."""
+    livro = st.session_state.get("livro")
+    if not livro or not livro.get("lido"):
+        return None
+    dado = sistema_lido().mecanica.dado_base.strip()
+    try:
+        ler_rolagem(dado)
+    except ErroRolagem:
+        return None
+    return dado
+
+
+def _rolagens_salvas() -> None:
+    salvas = st.session_state.setdefault("_rolagens_salvas", {})
+    st.subheader("Rolagens salvas")
+    st.caption(
+        "Ataque, dano, perícia... Ficam guardadas enquanto esta aba do navegador estiver aberta."
+    )
+    with st.form("form_salvar", border=False, clear_on_submit=True):
+        c1, c2, c3 = st.columns([2, 3, 1], vertical_alignment="bottom")
+        nome = c1.text_input(
+            "Nome", placeholder="Ataque com espada", key="salvar_nome", max_chars=40
+        )
+        expressao = c2.text_input(
+            "Rolagem", placeholder="1d20+5, 1d8+3", key="salvar_expressao", max_chars=LIMITE_TEXTO
+        )
+        if c3.form_submit_button("Salvar", icon=":material/bookmark_add:", width="stretch"):
+            try:
+                ler_rolagem(expressao)
+            except ErroRolagem as erro:
+                st.error(str(erro), icon=":material/error:")
+            else:
+                if nome.strip():
+                    salvas[nome.strip()] = expressao
+                else:
+                    st.warning("Dê um nome a esta rolagem.", icon=":material/warning:")
+    for i, (nome, expressao) in enumerate(salvas.items()):
+        c1, c2 = st.columns([5, 1])
+        if c1.button(f"{nome}: {expressao}", key=f"salva_{i}", width="stretch"):
+            _rolar_e_guardar(expressao)
+            st.rerun()
+        if c2.button("Apagar", key=f"apagar_salva_{i}", icon=":material/delete:", width="stretch"):
+            del salvas[nome]
+            st.rerun()
+
+
+def _grafico_distribuicao(
+    d: Distribuicao,
+    alvo: int | None,
+    dominio: list[int] | None = None,
+    teto: float | None = None,
+):
+    """A chance de cada total. As barras que atingem o alvo ficam na cor de destaque."""
+    # Valores muito raros só encolheriam o desenho; o texto da página avisa que ficam de fora.
+    linhas = [
+        {
+            "Total": v,
+            "Chance": p,
+            "Texto": _porcento(p),
+            "Situação": "Atinge o alvo" if alvo is not None and v >= alvo else "Abaixo do alvo",
+        }
+        for v, p in d.probs.items()
+        if p >= 0.0001
+    ]
+    eixo_x = alt.Axis(
+        labelOverlap=True, labelAngle=0, grid=False, tickColor="#dccfb9", domainColor="#dccfb9"
+    )
+    escala_x = alt.Scale(domain=dominio) if dominio else alt.Undefined
+    return (
+        alt.Chart(alt.Data(values=linhas))
+        .mark_bar(cornerRadiusTopLeft=4, cornerRadiusTopRight=4)
+        .encode(
+            x=alt.X("Total:O", title="Total", axis=eixo_x, scale=escala_x, sort="ascending"),
+            y=alt.Y(
+                "Chance:Q",
+                title=None,
+                scale=alt.Scale(domain=[0, teto]) if teto else alt.Undefined,
+                axis=alt.Axis(
+                    format=".0%", grid=True, gridColor="#ebe2d2", domain=False, ticks=False
+                ),
+            ),
+            color=alt.Color(
+                "Situação:N",
+                scale=alt.Scale(
+                    domain=["Atinge o alvo", "Abaixo do alvo"], range=["#b5452b", "#9a8a70"]
+                ),
+                legend=alt.Legend(orient="top", title=None) if alvo is not None else None,
+            ),
+            tooltip=[
+                alt.Tooltip("Total:O"),
+                alt.Tooltip("Texto:N", title="Chance"),
+            ],
+        )
+        .properties(height=260, background="transparent")
+        .configure_view(strokeWidth=0)
+        .configure_axis(labelColor="#6b5f50", titleColor="#6b5f50")
+        .configure_legend(labelColor="#6b5f50")
+    )
+
+
+def _resumo_distribuicao(d: Distribuicao, alvo: int) -> None:
+    m = st.columns(4)
+    m[0].metric(f"Chance de {alvo} ou mais", _porcento(d.chance(">=", alvo)))
+    m[1].metric("Média", _numero(d.media))
+    m[2].metric("Mínimo e máximo", f"{d.minimo} a {d.maximo}")
+    m[3].metric("Desvio padrão", _numero(d.desvio))
+    maior = max(d.probs.values())
+    empate = sum(abs(p - maior) < 1e-9 for p in d.probs.values()) > 1
+    provavel = "Sem total mais provável (empate)" if empate else f"Mais provável: **{d.moda}**"
+    st.caption(
+        f"{provavel} · Metade das rolagens fica entre **{d.percentil(0.25)}** e "
+        f"**{d.percentil(0.75)}** · 90% ficam até **{d.percentil(0.9)}**"
+    )
+
+
+def _origem_distribuicao(d: Distribuicao) -> str:
+    if d.exata:
+        return "Conta exata."
+    return (
+        f"Simulação de {d.simulacoes:,} rolagens".replace(",", ".")
+        + ": esta regra não tem conta exata com pouco processamento, então os valores são "
+        "aproximados, e o mínimo e o máximo são os que apareceram."
+    )
+
+
+def _guia_probabilidades() -> None:
+    c1, c2 = st.columns([3, 1])
+    expressao = c1.text_input("Rolagem", "1d20+5", key="prob_expressao", max_chars=LIMITE_TEXTO)
+    alvo = int(
+        c2.number_input("Alvo (dificuldade, defesa...)", -100000, 100000, 15, key="prob_alvo")
+    )
+    try:
+        d = _distribuicao(expressao)
+    except ErroRolagem as erro:
+        st.error(str(erro), icon=":material/error:")
+        return
+    _resumo_distribuicao(d, alvo)
+    st.altair_chart(_grafico_distribuicao(d, alvo), width="stretch")
+    st.caption(
+        _origem_distribuicao(d) + " O gráfico omite totais com chance abaixo de 0,01%; a tabela "
+        "mostra todos."
+    )
+    with st.expander("Ver como tabela", icon=":material/table:"):
+        acumulado = {v: d.chance(">=", v) for v in d.probs}
+        st.dataframe(
+            [
+                {
+                    "Total": v,
+                    "Chance": _porcento(p),
+                    "Chance deste total ou mais": _porcento(acumulado[v]),
+                }
+                for v, p in d.probs.items()
+            ],
+            hide_index=True,
+            width="stretch",
+        )
+
+
+def _guia_comparar() -> None:
+    st.caption("Qual é melhor: 2d6 ou 1d12? Com vantagem ou com +2? As duas contra o mesmo alvo.")
+    c1, c2, c3 = st.columns([2, 2, 1])
+    texto_a = c1.text_input("Rolagem A", "1d20+5", key="comparar_a", max_chars=LIMITE_TEXTO)
+    texto_b = c2.text_input("Rolagem B", "vant+3", key="comparar_b", max_chars=LIMITE_TEXTO)
+    alvo = int(c3.number_input("Alvo", -100000, 100000, 15, key="comparar_alvo"))
+    try:
+        a, b = _distribuicao(texto_a), _distribuicao(texto_b)
+    except ErroRolagem as erro:
+        st.error(str(erro), icon=":material/error:")
+        return
+    chance_a, chance_b = a.chance(">=", alvo), b.chance(">=", alvo)
+    diferenca = abs(chance_a - chance_b)
+    if diferenca < 0.0005:
+        st.info(f"As duas têm a mesma chance de atingir {alvo}: {_porcento(chance_a)}.")
+    else:
+        melhor = texto_a if chance_a > chance_b else texto_b
+        st.info(
+            f"**{melhor}** tem mais chance de atingir {alvo}: "
+            f"{_porcento(max(chance_a, chance_b))} contra {_porcento(min(chance_a, chance_b))}, "
+            f"{_numero(diferenca * 100)} pontos percentuais a mais."
+        )
+    # Mesmas escalas nos dois desenhos, para o olho comparar sem conta.
+    teto = max(max(a.probs.values()), max(b.probs.values()))
+    valores = [v for d in (a, b) for v, p in d.probs.items() if p >= 0.0001]
+    dominio = list(range(min(valores), max(valores) + 1))
+    colunas = st.columns(2)
+    for coluna, texto, d in ((colunas[0], texto_a, a), (colunas[1], texto_b, b)):
+        with coluna:
+            st.markdown(f"**{html.escape(texto)}**")
+            st.altair_chart(_grafico_distribuicao(d, alvo, dominio, teto), width="stretch")
+            m = st.columns(2)
+            m[0].metric(f"Chance de {alvo} ou mais", _porcento(d.chance(">=", alvo)))
+            m[1].metric("Média", _numero(d.media))
+            st.caption(_origem_distribuicao(d))
+
+
+def pagina_extras() -> None:
+    st.title("Extras")
+    st.markdown("Ferramentas de mesa que funcionam com qualquer sistema, com ou sem livro.")
+    rolar_guia, prob_guia, comparar_guia = st.tabs(["Rolar dados", "Probabilidades", "Comparar"])
+    with rolar_guia:
+        _guia_rolar()
+    with prob_guia:
+        _guia_probabilidades()
+    with comparar_guia:
+        _guia_comparar()
+
+
 def pagina_conteudo() -> None:
     st.title("Conteúdo e licenças")
     st.markdown(
@@ -1954,7 +2319,12 @@ resumidas, sem texto do livro.
 
 livro = livro_atual()
 paginas = [
-    INICIO, *([RESUMO, GERADOR, FICHA, ANALISES] if livro else []), BASTIDORES, ROTEIRO, CONTEUDO
+    INICIO,
+    *([RESUMO, GERADOR, FICHA, ANALISES] if livro else []),
+    EXTRAS,
+    BASTIDORES,
+    ROTEIRO,
+    CONTEUDO,
 ]  # fmt: skip
 if "_pagina_pendente" in st.session_state:
     st.session_state.pagina = st.session_state.pop("_pagina_pendente")
@@ -1989,5 +2359,6 @@ st.sidebar.caption(
     ANALISES: pagina_analises,
     BASTIDORES: pagina_bastidores,
     ROTEIRO: pagina_roteiro,
+    EXTRAS: pagina_extras,
     CONTEUDO: pagina_conteudo,
 }[st.session_state.pagina]()
