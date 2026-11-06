@@ -1,0 +1,50 @@
+/* Oriental: papel claro, faixa lateral vermelha e selo com a inicial do sistema. */
+@import url("https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap");
+:root {
+  --papel: #fcfaf5;
+  --papel-2: #ffffff;
+  --papel-3: #f1ece1;
+  --tinta: #1c1c1e;
+  --tinta-suave: #55534e;
+  --titulo: #1c1c1e;
+  --linha: #cfc8b8;
+  --ouro: #b3241b;
+  --ouro-suave: #b3241b;
+  --ouro-fundo: #cfc8b8;
+  --link: #b3241b;
+  --acento: #b3241b;
+  --acento-tinta: #ffffff;
+  --tag-tinta: #1c1c1e;
+  --barra-neutra: #a39d90;
+  --grade: #ebe6da;
+  --eixo: #cfc8b8;
+  --info: #2c5f8a;
+  --ok: #3e7346;
+  --aviso: #ad7423;
+  --erro: #b3241b;
+  --fonte-titulo: "Shippori Mincho B1", Georgia, serif;
+  --fonte-corpo: "Zen Kaku Gothic New", "Segoe UI", sans-serif;
+  --fonte-marca: "Shippori Mincho B1", Georgia, serif;
+  --filtro-tabela: invert(0.95) hue-rotate(195deg) saturate(0.4);
+}
+
+/* Faixa lateral vermelha, com um filete de papel. */
+.stApp::before {
+  content: ""; position: fixed; top: 0; bottom: 0; left: 0; width: 9px;
+  background: var(--acento); border-right: 2px solid var(--papel); box-shadow: 2px 0 0 var(--acento);
+}
+/* O selo, redondo e vermelho, com a inicial do sistema. */
+.stApp::after {
+  content: var(--inicial, "O"); position: fixed; top: 14px; right: 34px;
+  width: 58px; height: 58px; display: flex; align-items: center; justify-content: center; border-radius: 50%;
+  background: var(--acento); color: #ffffff; outline: 2px solid var(--papel); outline-offset: -6px;
+  font-family: var(--fonte-titulo); font-weight: 700; font-size: 1.5rem;
+}
+/* Títulos de seção com quadrado vermelho e fio fino. */
+.stApp [data-testid="stHeadingWithActionElements"]:has(h2) { border-bottom: 1px solid var(--linha); margin-bottom: 0.6rem; }
+.stApp h2 { display: flex !important; align-items: center; gap: 0.7rem; }
+.stApp h2::before { content: ""; flex: 0 0 auto; width: 0.7em; height: 0.7em; background: var(--acento); }
+.atributos, .rolagem { border-top: 3px solid var(--acento) !important; border-radius: 0 !important; }
+.st-key-oferenda { border-color: var(--acento) !important; outline-color: var(--linha) !important; background: var(--papel-2) !important; }
+.livro-atual { border-color: var(--linha) !important; background: var(--papel-2) !important; border-top: 3px solid var(--acento) !important; border-radius: 0 !important; }
+@media (max-width: 640px) { .stApp::after { display: none; } }

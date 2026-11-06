@@ -83,13 +83,13 @@ from oraculo.sistemas.generico.leitura import (
 )
 from oraculo.sistemas.generico.modelo import SistemaLido, normalizar
 from oraculo.sistemas.generico.narrativa import ContextoFicha, contexto_lido, sugerir_narrativa
+from oraculo.temas_site import GRIMORIO, cortina_html, css_do_tema, tema_do_site, tokens_do_tema
 
 st.set_page_config(
     page_title="Oráculo do Mestre", page_icon=":material/auto_stories:", layout="wide"
 )
-# Camada visual sobre o tema de .streamlit/config.toml (ver README, seção Design).
-st.html(f"<style>{(Path(__file__).parent / 'estilo.css').read_text(encoding='utf-8')}</style>")
 
+PASTA_TEMAS = Path(__file__).parent / "temas"
 CATALOGO_DND5E = Path(__file__).parents[1] / "dados" / "publicos" / "dnd5e" / "catalogo.json"
 MODELO_DETECTOR = Path(__file__).parents[1] / "dados" / "publicos" / "modelos" / "detector_rpg.json"
 AVALIACAO_GENERICA = (
@@ -356,7 +356,12 @@ def pagina_inicio() -> None:
     with envio:
         livro = livro_atual()
         if livro:
-            origem = "modo demonstração" if livro["demo"] else f"nota {livro['nota']:.0%}"
+            if livro["demo"]:
+                origem = "modo demonstração"
+            elif livro["nota"] is None:  # sistema salvo: o porteiro não leu o livro nesta visita
+                origem = "sistema salvo"
+            else:
+                origem = f"nota {livro['nota']:.0%}"
             st.success(
                 f"Livro validado: **{livro['nome']}** · sistema "
                 f"**{nome_do_sistema(livro)}** ({origem}).",
@@ -763,7 +768,9 @@ def mostrar_veredito(
         uteis = [p for p in paginas if len(p.strip()) >= MINIMO_CARACTERES]
         if len(uteis) > 1:
             st.caption("Nota de cada página")
-            st.bar_chart([modelo.prob_pagina(p) for p in uteis], height=180)
+            st.bar_chart(
+                [modelo.prob_pagina(p) for p in uteis], height=180, color=_cores_do_tema()["ouro"]
+            )
 
 
 def pagina_bastidores() -> None:
@@ -1939,12 +1946,54 @@ def pagina_roteiro() -> None:
 | 6 · Qualquer livro | Leitura com IA: resumo, fichas e encontros de qualquer sistema | Feito |
 | 7 · Leitura profunda | Etapas de criação, leitura a fundo, narrativa e PDF com tema | Feito |
 | 8 · Extras | Rolador de dados, com probabilidades e comparação | Feito |
+| 9 · Visual do livro | O site inteiro muda com o gênero do livro, com uma transição | Feito |
 | 5b · Demonstração | Vídeo curto do fluxo completo | ⏳ |
 """
     )
 
 
 # --------------------------------------------------------------------------- licenças
+# --------------------------------------------------------------------------- visual do livro
+def _tema_do_livro(livro: dict | None) -> str | None:
+    if not livro:
+        return None
+    if livro["sistema"] == "dnd5e":
+        return "fantasia"
+    if livro["sistema"] == "fm":
+        return _TEMA_FM.id
+    if livro["sistema"] == SISTEMA_LIDO:
+        return tema_do_sistema(sistema_lido()).id
+    return None
+
+
+def _aplicar_visual(livro: dict | None) -> None:
+    """Envia o tema do livro a esta sessão e, quando ele muda, a capa que cobre a troca."""
+    ligado = st.session_state.get("visual_do_livro", True)
+    tema = tema_do_site(_tema_do_livro(livro), ligado)
+    anterior = st.session_state.get("_tema_do_site")
+    st.session_state["_tema_do_site"] = tema
+    if anterior is not None and anterior != tema:
+        st.session_state["_trocas_de_tema"] = st.session_state.get("_trocas_de_tema", 0) + 1
+    sistema = nome_do_sistema(livro) if livro else ""
+    titulo = sistema if tema != GRIMORIO else "Oráculo do Mestre"
+    # Camada visual sobre o tema de .streamlit/config.toml (ver README, seção Design). Tudo no mesmo
+    # elemento: a ordem fica garantida (o tema vem depois do estilo normal), tudo chega junto, e a
+    # capa esconde a troca das fontes. Só com <style> o Streamlit levaria o elemento para o fim.
+    estilo = (Path(__file__).parent / "estilo.css").read_text(encoding="utf-8")
+    st.html(
+        f"<style>{estilo}</style><style>{css_do_tema(PASTA_TEMAS, tema, sistema)}</style>"
+        + cortina_html(
+            titulo,
+            st.session_state.get("_trocas_de_tema", 0),
+            tokens_do_tema(PASTA_TEMAS, tema)["ouro"],
+        )
+    )
+
+
+def _cores_do_tema() -> dict[str, str]:
+    return tokens_do_tema(PASTA_TEMAS, st.session_state.get("_tema_do_site", GRIMORIO))
+
+
 # --------------------------------------------------------------------------- extras
 _FACES_RAPIDAS = (4, 6, 8, 10, 12, 20, 100, "F")
 _MAX_HISTORICO = 50
@@ -2144,6 +2193,7 @@ def _grafico_distribuicao(
     teto: float | None = None,
 ):
     """A chance de cada total. As barras que atingem o alvo ficam na cor de destaque."""
+    cores = _cores_do_tema()
     # Valores muito raros só encolheriam o desenho; o texto da página avisa que ficam de fora.
     linhas = [
         {
@@ -2156,7 +2206,11 @@ def _grafico_distribuicao(
         if p >= 0.0001
     ]
     eixo_x = alt.Axis(
-        labelOverlap=True, labelAngle=0, grid=False, tickColor="#46503f", domainColor="#46503f"
+        labelOverlap=True,
+        labelAngle=0,
+        grid=False,
+        tickColor=cores["eixo"],
+        domainColor=cores["eixo"],
     )
     escala_x = alt.Scale(domain=dominio) if dominio else alt.Undefined
     return (
@@ -2169,13 +2223,14 @@ def _grafico_distribuicao(
                 title=None,
                 scale=alt.Scale(domain=[0, teto]) if teto else alt.Undefined,
                 axis=alt.Axis(
-                    format=".0%", grid=True, gridColor="#2c3b35", domain=False, ticks=False
+                    format=".0%", grid=True, gridColor=cores["grade"], domain=False, ticks=False
                 ),
             ),
             color=alt.Color(
                 "Situação:N",
                 scale=alt.Scale(
-                    domain=["Atinge o alvo", "Abaixo do alvo"], range=["#e0c07a", "#7d8f84"]
+                    domain=["Atinge o alvo", "Abaixo do alvo"],
+                    range=[cores["ouro"], cores["barra-neutra"]],
                 ),
                 legend=alt.Legend(orient="top", title=None) if alvo is not None else None,
             ),
@@ -2186,8 +2241,8 @@ def _grafico_distribuicao(
         )
         .properties(height=260, background="transparent")
         .configure_view(strokeWidth=0)
-        .configure_axis(labelColor="#c9bfa8", titleColor="#c9bfa8")
-        .configure_legend(labelColor="#c9bfa8")
+        .configure_axis(labelColor=cores["tinta-suave"], titleColor=cores["tinta-suave"])
+        .configure_legend(labelColor=cores["tinta-suave"])
     )
 
 
@@ -2322,6 +2377,7 @@ resumidas, sem texto do livro.
 
 
 livro = livro_atual()
+_aplicar_visual(livro)
 paginas = [
     INICIO,
     *([RESUMO, GERADOR, FICHA, ANALISES] if livro else []),
@@ -2349,6 +2405,13 @@ if livro:
     )
 else:
     st.sidebar.caption("Entregue um livro no **Início** para liberar o gerador e as análises.")
+st.sidebar.toggle(
+    "Visual do livro",
+    value=True,
+    key="visual_do_livro",
+    disabled=not livro,
+    help="O site muda para combinar com o gênero do livro. Desligado, fica o visual de grimório.",
+)
 st.sidebar.radio("Navegação", paginas, key="pagina")
 st.sidebar.caption(
     f"Projeto de portfólio de ciência de dados · Python, Databricks e GitHub · "

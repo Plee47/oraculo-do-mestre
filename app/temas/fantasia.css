@@ -1,0 +1,48 @@
+/* Fantasia: pergaminho e vinho, com a moldura dupla e os losangos da ficha em PDF. */
+@import url("https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=Uncial+Antiqua&family=Spectral:ital,wght@0,400;0,600;1,400&display=swap");
+:root {
+  --papel: #f7efdc;
+  --papel-2: #fbf6e9;
+  --papel-3: #eadfc4;
+  --tinta: #2e2116;
+  --tinta-suave: #5f4c37;
+  --titulo: #2e2116;
+  --linha: #bfa97f;
+  --ouro: #7a1f24;
+  --ouro-suave: #7a1f24;
+  --ouro-fundo: #bfa97f;
+  --link: #7a1f24;
+  --acento: #7a1f24;
+  --acento-tinta: #fbf6e9;
+  --tag-tinta: #2e2116;
+  --barra-neutra: #a08a63;
+  --grade: #e2d5b7;
+  --eixo: #bfa97f;
+  --info: #2f5f86;
+  --ok: #3f7043;
+  --aviso: #b0762a;
+  --erro: #a32a2a;
+  --fonte-titulo: "IM Fell English SC", Georgia, serif;
+  --fonte-corpo: "Spectral", Georgia, serif;
+  --fonte-marca: "Uncial Antiqua", Georgia, serif;
+  --filtro-tabela: invert(0.93) hue-rotate(205deg) sepia(0.28);
+}
+
+/* Moldura dupla com cantos em losango, fixa na janela. */
+.stApp::after {
+  content: ""; position: fixed; inset: 8px;
+  border: 3px double var(--ouro);
+}
+.stApp [data-testid="stHeadingWithActionElements"]:has(h2) { position: relative; padding-bottom: 0.45rem; margin-bottom: 0.4rem; }
+.stApp [data-testid="stHeadingWithActionElements"]:has(h2)::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: var(--ouro);
+}
+.stApp [data-testid="stHeadingWithActionElements"]:has(h2)::before {
+  content: ""; position: absolute; left: 0; bottom: -4px; width: 9px; height: 9px; background: var(--ouro); transform: rotate(45deg);
+}
+.atributos { border-color: var(--ouro) !important; }
+.pipeline li::before { border-radius: 0; transform: rotate(45deg); }
+.livro-atual { border-color: var(--ouro) !important; background: var(--papel-2) !important; }
+.st-key-oferenda { background: var(--papel-2) !important; }
+.rolagem .dado { border-radius: 0; }
+.vitrine h1 { letter-spacing: 0.01em; }

@@ -1,0 +1,158 @@
+/* O que todo tema de livro sobrepõe nos componentes do Streamlit, só com as variáveis do tema.
+   O grimório não usa este arquivo. */
+
+/* ------------------------------------------------------------ superfícies e texto */
+html, body { background: var(--papel); }
+.stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"], [data-testid="stHeader"] {
+  background: var(--papel) !important; color: var(--tinta) !important;
+}
+[data-testid="stSidebar"], [data-testid="stSidebar"] > div, [data-testid="stSidebar"] section {
+  background: var(--papel-3) !important; border-color: var(--ouro-fundo) !important;
+}
+[data-testid="stSidebar"] button[kind="headerNoPadding"] *, [data-testid="stSidebarCollapseButton"] *,
+[data-testid="stExpandSidebarButton"] * { color: var(--tinta-suave) !important; }
+
+/* Fontes: tudo menos ícones e código. */
+.stApp, .stApp p, .stApp li, .stApp label, .stApp input, .stApp textarea, .stApp button, .stApp summary,
+.stApp td, .stApp th, .stApp div, .stApp a, .stApp small,
+[data-baseweb="popover"], [data-baseweb="popover"] li, [data-baseweb="popover"] div { font-family: var(--fonte-corpo); }
+.stApp span { font-family: inherit; }
+/* Os ícones são letras de uma fonte própria: sem ela, viram palavras na tela. */
+.stApp [data-testid="stIconMaterial"], .stApp [data-testid="stExpanderIcon"], .stApp [data-testid="stExpanderIcon"] span,
+.stApp [data-testid*="Icon"] span, .stApp span[translate="no"] { font-family: "Material Symbols Rounded" !important; }
+.stApp h1, .stApp h2, .stApp h3, .stApp h4, .stApp h5, .stApp h6,
+.stApp h1 span, .stApp h2 span, .stApp h3 span, .stApp h4 span {
+  font-family: var(--fonte-titulo) !important; color: var(--titulo) !important;
+}
+.stApp code, .stApp pre, .stApp pre *, .rolagem .expressao, .rolagem .notacao, .rolagem .conta, .pipeline .tec {
+  font-family: "JetBrains Mono", Consolas, monospace !important;
+}
+.stApp code { background: var(--papel-2) !important; color: var(--tinta) !important; }
+
+.stApp p, .stApp li, .stApp label, .stApp td, .stApp th, .stApp tr, .stApp strong, .stApp em, .stApp b,
+.stApp summary, .stApp small, .stApp span, .stApp div[data-testid="stMarkdownContainer"] {
+  color: inherit;
+}
+.stApp p, .stApp li, .stApp label, .stApp td, .stApp th, .stApp summary { color: var(--tinta); }
+.stApp a, .stApp a *, .stApp a:hover { color: var(--link) !important; }
+[data-testid="stCaptionContainer"], [data-testid="stCaptionContainer"] p,
+[data-testid="stCaptionContainer"] li, [data-testid="stWidgetLabel"] small,
+[data-testid="stFileUploaderDropzoneInstructions"], [data-testid="stFileUploaderDropzoneInstructions"] * {
+  color: var(--tinta-suave) !important;
+}
+[data-testid="stMetricValue"], [data-testid="stMetricValue"] *, [data-testid="stMetricLabel"], [data-testid="stMetricLabel"] * {
+  color: var(--tinta) !important;
+}
+.stApp table, .stApp tr, .stApp td, .stApp th, .stApp hr { border-color: var(--linha) !important; }
+.stApp hr { background: var(--linha) !important; }
+[data-testid="stIconMaterial"] { color: inherit !important; }
+.stApp [data-testid="stHtml"] { color: var(--tinta); }
+.livro-atual .nome { color: var(--tinta); }
+/* Ornamentos do tema ficam acima da barra lateral e nunca capturam cliques. */
+.stApp::before, .stApp::after { z-index: 1000005; pointer-events: none; }
+/* A regra geral de fonte acima é mais forte que a destes elementos do site. */
+.stApp .marca { font-family: var(--fonte-marca); }
+.stApp .oferenda-titulo, .stApp .vitrine h1, .stApp .vitrine h1 *, .stApp .rolagem .total, .stApp .atributos .valor,
+.stApp .pipeline .etapa, .stApp .fluxo .n, .stApp [data-testid="stMetricValue"], .stApp [data-testid="stMetricValue"] * { font-family: var(--fonte-titulo); }
+.stApp .livro-atual .nome { font-family: var(--fonte-titulo); }
+
+/* ------------------------------------------------------------ botões */
+.stApp [data-testid="stBaseButton-secondary"], .stApp [data-testid="stBaseButton-secondaryFormSubmit"] {
+  background: var(--papel-2) !important; color: var(--tinta) !important; border-color: var(--linha) !important;
+}
+.stApp [data-testid="stBaseButton-secondary"] *, .stApp [data-testid="stBaseButton-secondaryFormSubmit"] * { color: var(--tinta) !important; }
+@media (hover: hover) and (pointer: fine) {
+  .stApp [data-testid="stBaseButton-secondary"]:hover, .stApp [data-testid="stBaseButton-secondaryFormSubmit"]:hover {
+    border-color: var(--ouro) !important;
+  }
+}
+.stApp [data-testid="stBaseButton-primary"], .stApp [data-testid="stBaseButton-primaryFormSubmit"] {
+  background: var(--acento) !important; border-color: var(--acento) !important; color: var(--acento-tinta) !important;
+}
+.stApp [data-testid="stBaseButton-primary"] *, .stApp [data-testid="stBaseButton-primaryFormSubmit"] * { color: var(--acento-tinta) !important; }
+.stApp [data-testid="stBaseButton-secondary"]:disabled, .stApp [data-testid="stBaseButton-secondary"]:disabled * {
+  color: var(--tinta-suave) !important;
+}
+
+/* ------------------------------------------------------------ campos */
+.stApp [data-baseweb="input"], .stApp [data-baseweb="base-input"], .stApp [data-baseweb="textarea"],
+.stApp [data-baseweb="select"] > div, .stApp [data-testid="stNumberInputContainer"],
+.stApp [data-testid="stTextInputRootElement"], .stApp [data-testid="stTextAreaRootElement"],
+.stApp [data-testid="stMultiSelect"] [data-baseweb="select"] > div,
+.stApp [data-testid="stSelectbox"] [role="group"], .stApp [data-testid="stMultiSelect"] [role="group"] {
+  background: var(--papel-2) !important; border-color: var(--linha) !important; color: var(--tinta) !important;
+}
+.stApp input, .stApp textarea { background: transparent !important; color: var(--tinta) !important; -webkit-text-fill-color: var(--tinta); caret-color: var(--ouro); }
+.stApp input::placeholder, .stApp textarea::placeholder { color: var(--tinta-suave) !important; -webkit-text-fill-color: var(--tinta-suave); opacity: 1; }
+.stApp [data-baseweb="select"] *, .stApp [data-testid="stNumberInputContainer"] * { color: var(--tinta); }
+.stApp [data-testid="stNumberInputContainer"] button { background: transparent !important; }
+.stApp [data-testid="stNumberInputContainer"] button:hover { background: var(--papel-3) !important; }
+.stApp [data-baseweb="select"] svg, .stApp [role="group"] button, .stApp [role="group"] button svg { color: var(--tinta-suave) !important; fill: currentColor; }
+.stApp [data-testid="stSelectbox"] input, .stApp [data-testid="stMultiSelect"] input { color: var(--tinta) !important; -webkit-text-fill-color: var(--tinta); }
+.stApp [data-baseweb="tag"], .stApp [data-testid="stMultiSelectTagsContainer"] span[data-baseweb="tag"] { background: var(--ouro-fundo) !important; }
+.stApp [data-baseweb="tag"] * { color: var(--tag-tinta) !important; }
+
+[data-baseweb="popover"] > div, [data-baseweb="popover"] ul, [data-baseweb="popover"] [role="listbox"], [data-baseweb="popover"] [data-testid="stSelectboxVirtualDropdown"] {
+  background: var(--papel-2) !important; color: var(--tinta) !important; border-color: var(--linha) !important;
+}
+[data-testid="stSelectboxVirtualDropdown"], [data-testid="stSelectboxVirtualDropdown"] * { background-color: var(--papel-2); color: var(--tinta) !important; border-color: var(--linha) !important; }
+[data-testid="stSelectboxVirtualDropdown"] li:hover, [data-testid="stSelectboxVirtualDropdown"] [aria-selected="true"] { background-color: var(--papel-3) !important; }
+[data-baseweb="popover"] li, [data-baseweb="popover"] li * { color: var(--tinta) !important; background: transparent; }
+[data-baseweb="popover"] li:hover, [data-baseweb="popover"] li[aria-selected="true"] { background: var(--papel-3) !important; }
+[data-baseweb="tooltip"], [data-baseweb="tooltip"] > div, [data-testid="stTooltipContent"], [data-testid="stTooltipContent"] * {
+  background: var(--papel-3) !important; color: var(--tinta) !important;
+}
+
+/* Rádio: círculo vazio ou cheio com o acento. */
+.stApp [data-testid="stRadioOption"] > div > div:first-child { background: transparent !important; border-color: var(--tinta-suave) !important; }
+.stApp [data-testid="stRadioOption"]:has(input:checked) > div > div:first-child { background: var(--acento) !important; border-color: var(--acento) !important; }
+.stApp [data-testid="stRadioOption"] > div > div:first-child > div { background: var(--acento-tinta) !important; }
+
+/* Interruptor. */
+.stApp [data-testid="stCheckbox"] label > div:not([data-testid]) { background: var(--barra-neutra) !important; }
+.stApp [data-testid="stCheckbox"] label:has(input:checked) > div:not([data-testid]) { background: var(--acento) !important; }
+.stApp [data-testid="stCheckbox"] label > div:not([data-testid]) > div { background: var(--papel-2) !important; }
+.stApp [data-testid="stCheckbox"] label:has(input:disabled) { opacity: 0.6; }
+.stApp [data-testid="stTooltipHoverTarget"] svg { stroke: var(--tinta-suave) !important; }
+
+/* Controle deslizante: a trilha traz a cor do tema padrão no próprio elemento, então fica lisa. */
+.stApp [data-testid="stSlider"] [role="group"] > div > div:first-child { background: var(--linha) !important; }
+.stApp [data-testid="stSlider"] [role="group"] > div > div:has(> div > input) { background: var(--acento) !important; box-shadow: none !important; }
+.stApp [data-testid="stSliderThumbValue"], .stApp [data-testid="stSliderThumbValue"] * { color: var(--tinta) !important; background: transparent !important; }
+.stApp [data-testid="stProgressBarTrack"], .stApp [data-testid="stProgress"] > div > div { background: var(--linha) !important; }
+.stApp [data-testid="stProgress"] [role="progressbar"] > div > div > div { background: var(--acento) !important; }
+
+/* Abas. */
+.stApp [data-baseweb="tab-list"], .stApp [data-testid="stTab"], .stApp [data-testid="stTab"] > div { background: transparent !important; }
+.stApp [data-baseweb="tab-border"] { background: var(--linha) !important; }
+.stApp [data-baseweb="tab-highlight"] { background: var(--ouro) !important; }
+.stApp [data-baseweb="tab"], .stApp [data-baseweb="tab"] * { background: transparent !important; color: var(--tinta) !important; }
+.stApp [data-baseweb="tab"][aria-selected="true"], .stApp [data-baseweb="tab"][aria-selected="true"] * { color: var(--link) !important; }
+
+/* Caixas, expansores e envio de arquivo. */
+.stApp [data-testid="stVerticalBlock"][class*="st-key"], .stApp [data-testid="stExpander"] details,
+.stApp [data-testid="stExpanderDetails"], .stApp [data-testid="stForm"] {
+  border-color: var(--linha) !important; background: transparent;
+}
+.stApp [data-testid="stExpander"] summary { background: var(--papel-2) !important; }
+.stApp [data-testid="stExpander"] summary:hover, .stApp [data-testid="stExpander"] summary:hover * { color: var(--link) !important; }
+.stApp div[data-testid="stVerticalBlock"]:not([class*="st-key"]) { border-color: var(--linha); }
+.stApp [data-testid="stLayoutWrapper"] > [data-testid="stVerticalBlock"] { border-color: var(--linha) !important; }
+.stApp [data-testid="stFileUploaderDropzone"], .stApp [data-testid="stFileUploaderDropzone"] section {
+  background: var(--papel) !important; border-color: var(--linha) !important;
+}
+.stApp [data-testid="stFileUploaderFile"], .stApp [data-testid="stFileUploaderFile"] * { color: var(--tinta) !important; }
+
+/* Tabelas desenhadas em canvas não aceitam CSS de cor: um filtro as leva para a paleta do tema. */
+.stApp [data-testid="stDataFrame"] canvas { filter: var(--filtro-tabela); }
+.stApp [data-testid="stDataFrameResizable"] { border-color: var(--linha) !important; }
+
+/* ------------------------------------------------------------ alertas */
+.stApp [data-testid="stAlertContainer"], .stApp [data-testid="stAlertContainer"] * { color: var(--tinta) !important; }
+.stApp [data-testid="stAlertContentInfo"], .stApp [data-testid="stAlert"]:has([data-testid="stAlertContentInfo"]) [data-testid="stAlertContainer"] { background: color-mix(in srgb, var(--info) 16%, var(--papel)) !important; }
+.stApp [data-testid="stAlertContentSuccess"], .stApp [data-testid="stAlert"]:has([data-testid="stAlertContentSuccess"]) [data-testid="stAlertContainer"] { background: color-mix(in srgb, var(--ok) 16%, var(--papel)) !important; }
+.stApp [data-testid="stAlertContentWarning"], .stApp [data-testid="stAlert"]:has([data-testid="stAlertContentWarning"]) [data-testid="stAlertContainer"] { background: color-mix(in srgb, var(--aviso) 18%, var(--papel)) !important; }
+.stApp [data-testid="stAlertContentError"], .stApp [data-testid="stAlert"]:has([data-testid="stAlertContentError"]) [data-testid="stAlertContainer"] { background: color-mix(in srgb, var(--erro) 16%, var(--papel)) !important; }
+
+::selection { background: var(--acento); color: var(--acento-tinta); }
+html { caret-color: var(--ouro); }

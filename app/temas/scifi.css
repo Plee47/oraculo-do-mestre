@@ -1,0 +1,58 @@
+/* Ficção científica: painel escuro, cantos de interface, régua e títulos de terminal. */
+@import url("https://fonts.googleapis.com/css2?family=Oxanium:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap");
+:root {
+  --papel: #081521;
+  --papel-2: #0e2030;
+  --papel-3: #050e17;
+  --tinta: #dcecf3;
+  --tinta-suave: #a3bcc9;
+  --titulo: #eef8fc;
+  --linha: #2a4558;
+  --ouro: #4ad4e6;
+  --ouro-suave: #4ad4e6;
+  --ouro-fundo: #2a4558;
+  --link: #6fdfee;
+  --acento: #4ad4e6;
+  --acento-tinta: #06202c;
+  --tag-tinta: #eef8fc;
+  --barra-neutra: #5f7f91;
+  --grade: #15293a;
+  --eixo: #2a4558;
+  --info: #5fa8d8;
+  --ok: #6fc28a;
+  --aviso: #e0b050;
+  --erro: #ec6a6a;
+  --fonte-titulo: "Oxanium", "Segoe UI", sans-serif;
+  --fonte-corpo: "IBM Plex Sans", "Segoe UI", sans-serif;
+  --fonte-marca: "Oxanium", "Segoe UI", sans-serif;
+  --filtro-tabela: hue-rotate(43deg) saturate(1.35);
+}
+
+/* Os quatro cantos de interface, fixos na janela. */
+.stApp::after {
+  content: ""; position: fixed; inset: 8px;
+  --c: var(--ouro);
+  background:
+    linear-gradient(var(--c), var(--c)) 0 0 / 34px 2px no-repeat,
+    linear-gradient(var(--c), var(--c)) 0 0 / 2px 34px no-repeat,
+    linear-gradient(var(--c), var(--c)) 100% 0 / 34px 2px no-repeat,
+    linear-gradient(var(--c), var(--c)) 100% 0 / 2px 34px no-repeat,
+    linear-gradient(var(--c), var(--c)) 0 100% / 34px 2px no-repeat,
+    linear-gradient(var(--c), var(--c)) 0 100% / 2px 34px no-repeat,
+    linear-gradient(var(--c), var(--c)) 100% 100% / 34px 2px no-repeat,
+    linear-gradient(var(--c), var(--c)) 100% 100% / 2px 34px no-repeat;
+}
+/* Títulos de seção como uma linha de terminal. */
+.stApp [data-testid="stHeadingWithActionElements"]:has(h2) { border-bottom: 1px solid var(--ouro); margin-bottom: 0.6rem; position: relative; }
+.stApp [data-testid="stHeadingWithActionElements"]:has(h2)::after {
+  content: ""; position: absolute; right: 0; bottom: -2px; width: 44px; height: 3px; background: var(--ouro);
+}
+.stApp h2::before { content: "// "; color: var(--ouro); }
+/* Cantos cortados, como os das caixas da ficha. */
+.stApp [data-testid="stBaseButton-primary"], .stApp [data-testid="stBaseButton-primaryFormSubmit"],
+.stApp [data-testid="stBaseButton-secondary"], .stApp [data-testid="stBaseButton-secondaryFormSubmit"] {
+  border-radius: 0 !important; clip-path: polygon(0 0, calc(100% - 9px) 0, 100% 9px, 100% 100%, 9px 100%, 0 calc(100% - 9px));
+}
+.livro-atual, .atributos, .rolagem { border-color: var(--ouro-fundo) !important; border-radius: 0 !important; background: var(--papel-2) !important; }
+.st-key-oferenda { border-color: var(--ouro) !important; outline-color: var(--linha) !important; background: var(--papel-2) !important; }
+.atributos .valor { color: var(--ouro) !important; }
