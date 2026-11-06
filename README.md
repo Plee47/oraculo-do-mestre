@@ -22,7 +22,7 @@ Projeto de portfólio de ciência de dados com **Python + Databricks + GitHub**,
 As dicas vêm de um **motor de regras explicável**: cada dica diz qual mecânica do sistema a
 gerou. O LLM só é usado para ler os livros e para escrever as dicas em linguagem natural.
 
-**Sistemas:** D&D 5ª edição (SRD 5.1) · Feiticeiros & Maldições (Fase 4)
+**Sistemas:** D&D 5ª edição (SRD 5.1) · Feiticeiros & Maldições (v2.5)
 
 ## Arquitetura
 
@@ -58,7 +58,7 @@ Por que essa divisão: [ADR 0001](docs/decisoes/0001-databricks-fabrica-streamli
 - [x] **Fase 2 · Análises:** fraquezas do grupo, desequilíbrio de encontros, dicas explicáveis
 - [x] **Fase 3a · Detector de livros:** "é livro de RPG?" com modelo explicável avaliado no MLflow
 - [x] **Fase 3b · Leitor de livros:** porteiro + extração com LLM (modelos do Databricks) avaliada contra o SRD
-- [ ] **Fase 4 · Feiticeiros & Maldições:** segundo sistema, extraído pelo leitor
+- [x] **Fase 4 · Feiticeiros & Maldições:** segundo sistema (fichas, análise de grupo, porteiro)
 - [ ] **Fase 5 · Polimento:** resultados, vídeo de demonstração
 
 ## Pipeline de dados (Fase 1)
@@ -240,12 +240,39 @@ oraculo_dev → livros_privados → *Upload*) e rode o job. O porteiro decide, e
 extraído fica nas tabelas com `privado = true`, que **nunca são exportadas**
 ([ADR 0005](docs/decisoes/0005-leitor-de-livros-com-llm.md)).
 
+## Feiticeiros & Maldições (Fase 4)
+
+Segundo sistema, para provar que o motor é genérico: adicionar um sistema é uma pasta nova
+em `src/oraculo/sistemas/` com um `sistema.yaml` (dados) e as regras em Python (fórmulas).
+
+| Peça | O que faz |
+|---|---|
+| `sistemas/fm/sistema.yaml` | 6 especializações, 7 origens, perícias, testes de resistência, compra de pontos |
+| `sistemas/fm/__init__.py` | PV, PE/estamina, Defesa, CD de especialização e de técnica, resistências (mestre no nível 9) |
+| `sistemas/fm/gerador.py` | Fichas válidas com cada escolha explicada (origem, atributos, perícias, equipamento) |
+| `sistemas/fm/analise.py` | Fraquezas do grupo: falta de Suporte, linha de frente, resistências sem treino, alcance |
+
+As fórmulas são testadas contra o exemplo de criação passo a passo do próprio livro
+(Especialista em Combate com CON 16 → 15 PV e 4 PE no nível 1).
+
+**O porteiro reconhece o livro:** o PDF real (368 páginas) passa como "livro de Feiticeiros
+& Maldições (nota 86%)", sem retreinar o detector. Ele é aceito no leitor, mas não vai ao
+extrator de magias e monstros: o livro base não tem listas prontas (cada jogador cria a
+própria técnica e os feitiços) nem bestiário, então **ainda não há análise de encontro**
+para este sistema.
+
+**Licença:** projeto de fãs gratuito que permite usar o sistema como base, com crédito aos
+autores. Aqui ficam só as fórmulas, resumidas à mão; nada do texto do livro entra no
+repositório, e `conteudo_publico: false` faz o guardião bloquear qualquer dado extraído dele
+([ADR 0006](docs/decisoes/0006-feiticeiros-e-maldicoes.md)).
+
 ## Estrutura
 
 ```
 ├── src/oraculo/
 │   ├── nucleo/             # ficha genérica, achados de análise, contrato de sistema
 │   ├── sistemas/dnd5e/     # regras, catálogo, parser do SRD, gerador, análises
+│   ├── sistemas/fm/        # Feiticeiros & Maldições: regras, gerador, análise de grupo
 │   ├── leitor/             # corpus, detector, porteiro, extração com LLM, avaliação
 │   └── guardiao.py         # bloqueia livros/dados protegidos no repo (ADR 0002)
 ├── dados/publicos/         # dados exportados pelo Databricks (só licença aberta)
@@ -305,3 +332,8 @@ O detector de livros foi treinado também com o *Tagmar* (Projeto Tagmar, licen�
 [CC BY-NC-SA 3.0 BR](https://creativecommons.org/licenses/by-nc-sa/3.0/br/)), com o *SRD 5.2*
 (CC BY 4.0) e com obras em domínio público do [Projeto Gutenberg](https://www.gutenberg.org).
 Nenhum desses textos é publicado aqui: só os 6 coeficientes do modelo.
+
+As mecânicas de *Feiticeiros & Maldições* (Livro de Regras v2.5) são de Setsugiri, Parker e
+equipe, num projeto de fãs gratuito inspirado em *Jujutsu Kaisen*, de Gege Akutami. O livro
+permite usar o sistema como base desde que os autores recebam crédito. Este repositório tem
+apenas um resumo das fórmulas, escrito para o projeto, sem texto do livro.

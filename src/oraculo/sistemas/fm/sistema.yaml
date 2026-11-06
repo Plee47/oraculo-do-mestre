@@ -1,0 +1,103 @@
+# Feiticeiros & Maldições — resumo das MECÂNICAS (números e fórmulas), escrito para este projeto.
+# Nenhum texto do livro é reproduzido aqui. O livro permite usar o sistema como base, modificando
+# ou adaptando, desde que os autores recebam crédito (seção "Créditos e considerações").
+# Crédito: Feiticeiros & Maldições, Livro de Regras v2.5 — desenvolvimento de Setsugiri e Parker;
+# projeto de fãs gratuito, inspirado em Jujutsu Kaisen (Gege Akutami).
+id: fm
+nome: "Feiticeiros & Maldições"
+versao: "2.5"
+fonte: "Feiticeiros & Maldições — Livro de Regras v2.5 (Setsugiri, Parker e equipe)"
+licenca: "Projeto de fãs gratuito; uso das mecânicas permitido com crédito aos autores"
+# false: nada extraído do livro vai para dados/publicos/ (o guardião bloqueia). Só este resumo
+# de mecânicas, escrito à mão, fica no código.
+conteudo_publico: false
+nivel_maximo: 20
+
+atributos:
+  - { id: for, nome: Força, abrev: FOR, minimo: 1, maximo: 30 }
+  - { id: des, nome: Destreza, abrev: DES, minimo: 1, maximo: 30 }
+  - { id: con, nome: Constituição, abrev: CON, minimo: 1, maximo: 30 }
+  - { id: int, nome: Inteligência, abrev: INT, minimo: 1, maximo: 30 }
+  - { id: sab, nome: Sabedoria, abrev: SAB, minimo: 1, maximo: 30 }
+  - { id: pre, nome: Presença, abrev: PRE, minimo: 1, maximo: 30 }
+
+# Especializações (equivalem às classes).
+# atributos_principais: atributos-chave da CD de especialização (o melhor deles é usado)
+# resistencias + resistencias_escolha: opções de teste de resistência treinado e quantas escolher
+# energia_por_nivel: PE por nível (Restringido: pontos de estamina, ver extras.energia)
+classes:
+  - { id: lutador, nome: Lutador, papel: combatente, dado_vida: 10, pv_primeiro_nivel: 12, energia_por_nivel: 4, atributos_principais: [for, des], resistencias: [fortitude, reflexos], resistencias_escolha: 1, prioridade: [for, con, des, sab, pre, int] }
+  - { id: especialista_combate, nome: Especialista em Combate, papel: combatente, dado_vida: 10, pv_primeiro_nivel: 12, energia_por_nivel: 4, atributos_principais: [for, des, sab], resistencias: [fortitude, reflexos], resistencias_escolha: 1, prioridade: [des, con, for, sab, int, pre] }
+  - { id: especialista_tecnica, nome: Especialista em Técnica, papel: tecnico, dado_vida: 8, pv_primeiro_nivel: 10, energia_por_nivel: 6, energia_soma_atributo: true, atributos_principais: [int, sab], resistencias: [astucia, vontade], resistencias_escolha: 1, prioridade: [int, con, des, sab, pre, for] }
+  - { id: controlador, nome: Controlador, papel: controlador, dado_vida: 8, pv_primeiro_nivel: 10, energia_por_nivel: 5, energia_soma_atributo: true, atributos_principais: [pre, sab], resistencias: [astucia, vontade], resistencias_escolha: 1, prioridade: [pre, con, sab, des, int, for] }
+  - { id: suporte, nome: Suporte, papel: suporte, dado_vida: 8, pv_primeiro_nivel: 10, energia_por_nivel: 5, energia_soma_atributo: true, atributos_principais: [pre, sab], resistencias: [astucia, vontade], resistencias_escolha: 1, prioridade: [sab, con, pre, des, int, for] }
+  - { id: restringido, nome: Restringido, papel: combatente, dado_vida: 12, pv_primeiro_nivel: 16, energia_por_nivel: 4, atributos_principais: [for, des, con, int, sab, pre], resistencias: [fortitude, reflexos], prioridade: [for, des, con, sab, int, pre] }
+
+extras:
+  conjunto_padrao: [15, 14, 13, 12, 10, 8]
+  compra_pontos:
+    orcamento: 17
+    custo: { 8: -2, 9: -1, 10: 0, 11: 2, 12: 3, 13: 4, 14: 5, 15: 7 }
+  limite_atributo_comum: 20  # passar disso exige habilidade, talento ou característica
+  niveis_pontos_atributo: [4, 8, 12, 16, 20]  # +2 pontos de atributo em cada um
+  deslocamento_base: 9  # metros
+
+  papeis:
+    combatente: "Linha de frente: aguenta e causa dano corpo a corpo"
+    tecnico: "Dano e efeitos com a técnica amaldiçoada"
+    controlador: "Luta através de invocações (shikigamis e corpos amaldiçoados)"
+    suporte: "Cura com energia reversa e fortalece aliados"
+
+  energia:
+    padrao: { id: pe, nome: "Pontos de Energia Amaldiçoada" }
+    restringido: { id: estamina, nome: "Pontos de Estamina" }
+
+  resistencias:
+    astucia: { nome: Astúcia, atributo: int, contra: "sobrecarga de informação e ataques à mente" }
+    fortitude: { nome: Fortitude, atributo: con, contra: "venenos e efeitos que debilitam o corpo" }
+    integridade: { nome: Integridade, atributo: con, contra: "efeitos que danificam ou alteram a alma" }
+    reflexos: { nome: Reflexos, atributo: des, contra: "áreas e efeitos que dá para desviar" }
+    vontade: { nome: Vontade, atributo: sab, contra: "influência e perturbação da mente e do espírito" }
+
+  # Treinamento com armas que acertam de longe (resumo dos treinamentos de cada especialização).
+  armas_distancia: [especialista_combate, especialista_tecnica, controlador, restringido]
+
+  pericias:
+    acrobacia: { nome: Acrobacia, atributo: des }
+    atletismo: { nome: Atletismo, atributo: for }
+    enganacao: { nome: Enganação, atributo: pre }
+    feiticaria: { nome: Feitiçaria, atributo: int, requer_treino: true }
+    furtividade: { nome: Furtividade, atributo: des }
+    historia: { nome: História, atributo: int }
+    intimidacao: { nome: Intimidação, atributo: pre }
+    intuicao: { nome: Intuição, atributo: sab }
+    investigacao: { nome: Investigação, atributo: int }
+    medicina: { nome: Medicina, atributo: sab, requer_treino: true }
+    ocultismo: { nome: Ocultismo, atributo: sab }
+    oficio: { nome: Ofício, atributo: int, requer_treino: true }
+    percepcao: { nome: Percepção, atributo: sab }
+    performance: { nome: Performance, atributo: pre }
+    persuasao: { nome: Persuasão, atributo: pre }
+    prestidigitacao: { nome: Prestidigitação, atributo: des, requer_treino: true }
+    tecnologia: { nome: Tecnologia, atributo: int }
+
+  # Treinamentos em perícias de cada especialização no 1º nível.
+  pericias_especializacao:
+    lutador: { oficios: 1, uma_de: [atletismo, acrobacia], livres: 3 }
+    especialista_combate: { oficios: 2, uma_de: [atletismo, acrobacia], livres: 3 }
+    especialista_tecnica: { oficios: 2, fixas: [feiticaria, ocultismo], livres: 2 }
+    controlador: { oficios: 1, fixas: [percepcao, persuasao], livres: 2 }
+    suporte: { oficios: 2, fixas: [medicina, prestidigitacao], livres: 3 }
+    restringido: { oficios: 1, livres: 4, proibidas: [feiticaria] }
+
+  # Origens: de onde vem o poder do personagem.
+  # livres: bônus a distribuir em atributos diferentes (ex.: +2 num e +1 noutro)
+  # pontos/maximo: pontos soltos para distribuir, com teto por atributo
+  origens:
+    inato: { nome: Inato, livres: [2, 1] }
+    herdado: { nome: Herdado, livres: [2, 1], nota: "bônus exatos dependem do clã" }
+    derivado: { nome: Derivado, livres: [2, 1], rara: true }
+    restringido: { nome: Restringido, fixo: { for: 1, des: 1, con: 1 }, pontos: 2, pontos_em: [for, des, con], rara: true, exige_especializacao: restringido, deslocamento_extra: 3 }
+    feto_hibrido: { nome: Feto Amaldiçoado Híbrido, livres: [2, 1], rara: true }
+    sem_tecnica: { nome: Sem Técnica, pontos: 4, maximo_por_atributo: 3, pericias_extras: 2 }
+    corpo_mutante: { nome: Corpo Amaldiçoado Mutante, pontos: 2, rara: true }

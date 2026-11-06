@@ -14,7 +14,7 @@ from pydantic import BaseModel
 
 from oraculo.nucleo.ficha import Ficha, Problema
 
-SISTEMAS_DISPONIVEIS = ("dnd5e",)
+SISTEMAS_DISPONIVEIS = ("dnd5e", "fm")
 
 
 class Atributo(BaseModel):
@@ -33,8 +33,12 @@ class Classe(BaseModel):
     dado_vida: int | None = None
     atributos_principais: list[str] = []
     resistencias: list[str] = []
+    resistencias_escolha: int | None = None  # None = todas as da lista; n = escolhe n delas
     conjuracao: str | None = None
     prioridade: list[str] = []
+    pv_primeiro_nivel: int | None = None  # quando não é o próprio dado de vida
+    energia_por_nivel: int | None = None  # PE, mana, estamina...
+    energia_soma_atributo: bool = False  # soma o modificador do atributo-chave uma vez
 
 
 class DefinicaoSistema(BaseModel):

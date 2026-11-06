@@ -31,6 +31,9 @@ from oraculo.sistemas.dnd5e import ATRIBUTOS, custo_compra_pontos, modificador
 from oraculo.sistemas.dnd5e.analise import TIPOS_PT, analisar_encontro, analisar_grupo, perfil
 from oraculo.sistemas.dnd5e.catalogo import Catalogo
 from oraculo.sistemas.dnd5e.gerador import PAPEIS, calcular_ca, gerar_ficha
+from oraculo.sistemas.fm import analise as fm_analise
+from oraculo.sistemas.fm import custo_compra_pontos as fm_custo
+from oraculo.sistemas.fm import gerador as fm_gerador
 
 st.set_page_config(page_title="Oráculo do Mestre", page_icon="🔮", layout="wide")
 
@@ -45,6 +48,7 @@ PAGINAS = (
     "Análise de grupo e encontro (D&D 5e)",
     "Leitor de livros de RPG",
     "Ficha rápida (D&D 5e)",
+    "Feiticeiros & Maldições",
     "Roteiro",
     "Conteúdo e licenças",
 )
@@ -467,6 +471,180 @@ def pagina_ficha() -> None:
         (st.error if p.gravidade == "erro" else st.warning)(p.mensagem)
 
 
+# --------------------------------------------------------------------------- F&M
+_ROTULOS_FM = {
+    "defesa": "Defesa", "pv_maximo": "PV máximo", "pe": "PE", "estamina": "Estamina",
+    "cd_especializacao": "CD de especialização", "atencao": "Atenção",
+}  # fmt: skip
+
+
+def _fm_resumo(ficha: Ficha) -> None:
+    regras = obter_regras("fm")
+    defn = regras.definicao
+    d = regras.derivados(ficha)
+    energia = "pe" if "pe" in d else "estamina"
+    chaves = ("pv_maximo", "defesa", energia, "cd_especializacao", "atencao")
+    for col, chave in zip(st.columns(5), chaves, strict=True):
+        col.metric(_ROTULOS_FM[chave], d.get(chave, "—"))
+    for col, attr in zip(st.columns(6), defn.atributos, strict=True):
+        valor = ficha.atributos.get(attr.id, 10)
+        col.markdown(f"**{attr.abrev}**  \n### {valor}  \n{d[f'mod_{attr.id}']:+d}")
+    res = defn.extras["resistencias"]
+    st.markdown(
+        "**Testes de resistência:** "
+        + " · ".join(f"{r['nome']} {d[f'resistencia_{rid}']:+d}" for rid, r in res.items())
+    )
+    extra = f"Iniciativa {d['iniciativa']:+d} · Deslocamento {d['deslocamento']} m"
+    if "cd_tecnica" in d:
+        extra = (
+            f"Ataque amaldiçoado {d['ataque_amaldicoado']:+d} · CD de técnica {d['cd_tecnica']}"
+            f" · {extra}"
+        )
+    st.caption(extra)
+
+
+def _fm_gerador(regras) -> None:
+    defn = regras.definicao
+    origens = defn.extras["origens"]
+    pericias = defn.extras["pericias"]
+    c1, c2, c3, c4 = st.columns(4)
+    nivel = c1.slider("Nível", 1, 20, 3, key="fm_nivel")
+    papel = c2.selectbox("Papel", ["qualquer", *fm_gerador.PAPEIS], key="fm_papel")
+    opcoes = {"Automática": None} | {
+        c.nome: c.id for c in defn.classes if papel == "qualquer" or c.papel == papel
+    }
+    classe = opcoes[c3.selectbox("Especialização", list(opcoes), key="fm_classe")]
+    opcoes_origem = {"Automática": None} | {o["nome"]: oid for oid, o in origens.items()}
+    origem = opcoes_origem[c4.selectbox("Origem", list(opcoes_origem), key="fm_origem")]
+    if "fm_semente" not in st.session_state:
+        st.session_state.fm_semente = 1
+    if st.button("🎲 Gerar outra", key="fm_gerar"):
+        st.session_state.fm_semente += 1
+    try:
+        ficha = fm_gerador.gerar_ficha(
+            nivel,
+            classe=classe,
+            origem=origem,
+            papel=None if papel == "qualquer" else papel,
+            seed=st.session_state.fm_semente,
+        )
+    except ValueError as e:
+        st.warning(str(e))
+        return
+    cls = defn.classe(ficha.classe)
+    st.subheader(f"{ficha.nome} · {origens[ficha.origem]['nome']} · {cls.nome} de nível {nivel}")
+    st.caption(f"Papel: {cls.papel} — {defn.extras['papeis'][cls.papel]}")
+    _fm_resumo(ficha)
+    e1, e2 = st.columns(2)
+    treinadas = ", ".join(pericias[p]["nome"] for p in ficha.pericias if p in pericias)
+    e1.markdown(f"**Perícias treinadas**  \n{treinadas}")
+    e1.markdown(f"**Equipamento**  \n{', '.join(ficha.equipamento)}")
+    if ficha.poderes:
+        e2.markdown(f"**Técnica e feitiços**  \n{', '.join(ficha.poderes)}")
+    with st.expander("🔮 Por que essas escolhas?", expanded=True):
+        for e in ficha.explicacoes:
+            st.write(f"- {e}")
+    for p in regras.validar(ficha):
+        (st.error if p.gravidade == "erro" else st.warning)(p.mensagem)
+    st.download_button(
+        "Baixar ficha (JSON)",
+        ficha.model_dump_json(indent=2),
+        file_name=f"{ficha.nome.lower()}.json",
+        mime="application/json",
+        key="fm_baixar",
+    )
+
+
+def _fm_ficha_rapida(regras) -> None:
+    defn = regras.definicao
+    origens = defn.extras["origens"]
+    c1, c2, c3 = st.columns([2, 2, 1])
+    classes = {c.nome: c.id for c in defn.classes}
+    classe_nome = c1.selectbox("Especialização", list(classes), key="fm_r_classe")
+    nomes_origem = {o["nome"]: oid for oid, o in origens.items()}
+    origem_nome = c2.selectbox("Origem", list(nomes_origem), key="fm_r_origem")
+    nivel = c3.number_input("Nível", 1, defn.nivel_maximo, 1, key="fm_r_nivel")
+    metodos = {"Valores fixos": "padrao", "Compra de pontos": "compra_pontos", "Livre": "livre"}
+    metodo = st.radio("Atributos", list(metodos), horizontal=True, key="fm_r_metodo")
+    valores = dict(
+        zip(("for", "con", "des", "int", "sab", "pre"), defn.extras["conjunto_padrao"], strict=True)
+    )
+    atributos = {}
+    for col, attr in zip(st.columns(6), defn.atributos, strict=True):
+        atributos[attr.id] = col.number_input(
+            attr.abrev, attr.minimo, attr.maximo, valores[attr.id], key=f"fm_attr_{attr.id}"
+        )
+    if metodos[metodo] == "compra_pontos":
+        custo = fm_custo(atributos)
+        orcamento = defn.extras["compra_pontos"]["orcamento"]
+        if custo is None:
+            st.caption("Na compra de pontos cada atributo começa entre 8 e 15.")
+        else:
+            progresso = max(0.0, min(custo / orcamento, 1.0))
+            st.progress(progresso, text=f"Pontos gastos: {custo} / {orcamento}")
+    ficha = Ficha(
+        nome="Ficha rápida",
+        sistema="fm",
+        nivel=int(nivel),
+        classe=classes[classe_nome],
+        origem=nomes_origem[origem_nome],
+        atributos=atributos,
+        metodo_atributos=metodos[metodo],
+    )
+    _fm_resumo(ficha)
+    problemas = regras.validar(ficha)
+    if not problemas:
+        st.success("Ficha válida pelas regras de Feiticeiros & Maldições.", icon="✅")
+    for p in problemas:
+        (st.error if p.gravidade == "erro" else st.warning)(p.mensagem)
+
+
+def _fm_grupo(regras) -> None:
+    defn = regras.definicao
+    st.caption("Monte um grupo de até 4 feiticeiros (fichas geradas) e veja as fraquezas dele.")
+    nivel = st.slider("Nível do grupo", 1, 20, 5, key="fm_g_nivel")
+    padrao = ["Lutador", "Especialista em Técnica", "Controlador", "—"]
+    nomes = ["—", *(c.nome for c in defn.classes)]
+    grupo = []
+    for i, col in enumerate(st.columns(4)):
+        escolha = col.selectbox(
+            f"PJ {i + 1}", nomes, index=nomes.index(padrao[i]), key=f"fm_pj_{i}"
+        )
+        if escolha != "—":
+            cid = next(c.id for c in defn.classes if c.nome == escolha)
+            grupo.append(
+                fm_gerador.gerar_ficha(nivel, classe=cid, nome=f"PJ {i + 1} ({escolha})", seed=i)
+            )
+    if not grupo:
+        return
+    linhas = []
+    for p in (fm_analise.perfil(f) for f in grupo):
+        energia = f"{p.energia} {'PE' if p.tipo_energia == 'pe' else 'estamina'}"
+        linhas.append({
+            "PJ": p.nome, "PV": p.pv, "Defesa": p.defesa, "Energia": energia,
+            "Resistências treinadas": ", ".join(sorted(p.treinado_em)),
+        })  # fmt: skip
+    st.dataframe(linhas, hide_index=True, use_container_width=True)
+    mostrar_achados(fm_analise.analisar_grupo(grupo))
+
+
+def pagina_fm() -> None:
+    regras = obter_regras("fm")
+    st.title("Feiticeiros & Maldições")
+    st.caption(
+        "Segundo sistema do Oráculo. Mecânicas resumidas do Livro de Regras v2.5 (Setsugiri, "
+        "Parker e equipe — projeto de fãs gratuito). O livro passa pelo porteiro do leitor no "
+        "Databricks, mas o texto dele fica só no workspace privado."
+    )
+    aba_gerador, aba_ficha, aba_grupo = st.tabs(["Gerador", "Ficha rápida", "Análise de grupo"])
+    with aba_gerador:
+        _fm_gerador(regras)
+    with aba_ficha:
+        _fm_ficha_rapida(regras)
+    with aba_grupo:
+        _fm_grupo(regras)
+
+
 # --------------------------------------------------------------------------- roteiro
 def pagina_roteiro() -> None:
     st.title("Roteiro")
@@ -479,7 +657,7 @@ def pagina_roteiro() -> None:
 | 2 · Análises | Fraquezas do grupo, desequilíbrio de encontros, dicas explicáveis | ✅ |
 | 3a · Detector de livros | "É livro de RPG?" com modelo explicável, avaliado no MLflow | ✅ |
 | 3b · Leitor de livros | Porteiro + extração com LLM avaliada contra o gabarito do SRD | ✅ |
-| 4 · Feiticeiros & Maldições | Segundo sistema, extraído pelo leitor | ⏳ |
+| 4 · Feiticeiros & Maldições | Segundo sistema: fichas, análise de grupo e porteiro | ✅ |
 | 5 · Polimento | Resultados, vídeo de demonstração | ⏳ |
 """
     )
@@ -496,6 +674,11 @@ processou, e nunca neste site ou no repositório.
 
 Este trabalho inclui material do *System Reference Document 5.1* da Wizards of the Coast LLC,
 licenciado sob [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/legalcode).
+
+As mecânicas de **Feiticeiros & Maldições** (Livro de Regras v2.5) são de Setsugiri, Parker
+e equipe, num projeto de fãs gratuito inspirado em *Jujutsu Kaisen*, de Gege Akutami. O livro
+permite usar o sistema como base com crédito aos autores. Aqui aparecem só fórmulas
+resumidas, sem texto do livro.
 """
     )
 
@@ -506,6 +689,7 @@ licenciado sob [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/legalcode
     "Análise de grupo e encontro (D&D 5e)": pagina_analise,
     "Leitor de livros de RPG": pagina_detector,
     "Ficha rápida (D&D 5e)": pagina_ficha,
+    "Feiticeiros & Maldições": pagina_fm,
     "Roteiro": pagina_roteiro,
     "Conteúdo e licenças": pagina_conteudo,
 }[pagina]()

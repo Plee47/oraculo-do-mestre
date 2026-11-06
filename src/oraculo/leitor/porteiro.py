@@ -10,8 +10,11 @@ from dataclasses import dataclass
 
 from oraculo.leitor.detector import ModeloDetector, Veredito, avaliar_documento
 
-# Sistemas que o leitor sabe extrair. Feiticeiros & Maldições entra na Fase 4.
-SISTEMAS_SUPORTADOS = {"dnd5e": "D&D 5e"}
+# Sistemas aceitos pelo porteiro: as páginas entram no bronze (com a marca de privado).
+SISTEMAS_SUPORTADOS = {"dnd5e": "D&D 5e", "fm": "Feiticeiros & Maldições"}
+# Sistemas com extrator de entradas pelo LLM (magias e monstros). O livro base de F&M não tem
+# listas prontas (feitiços são criados pelo jogador), então ele é aceito sem extração por ora.
+SISTEMAS_COM_EXTRATOR = frozenset({"dnd5e"})
 
 
 @dataclass(frozen=True)

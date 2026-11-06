@@ -8,6 +8,9 @@
 # MAGIC * `silver_leitor_respostas`: resposta bruta do LLM por página (auditoria);
 # MAGIC * `silver_leitor_magias` e `silver_leitor_monstros`: entradas extraídas, no formato do
 # MAGIC   catálogo, com a coluna `privado`. **O que vem de `livros_privados` nunca é exportado.**
+# MAGIC
+# MAGIC Só vão ao LLM os sistemas com extrator (`SISTEMAS_COM_EXTRATOR`, hoje D&D 5e). Livros de
+# MAGIC Feiticeiros & Maldições são aceitos pelo porteiro, mas o livro base não tem listas prontas.
 
 # COMMAND ----------
 
@@ -25,6 +28,7 @@ MAX_PAGINAS = int(dbutils.widgets.get("max_paginas_por_livro"))
 sys.path.insert(0, f"/Volumes/{CATALOGO}/{SCHEMA}/codigo/src")
 
 from oraculo.leitor.extracao import converter, janelas, parece_ter_entradas, prompt_unico
+from oraculo.leitor.porteiro import SISTEMAS_COM_EXTRATOR
 
 ALVO = f"`{CATALOGO}`.`{SCHEMA}`"
 PADRAO = "databricks-meta-llama-3-3-70b-instruct"
@@ -38,7 +42,11 @@ print("Modelo do leitor:", MODELO)
 
 # COMMAND ----------
 
-livros = spark.table(f"{ALVO}.leitor_livros").filter("aceito").collect()
+livros = (
+    spark.table(f"{ALVO}.leitor_livros")
+    .filter(F.col("aceito") & F.col("sistema").isin(*SISTEMAS_COM_EXTRATOR))
+    .collect()
+)
 prompts = []
 for livro in livros:
     paginas = [
