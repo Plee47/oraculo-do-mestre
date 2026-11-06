@@ -319,6 +319,15 @@ def gerar_ficha(
                 f"priorizando {foco} e evitando várias magias de concentração."
             )
 
+    # 8. Subclasse: a aberta no SRD para esta classe, se o nível já chega nela
+    escolhas = {}
+    subclasse = defn.extras["subclasses"].get(cls.id)
+    if subclasse and nivel >= subclasse["nivel"]:
+        escolhas["subclasse"] = subclasse["nome"]
+        expl.append(
+            f"Subclasse {subclasse['nome']} (nível {subclasse['nivel']}): {subclasse['descricao']}"
+        )
+
     equipamento = [x.id for x in (eq.armadura, eq.escudo, eq.arma, eq.arma_distancia) if x]
     return Ficha(
         nome=nome or rng.choice(NOMES),
@@ -329,6 +338,7 @@ def gerar_ficha(
         atributos=atributos,
         metodo_atributos="livre",
         origem=r.id,
+        escolhas=escolhas,
         pericias=pericias,
         equipamento=equipamento,
         poderes=poderes,

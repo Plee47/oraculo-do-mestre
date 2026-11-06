@@ -25,6 +25,7 @@ if recarregar_se_mudou([RAIZ / "src", RAIZ / "dados"]):
     st.cache_resource.clear()
     st.cache_data.clear()
 
+from oraculo.fichas_pdf import TEMAS, FichaImpressa, Tema, ValorImpresso, gerar_pdf, tema_para
 from oraculo.leitor.cache import cache_configurado
 from oraculo.leitor.detector import (
     MINIMO_CARACTERES,
@@ -43,9 +44,9 @@ from oraculo.sistemas.dnd5e.gerador import PAPEIS, calcular_ca, gerar_ficha
 from oraculo.sistemas.fm import analise as fm_analise
 from oraculo.sistemas.fm import custo_compra_pontos as fm_custo
 from oraculo.sistemas.fm import gerador as fm_gerador
+from oraculo.sistemas.generico.analise import ALVOS_DIFICULDADE, criatura_de_ficha, sugerir_encontro
 from oraculo.sistemas.generico.analise import analisar_encontro as analisar_encontro_lido
 from oraculo.sistemas.generico.analise import analisar_grupo as analisar_grupo_lido
-from oraculo.sistemas.generico.analise import criatura_de_ficha
 from oraculo.sistemas.generico.analise import perfil as perfil_lido
 from oraculo.sistemas.generico.formulas import normalizar_id
 from oraculo.sistemas.generico.gerador import SISTEMA_LIDO
@@ -53,8 +54,16 @@ from oraculo.sistemas.generico.gerador import calcular_derivados as calcular_der
 from oraculo.sistemas.generico.gerador import gerar_ficha as gerar_ficha_lida
 from oraculo.sistemas.generico.gerador import limites as limites_lido
 from oraculo.sistemas.generico.gerador import validar as validar_lido
-from oraculo.sistemas.generico.leitura import ErroLeitura, leitura_guardada, ler_sistema
+from oraculo.sistemas.generico.impressao import ficha_impressa, tema_do_sistema
+from oraculo.sistemas.generico.leitura import (
+    ErroLeitura,
+    detalhar_opcao,
+    leitura_guardada,
+    ler_mais_criaturas,
+    ler_sistema,
+)
 from oraculo.sistemas.generico.modelo import SistemaLido, normalizar
+from oraculo.sistemas.generico.narrativa import ContextoFicha, contexto_lido, sugerir_narrativa
 
 st.set_page_config(
     page_title="Oráculo do Mestre", page_icon=":material/auto_stories:", layout="wide"
@@ -122,6 +131,56 @@ def _ir_para(pagina: str) -> None:
     st.session_state.pagina = pagina
 
 
+def _acoes_da_ficha(ficha: Ficha, ctx: ContextoFicha, montar_pdf, tema: Tema) -> None:
+    """Sugestão criativa e downloads: iguais para qualquer sistema. `montar_pdf(ficha)` devolve
+    a ficha impressa, já com a narrativa, se houver."""
+    chave = hashlib.sha256(ficha.model_dump_json().encode()).hexdigest()
+    guardadas = st.session_state.setdefault("_narrativas", {})
+    cliente = cliente_llm()
+    if cliente is not None and st.button(
+        "Sugerir aparência, personalidade e história",
+        icon=":material/auto_awesome:",
+        key=f"narrativa_{chave[:12]}",
+    ):
+        try:
+            with st.spinner("Imaginando o personagem dentro das regras do livro…"):
+                narrativa = sugerir_narrativa(
+                    ctx, ficha, cliente, st.session_state.get("_paginas_livro")
+                )
+            guardadas[chave] = narrativa.para_ficha()
+        except (ErroLLM, ErroLeitura) as erro:
+            st.warning(f"Não consegui sugerir agora: {erro}")
+    if chave in guardadas:
+        ficha = ficha.model_copy(update={"narrativa": guardadas[chave]})
+        with st.container(border=True):
+            st.caption(
+                "Sugestão criativa da IA, baseada nas escolhas, nos atributos e no livro. "
+                "Não é regra: mude à vontade."
+            )
+            for rotulo, texto in ficha.narrativa.items():
+                st.markdown(f"**{rotulo}.** {texto}")
+    col_pdf, col_json, _ = st.columns([1, 1, 2])
+    col_pdf.download_button(
+        "Baixar ficha em PDF",
+        gerar_pdf(montar_pdf(ficha), tema),
+        file_name=f"{normalizar_id(ficha.nome)}.pdf",
+        mime="application/pdf",
+        icon=":material/picture_as_pdf:",
+        type="primary",
+        key=f"pdf_{chave[:12]}",
+        width="stretch",
+    )
+    col_json.download_button(
+        "Baixar em JSON",
+        ficha.model_dump_json(indent=2),
+        file_name=f"{normalizar_id(ficha.nome)}.json",
+        mime="application/json",
+        icon=":material/data_object:",
+        key=f"baixar_{chave[:12]}",
+        width="stretch",
+    )
+
+
 def _usar_livro(sistema: str, nome: str, nota: float | None = None, demo: bool = False) -> None:
     st.session_state.livro = {"sistema": sistema, "nome": nome, "nota": nota, "demo": demo}
     st.session_state.pagina = RESUMO
@@ -129,6 +188,7 @@ def _usar_livro(sistema: str, nome: str, nota: float | None = None, demo: bool =
 
 def _trocar_livro() -> None:
     st.session_state.pop("livro", None)
+    st.session_state.pop("_paginas_livro", None)
     st.session_state.pagina = INICIO
 
 
@@ -183,9 +243,9 @@ def _envio_do_livro() -> None:
         if not paginas and texto.strip():
             paginas, nome = [texto], "trecho colado"
     st.caption(
-        "Qualquer livro de RPG: D&D 5e e Feiticeiros & Maldições usam regras prontas; os outros "
-        "são lidos pela IA do Databricks. O arquivo não é salvo: só trechos selecionados vão ao "
-        "LLM, e o resultado fica apenas na sua sessão."
+        "Funciona com qualquer livro de RPG: a IA do Databricks lê as regras dele. O arquivo não "
+        "é salvo: só trechos selecionados vão ao LLM. O que ela extrai (nunca o texto do livro) "
+        "fica numa tabela privada, para este livro abrir mais rápido da próxima vez."
     )
 
     if not paginas:
@@ -198,7 +258,7 @@ def _envio_do_livro() -> None:
                 icon=":material/play_arrow:",
                 on_click=_usar_livro,
                 args=(sid, f"Demonstração de {nome_sistema}", None, True),
-                use_container_width=True,
+                width="stretch",
             )
         return
 
@@ -207,25 +267,21 @@ def _envio_do_livro() -> None:
     decisao = decidir(modelo, paginas)
     mostrar_veredito(v, decisao, paginas, modelo)
     pediu_leitura = False
-    if decisao.caminho == "pronto":
-        st.button(
-            f"Usar as regras prontas de {SISTEMAS_SUPORTADOS[v.sistema]}",
-            type="primary",
-            icon=":material/arrow_forward:",
-            on_click=_usar_livro,
-            args=(v.sistema, nome, v.nota),
-        )
-        pediu_leitura = st.button(
-            "Não é esse sistema? Ler como sistema novo", icon=":material/auto_awesome:"
-        )
-    elif decisao.caminho == "leitura":
+    if decisao.aceito:
         pediu_leitura = st.button(
             "Ler o livro com IA e montar o sistema",
             type="primary",
             icon=":material/auto_awesome:",
         )
+        if decisao.caminho == "pronto":
+            st.button(
+                f"Usar as regras prontas de {SISTEMAS_SUPORTADOS[v.sistema]} (sem IA)",
+                icon=":material/bolt:",
+                on_click=_usar_livro,
+                args=(v.sistema, nome, v.nota),
+            )
         st.caption(
-            "Na primeira vez leva de 1 a 3 minutos: a IA indexa o livro e lê a mecânica, a "
+            "Na primeira vez leva de 2 a 6 minutos: a IA indexa o livro e lê a mecânica, a "
             "criação e as criaturas. Depois, este livro abre em segundos."
         )
     if pediu_leitura:
@@ -272,13 +328,13 @@ def pagina_inicio() -> None:
                 on_click=_ir_para,
                 args=(GERADOR,),
                 type="primary",
-                use_container_width=True,
+                width="stretch",
             )
             b2.button(
                 "Enviar outro livro",
                 icon=":material/upload_file:",
                 on_click=_trocar_livro,
-                use_container_width=True,
+                width="stretch",
             )
         else:
             with st.container(border=True):
@@ -345,7 +401,11 @@ def mostrar_ficha(ficha: Ficha, cat: Catalogo) -> None:
                    and armaduras[i].categoria == "escudo"), None)  # fmt: skip
     raca = defn.extras["racas"].get(ficha.origem, ficha.origem)
 
-    st.subheader(f"{ficha.nome} · {raca} {classe.nome} de nível {ficha.nivel}")
+    subclasse = ficha.escolhas.get("subclasse")
+    titulo = f"{ficha.nome} · {raca} {classe.nome}"
+    if subclasse:
+        titulo += f" ({subclasse})"
+    st.subheader(f"{titulo} de nível {ficha.nivel}")
     st.caption(f"Papel: {classe.papel} — {defn.extras['papeis'][classe.papel]}")
 
     m = st.columns(5)
@@ -390,11 +450,79 @@ def mostrar_ficha(ficha: Ficha, cat: Catalogo) -> None:
     for p in problemas:
         (st.error if p.gravidade == "erro" else st.warning)(p.mensagem)
 
-    st.download_button(
-        "Baixar ficha (JSON)",
-        ficha.model_dump_json(indent=2),
-        file_name=f"{ficha.nome.lower()}.json",
-        mime="application/json",
+    defn_racas = defn.extras["racas"]
+    _acoes_da_ficha(
+        ficha,
+        ContextoFicha(
+            sistema=defn.nome,
+            contexto=defn.extras.get("resumo", ""),
+            escolhas={
+                "Raça": defn_racas.get(ficha.origem, ficha.origem or ""),
+                "Classe": classe.nome,
+                **({"Subclasse": subclasse} if subclasse else {}),
+            },
+            atributos=[(a.nome, ficha.atributos[a.id]) for a in defn.atributos],
+            valores=[("Pontos de Vida", d["pv_maximo"])],
+        ),
+        lambda f: _impressa_dnd(f, cat),
+        TEMAS["fantasia"],
+    )
+
+
+def _impressa_dnd(ficha: Ficha, cat: Catalogo) -> FichaImpressa:
+    regras = obter_regras("dnd5e")
+    defn = regras.definicao
+    d = regras.derivados(ficha)
+    armas = {a.id: a for a in cat.armas}
+    armaduras = {a.id: a for a in cat.armaduras}
+    armadura = next((armaduras[i] for i in ficha.equipamento if i in armaduras
+                     and armaduras[i].categoria != "escudo"), None)  # fmt: skip
+    escudo = next((armaduras[i] for i in ficha.equipamento if i in armaduras
+                   and armaduras[i].categoria == "escudo"), None)  # fmt: skip
+    valores = [
+        ValorImpresso("Pontos de Vida", str(d["pv_maximo"]), anotar=True),
+        ValorImpresso(
+            "Classe de Armadura", str(calcular_ca(ficha.atributos, ficha.classe, armadura, escudo))
+        ),
+        ValorImpresso("Iniciativa", f"{d['iniciativa']:+d}"),
+        ValorImpresso("Proficiência", f"+{d['proficiencia']}"),
+    ]
+    if "cd_magia" in d:
+        valores.append(ValorImpresso("CD de magia", str(d["cd_magia"])))
+    equipamento = []
+    for item in ficha.equipamento:
+        if item in armas:
+            equipamento.append(f"{armas[item].nome} ({armas[item].dano} {armas[item].tipo_dano})")
+        elif item in armaduras:
+            equipamento.append(armaduras[item].nome)
+    magias = {m.id: m for m in cat.magias}
+    por_circulo: dict[int, list[str]] = {}
+    for mid in ficha.poderes:
+        if mid in magias:
+            por_circulo.setdefault(magias[mid].circulo, []).append(magias[mid].nome)
+    secoes = [
+        ("Perícias", [", ".join(cat.pericia(p).nome for p in ficha.pericias)]),
+        ("Equipamento", equipamento),
+        ("Magias", [
+            f"{'Truques' if c == 0 else f'{c}º círculo'}: {', '.join(nomes)}"
+            for c, nomes in sorted(por_circulo.items())
+        ]),
+    ]  # fmt: skip
+    classe = defn.classe(ficha.classe)
+    raca = defn.extras["racas"].get(ficha.origem, ficha.origem or "")
+    return FichaImpressa(
+        nome=ficha.nome,
+        sistema=SISTEMAS_SUPORTADOS["dnd5e"],
+        subtitulo=(
+            f"{raca} {classe.nome}"
+            + (f" ({ficha.escolhas['subclasse']})" if "subclasse" in ficha.escolhas else "")
+            + f" de nível {ficha.nivel}"
+        ),
+        atributos=[(a.abrev, ficha.atributos[a.id], d[f"mod_{a.id}"]) for a in defn.atributos],
+        valores=valores,
+        secoes=secoes,
+        narrativa=dict(ficha.narrativa),
+        credito="SRD 5.1, Wizards of the Coast LLC, CC BY 4.0",
     )
 
 
@@ -483,7 +611,7 @@ def _dnd_analise() -> None:
             for p in perfis
         ],
         hide_index=True,
-        use_container_width=True,
+        width="stretch",
     )
     with st.expander("Fraquezas e forças do grupo", expanded=True):
         mostrar_achados(analisar_grupo(fichas, cat))
@@ -559,8 +687,9 @@ nenhuma página dele. Resultado: **12 de 12 livros certos**, incluindo romances 
 livro de regras de xadrez.
 
 **A leitura com IA** seleciona, sem LLM, as páginas de visão geral, mecânica, criação de
-personagem e criaturas (palavras-chave e o sumário do livro) e faz três leituras em paralelo
-com o LLM do Databricks. A saída vira uma especificação validada: fórmulas passam por um
+personagem e criaturas (busca híbrida, sumário e o mapa de títulos do livro) e faz as leituras em
+paralelo com o LLM do Databricks. Cada opção só é lida a fundo quando entra numa ficha, e o que já
+foi lido fica guardado. A saída vira uma especificação validada: fórmulas passam por um
 avaliador seguro (nada de `eval`), itens malformados viram aviso, e você pode corrigir qualquer
 número no resumo do sistema.
 
@@ -624,7 +753,7 @@ def mostrar_avaliacao_leitor() -> None:
                 "Tempo (s)": round(m["segundos"]),
             }
         )
-    st.dataframe(linhas, hide_index=True, use_container_width=True)
+    st.dataframe(linhas, hide_index=True, width="stretch")
     st.caption(
         f"Escolhido para o leitor: **{dados['modelo_escolhido'].removeprefix('databricks-')}**"
     )
@@ -769,12 +898,60 @@ def _fm_gerador(regras) -> None:
             st.write(f"- {e}")
     for p in regras.validar(ficha):
         (st.error if p.gravidade == "erro" else st.warning)(p.mensagem)
-    st.download_button(
-        "Baixar ficha (JSON)",
-        ficha.model_dump_json(indent=2),
-        file_name=f"{ficha.nome.lower()}.json",
-        mime="application/json",
-        key="fm_baixar",
+    d = regras.derivados(ficha)
+    _acoes_da_ficha(
+        ficha,
+        ContextoFicha(
+            sistema=defn.nome,
+            contexto=defn.extras.get("resumo", ""),
+            escolhas={"Origem": origens[ficha.origem]["nome"], "Especialização": cls.nome},
+            atributos=[(a.nome, ficha.atributos[a.id]) for a in defn.atributos],
+            valores=[("Pontos de Vida", d["pv_maximo"])],
+        ),
+        lambda f: _impressa_fm(f, regras),
+        tema_para("sobrenatural"),
+    )
+
+
+def _impressa_fm(ficha: Ficha, regras) -> FichaImpressa:
+    defn = regras.definicao
+    d = regras.derivados(ficha)
+    extras = defn.extras
+    energia = "pe" if "pe" in d else "estamina"
+    valores = [
+        ValorImpresso("Pontos de Vida", str(d["pv_maximo"]), anotar=True),
+        ValorImpresso(_ROTULOS_FM[energia], str(d[energia]), anotar=True),
+        ValorImpresso("Defesa", str(d["defesa"])),
+        ValorImpresso("CD de especialização", str(d["cd_especializacao"])),
+        ValorImpresso("Atenção", str(d["atencao"])),
+        ValorImpresso("Iniciativa", f"{d['iniciativa']:+d}"),
+        ValorImpresso("Deslocamento", f"{d['deslocamento']} m"),
+    ]
+    if "cd_tecnica" in d:
+        valores.append(ValorImpresso("CD de técnica", str(d["cd_tecnica"])))
+    resistencias = " · ".join(
+        f"{r['nome']} {d[f'resistencia_{rid}']:+d}" for rid, r in extras["resistencias"].items()
+    )
+    pericias = ", ".join(
+        extras["pericias"][p]["nome"] for p in ficha.pericias if p in extras["pericias"]
+    )
+    return FichaImpressa(
+        nome=ficha.nome,
+        sistema=SISTEMAS_SUPORTADOS["fm"],
+        subtitulo=(
+            f"{extras['origens'][ficha.origem]['nome']} · "
+            f"{defn.classe(ficha.classe).nome} de nível {ficha.nivel}"
+        ),
+        atributos=[(a.abrev, ficha.atributos[a.id], d[f"mod_{a.id}"]) for a in defn.atributos],
+        valores=valores,
+        secoes=[
+            ("Testes de resistência", [resistencias]),
+            ("Perícias treinadas", [pericias]),
+            ("Técnica e feitiços", [", ".join(ficha.poderes)]),
+            ("Equipamento", [", ".join(ficha.equipamento)]),
+        ],
+        narrativa=dict(ficha.narrativa),
+        credito="Feiticeiros & Maldições v2.5, de Setsugiri, Parker e equipe",
     )
 
 
@@ -851,7 +1028,7 @@ def _fm_grupo(regras) -> None:
                 sorted(defn.extras["resistencias"][r]["nome"] for r in p.treinado_em)
             ),
         })  # fmt: skip
-    st.dataframe(linhas, hide_index=True, use_container_width=True)
+    st.dataframe(linhas, hide_index=True, width="stretch")
     mostrar_achados(fm_analise.analisar_grupo(grupo))
 
 
@@ -903,6 +1080,7 @@ def pagina_analises() -> None:
 # Qualquer livro de RPG: o LLM do Databricks lê o livro e devolve a especificação do sistema
 # (oraculo.sistemas.generico). Tudo abaixo usa só essa especificação.
 MAX_LEITURAS_POR_SESSAO = 3
+MAX_DETALHES_POR_SESSAO = 30  # leituras a fundo de opções (as já guardadas não contam)
 
 
 def cliente_llm():
@@ -951,6 +1129,7 @@ def _usar_sistema_lido(s: SistemaLido, nome_arquivo: str, nota: float | None) ->
 
 def _ler_livro(paginas: list[str], nome: str, nota: float | None, incerto: bool) -> None:
     """Lê o livro com o LLM (uma vez por arquivo na sessão) e abre o resumo do sistema."""
+    st.session_state["_paginas_livro"] = paginas  # só em memória: para as leituras a fundo
     chave = hashlib.sha256("\n".join(paginas).encode()).hexdigest()
     lidos = st.session_state.setdefault("_lidos", {})
     if chave not in lidos:
@@ -1059,8 +1238,15 @@ def _resumo_lido() -> None:
         st.markdown(f"**Dano.** {m.dano_explicacao}{extra}")
 
     st.subheader("Criação de personagem")
+    if s.etapas:
+        for i, e in enumerate(s.etapas, 1):
+            quando = f" (a partir do nível {e.nivel_minimo})" if e.nivel_minimo > 1 else ""
+            st.markdown(f"**{i}. {e.nome}**{quando}. {e.instrucao}")
+            if e.opcoes:
+                nomes = ", ".join(o.nome for o in e.opcoes[:30])
+                st.caption(nomes + ("…" if len(e.opcoes) > 30 else ""))
     if s.geracao.explicacao:
-        st.markdown(s.geracao.explicacao)
+        st.markdown(f"**Atributos.** {s.geracao.explicacao}")
     for g in s.geracao.grupos:
         st.markdown(f"- **{g.nome or 'Grupo'}:** {g.explicacao or g.metodo}")
     if s.modificador:
@@ -1078,7 +1264,7 @@ def _resumo_lido() -> None:
                 for a in s.atributos
             ],
             hide_index=True,
-            use_container_width=True,
+            width="stretch",
         )
     if s.derivados:
         st.markdown("**Valores calculados**")
@@ -1093,7 +1279,7 @@ def _resumo_lido() -> None:
                 for d in s.derivados
             ],
             hide_index=True,
-            use_container_width=True,
+            width="stretch",
         )
     if s.arquetipos:
         st.markdown(f"**{s.nome_arquetipo.capitalize()}s** ({len(s.arquetipos)})")
@@ -1108,7 +1294,7 @@ def _resumo_lido() -> None:
                 for a in s.arquetipos
             ],
             hide_index=True,
-            use_container_width=True,
+            width="stretch",
         )
     cols = st.columns(3)
     cols[0].metric("Perícias", len(s.pericias))
@@ -1170,7 +1356,7 @@ def _corrigir_leitura(s: SistemaLido) -> None:
                 for a in s.atributos
             ],
             hide_index=True,
-            use_container_width=True,
+            width="stretch",
             key="editor_atributos",
             disabled=["id", "nome"],
         )
@@ -1180,7 +1366,7 @@ def _corrigir_leitura(s: SistemaLido) -> None:
                 for d in s.derivados
             ],
             hide_index=True,
-            use_container_width=True,
+            width="stretch",
             key="editor_derivados",
             disabled=["id", "nome"],
             column_config={
@@ -1245,29 +1431,110 @@ def _ficha_lida_html(s: SistemaLido, ficha: Ficha) -> None:
         st.caption(f"Sem fórmula calculável no livro: {', '.join(sem_valor)} (veja o resumo).")
 
 
+def _colunas_de(n: int) -> list:
+    """Colunas para n controles, em linhas de no máximo 4."""
+    colunas = []
+    while len(colunas) < n:
+        colunas += st.columns(min(4, n - len(colunas)))
+    return colunas
+
+
+def _ler_a_fundo(s: SistemaLido, ficha: Ficha) -> bool:
+    """Lê a fundo as opções escolhidas nesta ficha que ainda não foram lidas (no máx. uma vez
+    cada: depois vêm do cache). Devolve True se algo mudou."""
+    pendentes = [
+        (e, e.opcao(ficha.escolhas[e.id]))
+        for e in s.etapas
+        if e.id in ficha.escolhas and e.opcao(ficha.escolhas[e.id])
+        and not e.opcao(ficha.escolhas[e.id]).detalhada
+    ]  # fmt: skip
+    paginas = st.session_state.get("_paginas_livro")
+    cliente = cliente_llm()
+    if not pendentes or not paginas or cliente is None:
+        return False
+    if not st.toggle("Ler a fundo as opções desta ficha", True, key="lido_fundo"):
+        return False
+    feitos = st.session_state.get("_detalhes", 0)
+    if feitos >= MAX_DETALHES_POR_SESSAO:
+        st.caption("Limite de leituras a fundo desta sessão atingido (a cota é compartilhada).")
+        return False
+    mudou = False
+    with st.status("Lendo no livro o que escolhemos…", expanded=True) as status:
+        for e, o in pendentes:
+            st.write(f"{e.nome}: {o.nome}")
+            try:
+                detalhar_opcao(s, e.id, o.nome, paginas, cliente, cache_leituras())
+                mudou = True
+            except (ErroLLM, ErroLeitura) as erro:
+                st.warning(f"Não consegui ler {o.nome} a fundo: {erro}")
+            st.session_state["_detalhes"] = feitos = feitos + 1
+        status.update(label="Leitura concluída.", state="complete", expanded=False)
+    if mudou:
+        st.session_state.livro["lido"] = json.loads(s.model_dump_json())
+    return mudou
+
+
+def _habilidades_da_ficha(s: SistemaLido, ficha: Ficha) -> None:
+    linhas = []
+    for e in s.etapas:
+        o = e.opcao(ficha.escolhas.get(e.id))
+        if not o:
+            continue
+        for h in o.habilidades_detalhe:
+            if h.nivel is None or h.nivel <= ficha.nivel:
+                linhas.append({
+                    "Vem de": o.nome, "Habilidade": h.nome, "Efeito": h.resumo,
+                    "Página": "—" if h.pagina is None else str(h.pagina),
+                })  # fmt: skip
+    if linhas:
+        st.markdown("**Habilidades deste nível, segundo o livro**")
+        st.dataframe(linhas, hide_index=True, width="stretch")
+
+
 def _gerador_lido() -> None:
     s = sistema_lido()
     st.title(f"Gerador de fichas · {s.nome}")
     st.caption("Fichas pelas regras lidas do seu livro, com cada escolha explicada.")
-    c1, c2 = st.columns(2)
-    opcoes = ["Automático", *(a.nome for a in s.arquetipos)]
-    escolha = c1.selectbox(s.nome_arquetipo.capitalize(), opcoes, key="lido_arq")
     nivel = None
     if s.niveis.usa_niveis:
         topo = s.niveis.nivel_maximo or max(20, s.niveis.nivel_inicial)
-        nivel = c2.slider(
+        nivel = st.slider(
             s.niveis.nome.capitalize(), 1, topo, s.niveis.nivel_inicial, key="lido_nivel"
         )
+    pedidas: dict[str, str] = {}
+    escolha = "Automático"
+    etapas = s.etapas_de_escolha(nivel or s.niveis.nivel_inicial)
+    if etapas:
+        for e, col in zip(etapas, _colunas_de(len(etapas)), strict=True):
+            opcoes = e.opcoes_de(pedidas.get(e.depende_de))
+            rotulos = ["Automático", *(o.nome for o in opcoes)]
+            valor = col.selectbox(e.nome, rotulos, key=f"lido_etapa_{e.id}")
+            if valor != "Automático":
+                pedidas[e.id] = valor
+    elif s.arquetipos:
+        rotulos = ["Automático", *(a.nome for a in s.arquetipos)]
+        escolha = st.selectbox(s.nome_arquetipo.capitalize(), rotulos, key="lido_arq")
     if "lido_semente" not in st.session_state:
         st.session_state.lido_semente = 1
     if st.button("Gerar outra", key="lido_gerar", icon=":material/casino:"):
         st.session_state.lido_semente += 1
-    ficha = gerar_ficha_lida(
-        s,
-        arquetipo=None if escolha == "Automático" else escolha,
-        nivel=nivel,
-        seed=st.session_state.lido_semente,
-    )
+    args = {
+        "arquetipo": None if escolha == "Automático" else escolha,
+        "nivel": nivel,
+        "seed": st.session_state.lido_semente,
+        "escolhas": pedidas,
+    }
+    # O sorteio fica fixo até "Gerar outra": a leitura a fundo pode revelar novas opções, e a
+    # ficha não pode mudar sozinha entre uma interação e outra.
+    fixas = st.session_state.setdefault("_sorteios", {})
+    chave_sorteio = (args["seed"], args["nivel"], args["arquetipo"], tuple(sorted(pedidas.items())))
+    if chave_sorteio not in fixas:
+        fixas[chave_sorteio] = gerar_ficha_lida(s, **args).escolhas
+    args["sorteadas"] = fixas[chave_sorteio]
+    ficha = gerar_ficha_lida(s, **args)
+    if _ler_a_fundo(s, ficha):  # a leitura a fundo pode mudar atributos-chave, bônus e fórmulas
+        s = sistema_lido()
+        ficha = gerar_ficha_lida(s, **args)
     titulo = " · ".join(x for x in (ficha.nome, ficha.classe) if x)
     if s.niveis.usa_niveis:
         titulo += f" · {s.niveis.nome} {ficha.nivel}"
@@ -1280,17 +1547,14 @@ def _gerador_lido() -> None:
         e1.markdown(f"**Equipamento**  \n{', '.join(ficha.equipamento)}")
     if ficha.poderes:
         e2.markdown(f"**Habilidades**  \n{', '.join(ficha.poderes)}")
+    _habilidades_da_ficha(s, ficha)
     with st.expander("Por que essas escolhas?", expanded=True, icon=":material/lightbulb:"):
         for e in ficha.explicacoes:
             st.write(f"- {e}")
     for p in validar_lido(s, ficha):
         (st.error if p.gravidade == "erro" else st.warning)(p.mensagem)
-    st.download_button(
-        "Baixar ficha (JSON)",
-        ficha.model_dump_json(indent=2),
-        file_name=f"{ficha.nome.lower()}.json",
-        mime="application/json",
-        key="lido_baixar",
+    _acoes_da_ficha(
+        ficha, contexto_lido(s, ficha), lambda f: ficha_impressa(s, f), tema_do_sistema(s)
     )
 
 
@@ -1336,6 +1600,43 @@ def _ficha_rapida_lida() -> None:
         st.success("Ficha dentro das regras lidas do livro.", icon=":material/check_circle:")
     for p in problemas:
         (st.error if p.gravidade == "erro" else st.warning)(p.mensagem)
+
+
+def _tabela_criaturas(criaturas: list) -> None:
+    linhas = []
+    for c in criaturas:
+        ataques = "; ".join(f"{a.nome} ({a.dano})" if a.dano else a.nome for a in c.ataques)
+        linhas.append({
+            "Criatura": c.nome,
+            "Ameaça": c.ameaca or "—",
+            "Vida": "—" if c.vida is None else str(c.vida),
+            "Defesa": "—" if c.defesa is None else str(c.defesa),
+            "Ataques": ataques or "—",
+            "Página": "—" if c.pagina is None else str(c.pagina),
+        })  # fmt: skip
+    st.dataframe(linhas, hide_index=True, width="stretch")
+
+
+def _mais_criaturas(s: SistemaLido) -> None:
+    """Lê mais um lote de páginas de criaturas, só se a pessoa pedir."""
+    paginas = st.session_state.get("_paginas_livro")
+    cliente = cliente_llm()
+    if not paginas or cliente is None:
+        return
+    st.caption(f"O Oráculo leu {len(s.criaturas)} criaturas deste livro até agora.")
+    if not st.button("Ler mais criaturas do livro", icon=":material/menu_book:", key="lido_mais"):
+        return
+    try:
+        with st.spinner("Lendo mais páginas de criaturas…"):
+            novas = ler_mais_criaturas(s, paginas, cliente, cache_leituras())
+    except (ErroLLM, ErroLeitura) as erro:
+        st.warning(f"Não consegui ler mais criaturas: {erro}")
+        return
+    st.session_state.livro["lido"] = json.loads(s.model_dump_json())
+    st.session_state["_aviso_criaturas"] = (
+        f"{novas} criaturas novas." if novas else "Não achei mais criaturas com números."
+    )
+    st.rerun()
 
 
 def _analises_lido() -> None:
@@ -1387,17 +1688,49 @@ def _analises_lido() -> None:
     vazias = {k for k in linhas[0] if all(linha[k] is None for linha in linhas)}
     linhas = [{k: ("—" if v is None else str(v)) for k, v in linha.items() if k not in vazias}
               for linha in linhas]  # fmt: skip
-    st.dataframe(linhas, hide_index=True, use_container_width=True)
+    st.dataframe(linhas, hide_index=True, width="stretch")
     with st.expander("Fraquezas e forças do grupo", expanded=True):
         mostrar_achados(analisar_grupo_lido(s, grupo))
 
     st.subheader("Encontro")
-    fontes = ["Inimigos montados com as regras do livro"]
+    if "_aviso_criaturas" in st.session_state:
+        st.success(st.session_state.pop("_aviso_criaturas"), icon=":material/check_circle:")
+    fontes = ["Sugestão do Oráculo", "Inimigos montados com as regras do livro"]
     if s.criaturas:
-        fontes.insert(0, "Criaturas do livro")
+        fontes.insert(1, "Criaturas do livro")
     fonte = st.radio("Inimigos", fontes, horizontal=True, key="lido_fonte")
     criaturas = []
-    if fonte == "Criaturas do livro":
+    if fonte == "Sugestão do Oráculo":
+        dificuldade = st.select_slider(
+            "Dificuldade desejada", list(ALVOS_DIFICULDADE), value="equilibrado", key="lido_dific"
+        )
+        sugestao = sugerir_encontro(s, grupo, dificuldade)
+        if sugestao is None:
+            st.info(
+                "O livro não deu os números para estimar (vida e dano dos personagens e dos "
+                "inimigos). Corrija a leitura no resumo do sistema ou monte o encontro à mão.",
+                icon=":material/info:",
+            )
+            _mais_criaturas(s)
+            return
+        criaturas = sugestao.criaturas
+        de_onde = (
+            "criaturas do próprio livro"
+            if sugestao.origem == "livro"
+            else "inimigos montados com as regras do livro (ele não traz criaturas com números)"
+        )
+        st.markdown(
+            "**Encontro sugerido:** "
+            + ", ".join(f"{n}× {c.nome}" for c, n in criaturas)
+            + f". Vem de {de_onde}."
+        )
+        _tabela_criaturas([c for c, _ in criaturas])
+        if sugestao.resumo.veredito != dificuldade:
+            st.caption(
+                f'O mais perto de "{dificuldade}" com as opções lidas até agora. Ler mais '
+                "criaturas do livro pode aproximar."
+            )
+    elif fonte == "Criaturas do livro":
         rotulos = {f"{c.nome}" + (f" ({c.ameaca})" if c.ameaca else ""): c for c in s.criaturas}
         escolhidos = st.multiselect(
             "Criaturas", list(rotulos), default=list(rotulos)[:1], key="lido_criaturas"
@@ -1442,6 +1775,7 @@ def _analises_lido() -> None:
         "—" if resumo.rodadas_para_perder is None else f"{resumo.rodadas_para_perder:.1f}",
     )
     mostrar_achados(achados)
+    _mais_criaturas(s)
 
 
 # --------------------------------------------------------------------------- roteiro
@@ -1459,6 +1793,7 @@ def pagina_roteiro() -> None:
 | 4 · Feiticeiros & Maldições | Segundo sistema: fichas, análise de grupo e porteiro | Feito |
 | 5a · Vitrine | Site que começa pelo livro, design de portfólio | Feito |
 | 6 · Qualquer livro | Leitura com IA: resumo, fichas e encontros de qualquer sistema | Feito |
+| 7 · Leitura profunda | Etapas de criação, leitura a fundo, narrativa e PDF com tema | Feito |
 | 5b · Demonstração | Vídeo curto do fluxo completo | ⏳ |
 """
     )
@@ -1472,9 +1807,10 @@ def pagina_conteudo() -> None:
 Este site e o repositório publicam **apenas conteúdo com licença aberta**.
 
 **Livros que você envia:** o PDF é lido na memória do servidor e não é salvo. Para montar o
-sistema, trechos selecionados vão ao LLM do Databricks (Foundation Model APIs), e o resultado
-(resumo, regras, fichas) fica só na sua sessão; você pode baixá-lo, mas ele nunca é publicado
-aqui. Use livros que você tem o direito de ler.
+sistema, trechos selecionados vão ao LLM do Databricks (Foundation Model APIs). O que é extraído
+(regras resumidas, nunca o texto do livro) fica na sua sessão e numa tabela privada do dono do
+site, para o mesmo arquivo não ser lido de novo; nada disso é publicado aqui. Use livros que
+você tem o direito de ler.
 
 Este trabalho inclui material do *System Reference Document 5.1* da Wizards of the Coast LLC,
 licenciado sob [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/legalcode).
@@ -1506,7 +1842,7 @@ if livro:
         "Trocar de livro",
         icon=":material/swap_horiz:",
         on_click=_trocar_livro,
-        use_container_width=True,
+        width="stretch",
     )
 else:
     st.sidebar.caption("Envie um livro no **Início** para liberar o gerador e as análises.")

@@ -93,6 +93,8 @@ def _juntar_frases(formula: str, nomes: dict[str, float]) -> str:
     O LLM escreve nomes de várias palavras; sem isso, viram nomes soltos ("Modificador",
     "de", "Força"). Compara sem acento e sem caixa, do nome mais longo para o mais curto.
     """
+    for velho, novo in _SUBSTITUICOES.items():  # antes de tirar acentos: ÷ e × não são ASCII
+        formula = formula.replace(velho, novo)
     if not any("_" in n for n in nomes):
         return formula
     texto = unicodedata.normalize("NFKD", formula).encode("ascii", "ignore").decode()

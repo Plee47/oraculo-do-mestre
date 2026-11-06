@@ -11,7 +11,13 @@ import random
 
 from oraculo.nucleo.ficha import Ficha, Problema
 from oraculo.sistemas.generico.formulas import avaliar, normalizar_id, tem_dado
-from oraculo.sistemas.generico.modelo import Atributo, Derivado, RegraGeracao, SistemaLido
+from oraculo.sistemas.generico.modelo import (
+    Atributo,
+    Derivado,
+    Opcao,
+    RegraGeracao,
+    SistemaLido,
+)
 
 SISTEMA_LIDO = "lido"
 NOMES = (
@@ -109,6 +115,16 @@ def _com_regra(
             texto += f"; sobraram {restantes} pontos porque todos chegaram ao máximo"
         return valores, texto
 
+    sem_faixa = all(limites(s, por_id[a]) == (None, None) for a in ordem)
+    if s.modificador and sem_faixa and s.modificador_de(10) == 0:
+        tipicos = (15, 14, 13, 12, 10, 8)
+        for i, aid in enumerate(ordem):
+            valores[aid] = tipicos[i] if i < len(tipicos) else 10
+        return valores, (
+            "o livro não traz um método de geração nos trechos lidos; usei valores típicos da "
+            "escala do modificador dele (10 vale +0), os maiores nos atributos do arquétipo"
+        )
+
     # Método que o Oráculo não automatiza: valores proporcionais à faixa do atributo.
     fracoes = [0.75, 0.7, 0.6, 0.55]
     for i, aid in enumerate(ordem):
@@ -186,6 +202,46 @@ def _escolher_pericias(
     return list(dict.fromkeys(escolhidas))
 
 
+def escolher_opcoes(
+    s: SistemaLido,
+    escolhas: dict[str, str] | None,
+    nivel: int,
+    rng: random.Random,
+    expl: list[str],
+    sorteadas: dict[str, str] | None = None,
+) -> dict[str, Opcao]:
+    """Percorre as etapas do livro: usa o que o jogador pediu e sorteia o resto.
+
+    `sorteadas` repete um sorteio anterior: a ficha não muda quando a leitura a fundo revela
+    novas opções.
+    """
+    feitas: dict[str, Opcao] = {}
+    for e in s.etapas_de_escolha(nivel):
+        pai = feitas[e.depende_de].nome if e.depende_de in feitas else None
+        opcoes = e.opcoes_de(pai)
+        if not opcoes:
+            continue
+        pedida = next(
+            (
+                o
+                for o in opcoes
+                if normalizar_id(o.nome) == normalizar_id((escolhas or {}).get(e.id, ""))
+            ),
+            None,
+        )
+        repetida = next(
+            (o for o in opcoes
+             if normalizar_id(o.nome) == normalizar_id((sorteadas or {}).get(e.id, ""))),
+            None,
+        )  # fmt: skip
+        o = pedida or repetida or rng.choice(opcoes)
+        feitas[e.id] = o
+        pagina = f" (p. {o.pagina})" if o.pagina else ""
+        como = "escolha" if pedida else "sorteada entre as opções do livro"
+        expl.append(f"{e.nome}: {o.nome}{pagina}, {como}.")
+    return feitas
+
+
 def gerar_ficha(
     s: SistemaLido,
     *,
@@ -193,17 +249,11 @@ def gerar_ficha(
     nivel: int | None = None,
     nome: str | None = None,
     seed: int | None = None,
+    escolhas: dict[str, str] | None = None,
+    sorteadas: dict[str, str] | None = None,
 ) -> Ficha:
     rng = random.Random(seed)
     expl: list[str] = []
-
-    arq = s.arquetipo(arquetipo)
-    if arquetipo and arq is None:
-        raise ValueError(f"{s.nome_arquetipo} desconhecido: {arquetipo!r}")
-    if arq is None and s.arquetipos:
-        arq = rng.choice(s.arquetipos)
-        expl.append(f"{arq.nome}: sorteado entre as opções de {s.nome_arquetipo} do livro.")
-    chaves = arq.atributos_chave if arq else []
 
     nivel_final = 1
     if s.niveis.usa_niveis:
@@ -211,13 +261,50 @@ def gerar_ficha(
         if s.niveis.nivel_maximo:
             nivel_final = min(nivel_final, s.niveis.nivel_maximo)
 
+    principal = s.etapa_principal()
+    pedidas = dict(escolhas or {})
+    if arquetipo and principal:
+        if principal.opcao(arquetipo) is None:
+            raise ValueError(f"{s.nome_arquetipo} desconhecido: {arquetipo!r}")
+        pedidas[principal.id] = arquetipo
+    feitas = escolher_opcoes(s, pedidas, nivel_final, rng, expl, sorteadas) if s.etapas else {}
+
+    arq = feitas.get(principal.id) if principal else None
+    if arq is None:
+        arq = s.arquetipo(arquetipo)
+        if arquetipo and arq is None:
+            raise ValueError(f"{s.nome_arquetipo} desconhecido: {arquetipo!r}")
+        if arq is None and s.arquetipos:
+            arq = rng.choice(s.arquetipos)
+            expl.append(f"{arq.nome}: sorteado entre as opções de {s.nome_arquetipo} do livro.")
+
+    # Atributos importantes: os da escolha principal primeiro, depois os das outras escolhas.
+    outras = [o for o in feitas.values() if o is not arq]
+    chaves = list(dict.fromkeys(
+        [*(arq.atributos_chave if arq else []), *(c for o in outras for c in o.atributos_chave)]
+    ))  # fmt: skip
+
     ordem = prioridade(s, chaves, rng)
     atributos, como = gerar_atributos(s, ordem, rng) if ordem else ({}, "")
     if como:
         expl.append(f"Atributos: {como}.")
     if chaves:
+        rotulo = arq.nome if arq else "as escolhas"
         nomes = ", ".join(s.atributo(c).nome for c in chaves)
-        expl.append(f"Atributos mais importantes para {arq.nome}: {nomes}.")
+        expl.append(f"Atributos mais importantes para {rotulo}: {nomes}.")
+
+    # Bônus de atributo que as escolhas concedem
+    for o in feitas.values():
+        aplicados = []
+        for aid, bonus in o.bonus_atributos.items():
+            if aid in atributos:
+                a = next(x for x in s.atributos if x.id == aid)
+                maximo = limites(s, a)[1]
+                novo = atributos[aid] + bonus
+                atributos[aid] = min(novo, maximo) if maximo is not None else novo
+                aplicados.append(f"{bonus:+d} {a.sigla or a.nome}")
+        if aplicados:
+            expl.append(f"Bônus de {o.nome}: {', '.join(aplicados)}.")
 
     calculados = [
         (d, v)
@@ -235,24 +322,32 @@ def gerar_ficha(
             )  # fmt: skip
         )
 
-    pericias = _escolher_pericias(s, arq.pericias if arq else [], atributos, rng)
+    fontes = [*([arq] if arq else []), *outras]
+    pericias_livro = list(dict.fromkeys(p for o in fontes for p in o.pericias))
+    pericias = _escolher_pericias(s, pericias_livro, atributos, rng)
     if pericias:
         origem = (
-            f"as de {arq.nome}" if arq and arq.pericias else "as ligadas aos melhores atributos"
+            f"as de {', '.join(o.nome for o in fontes if o.pericias)}"
+            if pericias_livro
+            else "as ligadas aos melhores atributos"
         )
         expl.append(f"Perícias: {origem}.")
 
+    poderes = []
+    for o in fontes:
+        poderes += list(o.habilidades) + list(getattr(o, "poderes", []))
     return Ficha(
         nome=nome or rng.choice(NOMES),
         sistema=SISTEMA_LIDO,
         tipo="pj",
         nivel=nivel_final,
         classe=arq.nome if arq else None,
+        escolhas={e: o.nome for e, o in feitas.items()},
         atributos=atributos,
         metodo_atributos="livre",
         pericias=pericias,
-        equipamento=list(arq.equipamento) if arq else [],
-        poderes=list(arq.habilidades) if arq else [],
+        equipamento=list(dict.fromkeys(x for o in fontes for x in o.equipamento)),
+        poderes=list(dict.fromkeys(poderes)),
         explicacoes=expl,
         tags=[arq.papel] if arq and arq.papel else [],
     )

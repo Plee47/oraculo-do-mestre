@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from oraculo.leitor.avaliacao_generica import avaliar_leitura
+from oraculo.leitor.avaliacao_generica import SUBCLASSES_SRD, avaliar_leitura
 from oraculo.leitor.cache import CacheDatabricks, CacheMemoria, hash_livro
 from oraculo.leitor.indice import IndiceLivro, texto_para_vetores, tokens, vetores_para_texto
 from oraculo.leitor.llm import ClienteDatabricks, ErroLLM, cliente_configurado, espera
@@ -94,9 +94,9 @@ class LLMContador:
 def test_livro_lido_uma_vez_nao_gasta_llm_de_novo():
     llm, cache = LLMContador(), CacheMemoria()
     primeira = ler_sistema(_paginas(), llm, cache=cache, estrategia="bm25")
-    assert not primeira.do_cache and llm.chamadas == 3
+    assert not primeira.do_cache and llm.chamadas == 5  # 4 leituras + lacunas (sem dano e vida)
     segunda = ler_sistema(_paginas(), llm, cache=cache, estrategia="bm25")
-    assert segunda.do_cache and llm.chamadas == 3
+    assert segunda.do_cache and llm.chamadas == 5
     assert segunda.sistema == primeira.sistema
     assert leitura_guardada(_paginas(), cache, "bm25") is not None
     assert leitura_guardada(["outro livro"], cache, "bm25") is None
@@ -222,6 +222,13 @@ def test_leitura_perfeita_tira_nota_maxima(gabarito):
                 )
             ],
             "arquetipos": [{"nome": c.nome} for c in gabarito.classes],
+            "etapas": [
+                {"nome": "Raça", "opcoes": [{"nome": r.nome} for r in gabarito.racas]},
+                {
+                    "nome": "Subclasse",
+                    "opcoes": [{"nome": sub, "pai": c} for sub, c in SUBCLASSES_SRD.items()],
+                },
+            ],
             "criaturas": [
                 {"nome": m.nome, "vida": m.pv, "defesa": m.ca} for m in gabarito.monstros[:5]
             ],
@@ -230,6 +237,7 @@ def test_leitura_perfeita_tira_nota_maxima(gabarito):
     m = avaliar_leitura(s, gabarito)
     assert m["nota_geral"] == 1.0
     assert m["criaturas_lidas"] == 5
+    assert m["subclasses_na_classe_certa"] == 1.0
 
 
 def test_erros_derrubam_as_metricas_certas(gabarito):

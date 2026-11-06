@@ -34,6 +34,15 @@ RACAS_PT = {
 }  # fmt: skip
 
 
+# As 12 subclasses abertas do SRD 5.1 e a classe de cada uma.
+SUBCLASSES_SRD = {
+    "Path of the Berserker": "Barbarian", "College of Lore": "Bard", "Life Domain": "Cleric",
+    "Circle of the Land": "Druid", "Champion": "Fighter", "Way of the Open Hand": "Monk",
+    "Oath of Devotion": "Paladin", "Hunter": "Ranger", "Thief": "Rogue",
+    "Draconic Bloodline": "Sorcerer", "The Fiend": "Warlock", "School of Evocation": "Wizard",
+}  # fmt: skip
+
+
 def _chaves(nome: str) -> set[str]:
     base = normalizar_id(nome)
     return {base, base.replace("_", "")}
@@ -85,6 +94,30 @@ def avaliar_leitura(s: SistemaLido, gabarito: Catalogo) -> dict[str, float]:
         sum(1 for n in arquetipos if any(_casa(n, al) for al in classes.values())), len(arquetipos)
     )
 
+    # Etapas: raças e subclasses foram achadas, cada subclasse na classe certa?
+    opcoes = [o for e in s.etapas for o in e.opcoes]
+    racas = [
+        {*_chaves(r.nome), RACAS_PT.get(normalizar_id(r.nome), "")} - {""} for r in gabarito.racas
+    ]
+    m["racas_recall"] = _razao(
+        sum(1 for al in racas if any(_casa(o.nome, al) for o in opcoes)), len(racas)
+    )
+    sub_achadas = {
+        sub: next((o for o in opcoes if _casa(o.nome, _chaves(sub))), None)
+        for sub in SUBCLASSES_SRD
+    }
+    m["subclasses_recall"] = _razao(sum(1 for o in sub_achadas.values() if o), len(SUBCLASSES_SRD))
+    com_pai = [(sub, o) for sub, o in sub_achadas.items() if o and o.pai]
+    m["subclasses_na_classe_certa"] = _razao(
+        sum(
+            1
+            for sub, o in com_pai
+            if _casa(o.pai, {*_chaves(SUBCLASSES_SRD[sub]),
+                             CLASSES_PT[normalizar_id(SUBCLASSES_SRD[sub])]})
+        ),
+        len(com_pai),
+    )  # fmt: skip
+
     # Criaturas: o nome existe no catálogo? PV e CA batem?
     por_nome = {}
     for monstro in gabarito.monstros:
@@ -104,7 +137,10 @@ def avaliar_leitura(s: SistemaLido, gabarito: Catalogo) -> dict[str, float]:
     m["modificador_certo"] = 1.0 if s.modificador and modificador_certo else 0.0
     m["derivados_calculaveis"] = _razao(sum(1 for d in s.derivados if d.formula), len(s.derivados))
 
-    partes = ("atributos_recall", "classes_recall", "classes_precisao", "criaturas_precisao",
-              "criaturas_pv_acerto", "mecanica_d20", "modificador_certo")  # fmt: skip
+    partes = (
+        "atributos_recall", "classes_recall", "classes_precisao", "racas_recall",
+        "subclasses_recall", "criaturas_precisao", "criaturas_pv_acerto", "mecanica_d20",
+        "modificador_certo",
+    )  # fmt: skip
     m["nota_geral"] = sum(m[p] for p in partes) / len(partes)
     return m
