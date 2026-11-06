@@ -5,6 +5,7 @@ de quatro famílias de sistema: rolagem por atributo (Call of Cthulhu), valores 
 """
 
 import json
+import math
 import random
 from pathlib import Path
 
@@ -12,9 +13,11 @@ import pytest
 
 from oraculo.leitor.cache import CacheMemoria
 from oraculo.sistemas.generico.analise import (
+    ALVOS_DIFICULDADE,
     analisar_encontro,
     analisar_grupo,
     criatura_de_ficha,
+    sugerir_encontro,
 )
 from oraculo.sistemas.generico.formulas import (
     ErroFormula,
@@ -29,6 +32,7 @@ from oraculo.sistemas.generico.leitura import (
     ErroLeitura,
     detalhar_opcao,
     extrair_json,
+    ler_mais_criaturas,
     ler_sistema,
     selecionar_paginas,
 )
@@ -627,3 +631,86 @@ def test_leitura_a_fundo_de_uma_opcao():
 def test_opcao_desconhecida_da_erro():
     with pytest.raises(ValueError):
         detalhar_opcao(sistema(FANTASIA), "classe", "Bardo", _livro_fantasia(), LLMDetalhe())
+
+
+# --------------------------------------------------------------------------- encontros
+
+
+def _grupo_d20(s):
+    return [
+        gerar_ficha(s, arquetipo=a, nivel=3, seed=i)
+        for i, a in enumerate(("Guerreiro", "Guerreiro", "Mago"))
+    ]
+
+
+@pytest.mark.parametrize("dificuldade", ["fácil", "equilibrado", "difícil"])
+def test_sugestao_fica_perto_da_dificuldade_pedida(dificuldade):
+    s = sistema(D20)
+    s.criaturas += sistema(
+        {
+            "nome": "x",
+            "criaturas": [
+                {"nome": "Rato", "vida": 2, "ataques": [{"nome": "Mordida", "dano": "1d2"}]},
+                {"nome": "Urso", "vida": 34, "ataques": [{"nome": "Garra", "dano": "2d6+4"}]},
+            ],
+        }
+    ).criaturas
+    sug = sugerir_encontro(s, _grupo_d20(s), dificuldade)
+    assert sug.origem == "livro" and sug.criaturas
+    razao = sug.resumo.rodadas_para_perder / sug.resumo.rodadas_para_vencer
+    assert abs(math.log(razao / ALVOS_DIFICULDADE[dificuldade])) < 0.5
+
+
+def test_dificuldades_ficam_em_ordem():
+    s = sistema(D20)
+    razoes = []
+    for d in ("fácil", "equilibrado", "difícil"):
+        r = sugerir_encontro(s, _grupo_d20(s), d).resumo
+        razoes.append(r.rodadas_para_perder / r.rodadas_para_vencer)
+    assert razoes[0] > razoes[1] > razoes[2]
+
+
+def test_sem_criaturas_usa_inimigos_pelas_regras():
+    s = sistema(SHINOBI)
+    grupo = [gerar_ficha(s, seed=i) for i in range(3)]
+    sug = sugerir_encontro(s, grupo)
+    assert sug is not None and sug.origem == "regras"
+    assert all("PdM" in c.nome for c, _ in sug.criaturas)
+
+
+def test_sem_numeros_nao_inventa_sugestao():
+    s = sistema(VAMPIRO)  # sem dano básico
+    assert sugerir_encontro(s, [gerar_ficha(s, seed=1)]) is None
+    with pytest.raises(ValueError):
+        sugerir_encontro(sistema(D20), [], "impossível")
+
+
+def test_ler_mais_criaturas_nao_repete_e_guarda():
+    class LLMCriaturas:
+        chamadas = 0
+
+        def completar(self, sistema, usuario, max_tokens=6000, pequeno=False):
+            type(self).chamadas += 1
+            return json.dumps(
+                {
+                    "criaturas": [
+                        {"nome": "Lobo", "vida": 11},  # já conhecida
+                        {"nome": "Grifo", "vida": 59, "atributos": {"FOR": 18}, "pagina": 21},
+                        {"sem_nome": True},
+                    ]
+                }
+            )
+
+    paginas = [f"Página {i}. " + "texto de ambientação " * 30 for i in range(30)]
+    paginas[20] = "Bestiário: criaturas, monstros, ataque e pontos de vida. " * 20
+    s, cache = sistema(D20), CacheMemoria()
+    s.paginas_fonte["criaturas"] = []
+    assert ler_mais_criaturas(s, paginas, LLMCriaturas(), cache) == 1
+    assert [c.nome for c in s.criaturas].count("Lobo") == 1
+    grifo = next(c for c in s.criaturas if c.nome == "Grifo")
+    assert grifo.atributos == {"for": 18} and 21 in s.paginas_fonte["criaturas"]
+    assert LLMCriaturas.chamadas == 1
+    # as páginas já lidas não voltam: o próximo lote é outro
+    antes = set(s.paginas_fonte["criaturas"])
+    ler_mais_criaturas(s, paginas, LLMCriaturas(), cache)
+    assert set(s.paginas_fonte["criaturas"]) >= antes
