@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import io
 import json
 import sys
 from pathlib import Path
@@ -22,9 +23,13 @@ if recarregar_se_mudou([RAIZ / "src", RAIZ / "dados"]):
     st.cache_resource.clear()
     st.cache_data.clear()
 
-from oraculo.leitor.detector import MINIMO_CARACTERES, ModeloDetector, avaliar_documento
-from oraculo.leitor.extracao import parece_ter_entradas
-from oraculo.leitor.porteiro import decidir
+from oraculo.leitor.detector import (
+    MINIMO_CARACTERES,
+    ModeloDetector,
+    Veredito,
+    avaliar_documento,
+)
+from oraculo.leitor.porteiro import SISTEMAS_SUPORTADOS, Decisao, decidir
 from oraculo.nucleo import Ficha, obter_regras
 from oraculo.nucleo.analise import Achado
 from oraculo.sistemas.dnd5e import ATRIBUTOS, custo_compra_pontos, modificador
@@ -42,15 +47,18 @@ MODELO_DETECTOR = Path(__file__).parents[1] / "dados" / "publicos" / "modelos" /
 AVALIACAO_LEITOR = (
     Path(__file__).parents[1] / "dados" / "publicos" / "avaliacoes" / "leitor_srd51.json"
 )
-PAGINAS = (
-    "Início",
-    "Gerador de fichas (D&D 5e)",
-    "Análise de grupo e encontro (D&D 5e)",
-    "Leitor de livros de RPG",
-    "Ficha rápida (D&D 5e)",
-    "Feiticeiros & Maldições",
-    "Roteiro",
-    "Conteúdo e licenças",
+INICIO = "Início"
+GERADOR = "Gerador de fichas"
+FICHA = "Ficha rápida"
+ANALISES = "Análises"
+BASTIDORES = "Bastidores do leitor"
+ROTEIRO = "Roteiro"
+CONTEUDO = "Conteúdo e licenças"
+LIMITE_PAGINAS = 200
+NOMES_SISTEMAS = {"dnd5e": "D&D 5e", "fm": "Feiticeiros & Maldições", "tagmar": "Tagmar"}
+CREDITO_FM = (
+    "Mecânicas resumidas do Livro de Regras v2.5 de Feiticeiros & Maldições (Setsugiri, Parker "
+    "e equipe — projeto de fãs gratuito). Nenhum texto do livro é publicado aqui."
 )
 
 
@@ -64,33 +72,123 @@ def modelo_detector() -> ModeloDetector:
     return ModeloDetector.carregar(MODELO_DETECTOR)
 
 
-pagina = st.sidebar.radio("Navegação", PAGINAS)
-st.sidebar.caption("Projeto de portfólio · Python + Databricks + GitHub")
+@st.cache_data(max_entries=3, show_spinner="Lendo o PDF…")
+def paginas_do_pdf(dados: bytes) -> tuple[list[str], int]:
+    """Texto das primeiras páginas do PDF (só em memória; nada é salvo)."""
+    from pypdf import PdfReader
+
+    leitor = PdfReader(io.BytesIO(dados))
+    paginas = [(p.extract_text() or "") for p in leitor.pages[:LIMITE_PAGINAS]]
+    return paginas, len(leitor.pages)
+
+
+# --------------------------------------------------------------------------- livro escolhido
+# O site gira em torno de um livro validado pelo porteiro: o sistema dele define as regras do
+# gerador, da ficha rápida e das análises.
+def livro_atual() -> dict | None:
+    return st.session_state.get("livro")
+
+
+def sistema_atual() -> str:
+    return livro_atual()["sistema"]
+
+
+def _ir_para(pagina: str) -> None:
+    st.session_state.pagina = pagina
+
+
+def _usar_livro(sistema: str, nome: str, nota: float | None = None, demo: bool = False) -> None:
+    st.session_state.livro = {"sistema": sistema, "nome": nome, "nota": nota, "demo": demo}
+    st.session_state.pagina = GERADOR
+
+
+def _trocar_livro() -> None:
+    st.session_state.pop("livro", None)
+    st.session_state.pagina = INICIO
 
 
 # --------------------------------------------------------------------------- início
 def pagina_inicio() -> None:
     st.title("🔮 Oráculo do Mestre")
-    st.subheader("Lê livros de RPG, monta fichas e aponta o que está desequilibrado na sua mesa.")
-    st.markdown(
-        """
-- **Leitor de livros:** reconhece se o PDF é um livro de RPG, de qual sistema, e extrai
-  classes, magias e criaturas para tabelas estruturadas.
-- **Gerador de fichas:** cria personagens válidos pelas regras, explicando cada escolha.
-- **Análise:** encontra fraquezas do grupo e desequilíbrios nos encontros, sempre explicando
-  *qual regra* gerou a dica.
+    st.subheader("Conheceu um sistema de RPG? Envie o livro e crie fichas dentro das regras dele.")
+    passos = st.columns(3)
+    passos[0].markdown("**1 · Envie o livro**  \nO PDF do livro de regras, ou um trecho colado.")
+    passos[1].markdown(
+        "**2 · O porteiro valida**  \nConfere se é mesmo RPG e de qual sistema. Um romance ou "
+        "um manual não viram ficha."
+    )
+    passos[2].markdown(
+        "**3 · Crie e analise**  \nGerador de fichas, ficha rápida e análises, todos nas "
+        "regras do sistema validado."
+    )
+    st.divider()
 
-Sistemas: **D&D 5ª edição** (SRD) e **Feiticeiros & Maldições** (em breve).
-"""
+    livro = livro_atual()
+    if livro:
+        origem = "modo demonstração" if livro["demo"] else f"nota {livro['nota']:.0%}"
+        st.success(
+            f"Livro validado: **{livro['nome']}** · sistema "
+            f"**{SISTEMAS_SUPORTADOS[livro['sistema']]}** ({origem}).",
+            icon="✅",
+        )
+        b1, b2, _ = st.columns([1, 1, 2])
+        b1.button("🎲 Criar uma ficha", on_click=_ir_para, args=(GERADOR,), type="primary")
+        b2.button("📚 Enviar outro livro", on_click=_trocar_livro)
+        return
+
+    aba_pdf, aba_texto = st.tabs(["📄 Enviar PDF", "📝 Colar texto"])
+    paginas: list[str] = []
+    nome = ""
+    with aba_pdf:
+        arquivo = st.file_uploader("PDF", type=["pdf"], label_visibility="collapsed")
+        if arquivo is not None:
+            paginas, total = paginas_do_pdf(arquivo.getvalue())
+            nome = Path(arquivo.name).stem
+            if total > LIMITE_PAGINAS:
+                st.caption(f"Analisando as primeiras {LIMITE_PAGINAS} de {total} páginas.")
+    with aba_texto:
+        texto = st.text_area(
+            "Texto",
+            height=160,
+            label_visibility="collapsed",
+            placeholder=f"Cole pelo menos {MINIMO_CARACTERES} caracteres de um livro…",
+        )
+        if not paginas and texto.strip():
+            paginas, nome = [texto], "trecho colado"
+    st.caption(
+        "O arquivo é lido só na memória deste servidor: não é salvo nem enviado a nenhum LLM. "
+        f"Sistemas com fichas e análises: {', '.join(SISTEMAS_SUPORTADOS.values())}."
     )
-    st.info(
-        "Experimente o **Gerador de fichas** e a **Análise de grupo e encontro** no menu ao lado.",
-        icon="🎲",
-    )
+
+    if not paginas:
+        st.markdown("**Sem um livro à mão?** Experimente com um sistema que o Oráculo já conhece:")
+        for col, (sid, nome_sistema) in zip(
+            st.columns(len(SISTEMAS_SUPORTADOS)), SISTEMAS_SUPORTADOS.items(), strict=True
+        ):
+            col.button(
+                f"Demonstração: {nome_sistema}",
+                key=f"demo_{sid}",
+                on_click=_usar_livro,
+                args=(sid, f"demonstração de {nome_sistema}", None, True),
+                use_container_width=True,
+            )
+        return
+
+    modelo = modelo_detector()
+    v = avaliar_documento(modelo, paginas)
+    decisao = decidir(modelo, paginas)
+    mostrar_veredito(v, decisao, paginas, modelo)
+    if decisao.aceito:
+        st.button(
+            f"✅ Usar este livro e criar fichas de {SISTEMAS_SUPORTADOS[v.sistema]}",
+            type="primary",
+            on_click=_usar_livro,
+            args=(v.sistema, nome, v.nota),
+        )
 
 
 # --------------------------------------------------------------------------- gerador
-def pagina_gerador() -> None:
+def _dnd_gerador() -> None:
     cat = catalogo_dnd5e()
     regras = obter_regras("dnd5e")
     defn = regras.definicao
@@ -215,7 +313,7 @@ def _cr(cr: float) -> str:
     return {0.125: "1/8", 0.25: "1/4", 0.5: "1/2"}.get(cr, f"{cr:g}")
 
 
-def pagina_analise() -> None:
+def _dnd_analise() -> None:
     cat = catalogo_dnd5e()
     defn = obter_regras("dnd5e").definicao
     st.title("Análise de grupo e encontro · D&D 5e")
@@ -283,97 +381,62 @@ def pagina_analise() -> None:
     mostrar_achados(achados)
 
 
-# --------------------------------------------------------------------------- detector
-NOMES_SISTEMAS = {"dnd5e": "D&D 5e", "fm": "Feiticeiros & Maldições", "tagmar": "Tagmar"}
-LIMITE_PAGINAS = 200
-
-
-def pagina_detector() -> None:
-    modelo = modelo_detector()
-    st.title("Leitor de livros de RPG")
-    st.markdown(
-        "Antes de qualquer LLM ler um livro, o **porteiro** confere se é mesmo um livro de RPG "
-        "de um sistema suportado. Assim um romance ou um manual não viram fichas, e a cota de "
-        "LLM não é gasta à toa."
-    )
-    st.caption(
-        "Envie um PDF ou cole um trecho. O arquivo é lido só na memória deste servidor, não é "
-        "salvo e não é enviado a nenhum LLM: a extração roda no Databricks, sobre os livros que "
-        "você coloca no seu próprio workspace."
-    )
-    mostrar_avaliacao_leitor()
-    aba_pdf, aba_texto = st.tabs(["📄 Enviar PDF", "📝 Colar texto"])
-    paginas: list[str] = []
-    with aba_pdf:
-        arquivo = st.file_uploader("PDF", type=["pdf"], label_visibility="collapsed")
-        if arquivo is not None:
-            from pypdf import PdfReader
-
-            leitor = PdfReader(arquivo)
-            total = len(leitor.pages)
-            with st.spinner("Lendo o PDF…"):
-                paginas = [(p.extract_text() or "") for p in leitor.pages[:LIMITE_PAGINAS]]
-            if total > LIMITE_PAGINAS:
-                st.caption(f"Analisando as primeiras {LIMITE_PAGINAS} de {total} páginas.")
-    with aba_texto:
-        texto = st.text_area(
-            "Texto",
-            height=180,
-            label_visibility="collapsed",
-            placeholder=f"Cole pelo menos {MINIMO_CARACTERES} caracteres de um livro…",
-        )
-        if not paginas and texto.strip():
-            paginas = [texto]
-
-    if not paginas:
-        with st.expander("Como funciona", expanded=True):
-            st.markdown(
-                """
-O detector dá uma nota a cada página com base em **6 sinais que um mestre reconheceria**:
-notação de dados (`1d20`), modificadores (`+2`), siglas de atributos, vocabulário de regras,
-blocos de estatísticas e texto que fala com o leitor. A nota do livro é a média das páginas.
-
-Foi treinado no Databricks com 12 obras de licença aberta e avaliado com *leave-one-book-out*,
-em que cada livro é julgado por um modelo que nunca viu nenhuma página dele: **12 de 12 livros
-certos**, incluindo romances de fantasia e um livro de regras de xadrez.
-"""
-            )
-        return
-
-    v = avaliar_documento(modelo, paginas)
+# --------------------------------------------------------------------------- porteiro
+def mostrar_veredito(
+    v: Veredito, decisao: Decisao, paginas: list[str], modelo: ModeloDetector
+) -> None:
     if v.paginas_analisadas == 0:
         st.warning(
             f"Texto insuficiente: cole ao menos {MINIMO_CARACTERES} caracteres, ou envie um PDF "
             "com texto selecionável (PDFs escaneados não têm texto)."
         )
         return
-    if v.e_rpg:
-        st.success(f"**Parece um livro de RPG** (nota {v.nota:.0%})", icon="🎲")
-    else:
-        st.info(f"**Não parece um livro de RPG** (nota {v.nota:.0%})", icon="📚")
-    m = st.columns(3)
-    m[0].metric("Páginas analisadas", v.paginas_analisadas)
-    m[1].metric("Páginas com cara de RPG", f"{v.fracao_paginas_rpg:.0%}")
-    m[2].metric("Sistema provável", NOMES_SISTEMAS.get(v.sistema, "—") if v.sistema else "—")
-    st.markdown("**Por quê:**")
-    for motivo in v.motivos:
-        st.write(f"- {motivo.capitalize()}")
-
-    decisao = decidir(modelo, paginas)
-    st.markdown("**Porteiro do leitor:**")
     if decisao.aceito:
-        st.success(
-            f"Seguiria para a extração com LLM: {decisao.motivo}. "
-            f"{sum(parece_ter_entradas(p) for p in paginas)} página(s) passariam no pré-filtro.",
-            icon="✅",
+        st.success(f"**Livro aceito pelo porteiro:** {decisao.motivo}.", icon="✅")
+    elif v.e_rpg:
+        st.warning(
+            f"**É um livro de RPG, mas o Oráculo ainda não conhece este sistema** "
+            f"({NOMES_SISTEMAS.get(v.sistema, 'não identificado')}). Hoje as fichas e análises "
+            f"existem para: {', '.join(SISTEMAS_SUPORTADOS.values())}.",
+            icon="🧩",
         )
     else:
-        st.warning(f"Barrado antes do LLM: {decisao.motivo}.", icon="⛔")
+        st.info(
+            f"**Não parece um livro de RPG** (nota {v.nota:.0%}), então não vira ficha.",
+            icon="📚",
+        )
+    with st.expander("Por que o porteiro decidiu assim?"):
+        m = st.columns(3)
+        m[0].metric("Páginas analisadas", v.paginas_analisadas)
+        m[1].metric("Páginas com cara de RPG", f"{v.fracao_paginas_rpg:.0%}")
+        m[2].metric("Sistema provável", NOMES_SISTEMAS.get(v.sistema, "—") if v.sistema else "—")
+        for motivo in v.motivos:
+            st.write(f"- {motivo.capitalize()}")
+        uteis = [p for p in paginas if len(p.strip()) >= MINIMO_CARACTERES]
+        if len(uteis) > 1:
+            st.caption("Nota de cada página")
+            st.bar_chart([modelo.prob_pagina(p) for p in uteis], height=180)
 
-    uteis = [p for p in paginas if len(p.strip()) >= MINIMO_CARACTERES]
-    if len(uteis) > 1:
-        st.caption("Nota de cada página")
-        st.bar_chart([modelo.prob_pagina(p) for p in uteis], height=180)
+
+def pagina_bastidores() -> None:
+    st.title("Bastidores do leitor")
+    st.markdown(
+        """
+**O porteiro** é um detector treinado no Databricks. Ele dá uma nota a cada página com base em
+**6 sinais que um mestre reconheceria**: notação de dados (`1d20`), modificadores (`+2`),
+siglas de atributos, vocabulário de regras, blocos de estatísticas e texto que fala com o
+leitor. A nota do livro é a média das páginas, e palavras típicas de cada sistema dizem qual
+é o sistema.
+
+Ele foi avaliado com *leave-one-book-out*: cada livro é julgado por um modelo que nunca viu
+nenhuma página dele. Resultado: **12 de 12 livros certos**, incluindo romances de fantasia e um
+livro de regras de xadrez.
+
+**A extração** dos livros aceitos roda no Databricks, com os LLMs da própria plataforma, sobre
+os livros que você coloca no seu workspace. O que vem de livros protegidos nunca sai de lá.
+"""
+    )
+    mostrar_avaliacao_leitor()
 
 
 def mostrar_avaliacao_leitor() -> None:
@@ -407,7 +470,7 @@ def mostrar_avaliacao_leitor() -> None:
 
 
 # --------------------------------------------------------------------------- ficha
-def pagina_ficha() -> None:
+def _dnd_ficha() -> None:
     regras = obter_regras("dnd5e")
     defn = regras.definicao
     st.title("Ficha rápida · D&D 5e")
@@ -628,21 +691,35 @@ def _fm_grupo(regras) -> None:
     mostrar_achados(fm_analise.analisar_grupo(grupo))
 
 
-def pagina_fm() -> None:
-    regras = obter_regras("fm")
-    st.title("Feiticeiros & Maldições")
-    st.caption(
-        "Segundo sistema do Oráculo. Mecânicas resumidas do Livro de Regras v2.5 (Setsugiri, "
-        "Parker e equipe — projeto de fãs gratuito). O livro passa pelo porteiro do leitor no "
-        "Databricks, mas o texto dele fica só no workspace privado."
-    )
-    aba_gerador, aba_ficha, aba_grupo = st.tabs(["Gerador", "Ficha rápida", "Análise de grupo"])
-    with aba_gerador:
-        _fm_gerador(regras)
-    with aba_ficha:
-        _fm_ficha_rapida(regras)
-    with aba_grupo:
-        _fm_grupo(regras)
+def pagina_gerador() -> None:
+    if sistema_atual() == "fm":
+        st.title("Gerador de fichas · Feiticeiros & Maldições")
+        st.caption(CREDITO_FM)
+        _fm_gerador(obter_regras("fm"))
+    else:
+        _dnd_gerador()
+
+
+def pagina_ficha() -> None:
+    if sistema_atual() == "fm":
+        st.title("Ficha rápida · Feiticeiros & Maldições")
+        st.caption(CREDITO_FM)
+        _fm_ficha_rapida(obter_regras("fm"))
+    else:
+        _dnd_ficha()
+
+
+def pagina_analises() -> None:
+    if sistema_atual() == "fm":
+        st.title("Análises · Feiticeiros & Maldições")
+        _fm_grupo(obter_regras("fm"))
+        st.info(
+            "Análise de encontro: o livro base de Feiticeiros & Maldições não tem bestiário, "
+            "então ainda não há maldições para comparar com o grupo.",
+            icon="🧭",
+        )
+    else:
+        _dnd_analise()
 
 
 # --------------------------------------------------------------------------- roteiro
@@ -683,13 +760,26 @@ resumidas, sem texto do livro.
     )
 
 
+livro = livro_atual()
+paginas = [INICIO, *([GERADOR, FICHA, ANALISES] if livro else []), BASTIDORES, ROTEIRO, CONTEUDO]
+if st.session_state.get("pagina") not in paginas:
+    st.session_state.pagina = INICIO
+if livro:
+    st.sidebar.success(
+        f"📖 **{livro['nome']}**  \nSistema: {SISTEMAS_SUPORTADOS[livro['sistema']]}", icon="✅"
+    )
+    st.sidebar.button("Trocar de livro", on_click=_trocar_livro, use_container_width=True)
+else:
+    st.sidebar.info("Envie um livro no **Início** para liberar o gerador e as análises.")
+st.sidebar.radio("Navegação", paginas, key="pagina")
+st.sidebar.caption("Projeto de portfólio · Python + Databricks + GitHub")
+
 {
-    "Início": pagina_inicio,
-    "Gerador de fichas (D&D 5e)": pagina_gerador,
-    "Análise de grupo e encontro (D&D 5e)": pagina_analise,
-    "Leitor de livros de RPG": pagina_detector,
-    "Ficha rápida (D&D 5e)": pagina_ficha,
-    "Feiticeiros & Maldições": pagina_fm,
-    "Roteiro": pagina_roteiro,
-    "Conteúdo e licenças": pagina_conteudo,
-}[pagina]()
+    INICIO: pagina_inicio,
+    GERADOR: pagina_gerador,
+    FICHA: pagina_ficha,
+    ANALISES: pagina_analises,
+    BASTIDORES: pagina_bastidores,
+    ROTEIRO: pagina_roteiro,
+    CONTEUDO: pagina_conteudo,
+}[st.session_state.pagina]()
