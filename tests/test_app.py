@@ -57,10 +57,43 @@ SISTEMA_2D8 = {
 }
 
 
+ETAPAS_2D8 = [
+    {
+        "id": "cla",
+        "nome": "Clã",
+        "tipo": "escolha",
+        "principal": True,
+        "opcoes": [
+            {"nome": "Clã da Folha", "atributos_chave": ["for"], "papel": "combate", "pagina": 1},
+            {"nome": "Clã da Névoa", "atributos_chave": ["esp"], "papel": "suporte", "pagina": 1},
+        ],
+    },
+    {
+        "id": "estilo",
+        "nome": "Estilo",
+        "tipo": "escolha",
+        "depende_de": "cla",
+        "opcoes": [
+            {"nome": "Punho Leve", "pai": "Clã da Folha"},
+            {"nome": "Bruma Densa", "pai": "Clã da Névoa"},
+        ],
+    },
+]
+DETALHE = {
+    "descricao": "Clã de guerreiros.",
+    "equipamento": ["Kunai"],
+    "habilidades": [{"nome": "Golpe da Folha", "resumo": "Dano extra.", "nivel": 1, "pagina": 1}],
+}
+
+
 class LLMFalso:
     """Responde como o LLM do Databricks, sem rede (usado só nos testes)."""
 
     def completar(self, sistema: str, usuario: str, max_tokens: int = 6000) -> str:
+        if "ESTRUTURA" in usuario:
+            return json.dumps({"nome_arquetipo": "clã", "etapas": ETAPAS_2D8})
+        if "da decisão" in usuario:
+            return json.dumps(DETALHE)
         if "Trechos do início" in usuario:
             return json.dumps(
                 {
@@ -172,6 +205,24 @@ def test_livro_ja_lido_vem_do_cache_sem_gastar_llm():
     next(b for b in at.button if b.label.startswith("Ler o livro")).click().run()
     assert not at.exception
     assert at.title[0].value == "Resumo do sistema · Ninjas 2d8"
+
+
+def test_ficha_por_etapas_com_leitura_a_fundo():
+    at = abrir(llm=LLMFalso())
+    at.text_area[0].set_value(TRECHO_RPG).run()
+    next(b for b in at.button if b.label.startswith("Ler o livro")).click().run()
+    ir(at, "Gerador de fichas")
+    at.selectbox(key="lido_etapa_cla").set_value("Clã da Folha").run()
+    assert not at.exception
+    # a etapa filha só oferece as opções do clã escolhido
+    assert at.selectbox(key="lido_etapa_estilo").options == ["Automático", "Punho Leve"]
+    assert "Clã da Folha" in at.subheader[0].value
+    # a leitura a fundo entrou na ficha e ficou guardada no livro da sessão
+    opcoes = at.session_state.livro["lido"]["etapas"][0]["opcoes"]
+    assert next(o for o in opcoes if o["nome"] == "Clã da Folha")["detalhada"]
+    assert at.dataframe  # tabela de habilidades do nível
+    assert any("Kunai" in m.value for m in at.markdown)
+    assert not [e for e in at.error]
 
 
 def test_sem_credencial_a_leitura_explica_o_motivo(monkeypatch):

@@ -26,17 +26,24 @@ from oraculo.leitor.cache import CacheLeituras, hash_livro
 from oraculo.leitor.extracao import limpar_texto_pdf
 from oraculo.leitor.indice import IndiceLivro, texto_para_vetores, vetores_para_texto
 from oraculo.leitor.llm import ClienteLLM, ErroLLM
+from oraculo.sistemas.generico.formulas import normalizar_id
 from oraculo.sistemas.generico.modelo import (
     Arquetipo,
     Atributo,
     Criatura,
     Derivado,
+    Etapa,
     GeracaoAtributos,
+    Habilidade,
     Mecanica,
     Niveis,
+    Opcao,
     Pericia,
     SistemaLido,
+    calculavel_em,
     normalizar,
+    normalizar_opcao,
+    sincronizar_arquetipos,
 )
 
 # --------------------------------------------------------------------------- seleção
@@ -74,14 +81,14 @@ PALAVRAS = {
 }  # fmt: skip
 ORCAMENTO = {
     "visao": 45_000, "mecanica": 30_000, "dano": 12_000, "encontros": 12_000, "sumario": 15_000,
-    "criacao": 75_000, "criaturas": 60_000,
+    "criacao": 60_000, "estrutura": 70_000, "criaturas": 60_000,
 }  # fmt: skip
 _RE_SUMARIO = re.compile(r"\b(sum[aá]rio|[ií]ndice|contents|table of contents)\b", re.I)
 _RE_LINHA_SUMARIO = re.compile(r"(\.{3,}|\s)\s*\d{1,3}\s*$", re.M)
 _RE_NUMERO = re.compile(r"\b\d{1,3}\b")
 
 # Mudou um prompt, o modelo ou a seleção de páginas? Mude a versão: o cache antigo deixa de valer.
-VERSAO_LEITURA = "2026-11-06.2"
+VERSAO_LEITURA = "2026-11-06.3"
 VERSAO_VETORES = "qwen3-0.6b-1200c"
 ESTRATEGIAS = ("palavras", "bm25", "hibrida")
 # Estratégia do site, escolhida pela avaliação contra o gabarito do SRD (notebook 23).
@@ -97,6 +104,9 @@ CONSULTAS = {
     "criacao": "criação de personagem passo a passo atributos distribuir pontos escolher "
     "classe raça clã origem pontos de vida iniciais nível inicial character creation "
     "ability scores choose class race hit points starting level",
+    "estrutura": "passo a passo montar personagem escolha sua raça classe subclasse clã "
+    "origem especialização profissão arquétipo opções disponíveis lista de classes "
+    "choose your race class subclass archetype path options available",
     "criaturas": "bestiário criaturas monstros inimigos estatísticas ataque pontos de vida "
     "defesa bestiary monster creature statistics armor class hit points actions",
 }
@@ -154,6 +164,7 @@ def selecionar_paginas(paginas: list[str]) -> dict[str, list[int]]:
     return {
         "visao": sorted(set(inicio) | set(mecanica) | set(encontros) | set(dano)),
         "criacao": sorted(set(sumario) | set(criacao)),
+        "estrutura": sorted(set(sumario) | set(criacao)),
         "criaturas": criaturas,
     }
 
@@ -204,8 +215,9 @@ def selecionar_por_busca(
             | set(parte("dano", ORCAMENTO["dano"]))
             | set(parte("encontros", ORCAMENTO["encontros"]))
         ),
-        "criacao": sorted(
-            set(_sumario(paginas, uteis)) | set(parte("criacao", ORCAMENTO["criacao"]))
+        "criacao": parte("criacao", ORCAMENTO["criacao"]),
+        "estrutura": sorted(
+            set(_sumario(paginas, uteis)) | set(parte("estrutura", ORCAMENTO["estrutura"]))
         ),
         "criaturas": parte("criaturas", ORCAMENTO["criaturas"]),
     }
@@ -256,9 +268,7 @@ PROMPT_VISAO = """Trechos do início do livro e das regras básicas. Devolva:
                      ou \"\" se não houver"
 }"""
 
-PROMPT_CRIACAO = """Trechos sobre criação de personagem (e o sumário do livro, se houver:
-use-o para achar os nomes de todas as classes, clãs, profissões ou arquétipos, mesmo os que
-não aparecem descritos nos trechos). Devolva:
+PROMPT_CRIACAO = """Trechos sobre criação de personagem. Devolva:
 {
  "niveis": {"usa_niveis": bool, "nivel_inicial": int (o número do nível de um personagem
             INICIANTE, como o livro escreve: se começa em "Nível de Campanha 4", é 4),
@@ -288,25 +298,60 @@ não aparecem descritos nos trechos). Devolva:
    defesa, sanidade, energia, habilidades de combate...",
    "formula": "fórmula com os ids dos atributos (o modificador de um atributo é mod_<id>, ex.:
    mod_des); pode usar o id de outro derivado; o nível do personagem é sempre 'nivel'; NUNCA
-   escreva 'outros' ou 'bônus' genéricos; se o valor depende do arquétipo, ponha a fórmula
-   comum (ou \"\") e a de cada arquétipo em arquetipos[].formulas; se depender de perícia ou
-   de uma escolha do jogador, deixe \"\" e explique",
+   escreva 'outros' ou 'bônus' genéricos; se o valor muda conforme a classe ou opção escolhida,
+   deixe \"\" e explique; se depender de perícia ou de uma escolha do jogador, idem",
    "tipo": "vida | defesa | recurso | iniciativa | movimento | outro",
    "explicacao": "1 frase"}],
  "pericias": [{"nome": "...", "atributo": "id do atributo ou null", "descricao": "1 frase"}]
-   (até 40),
- "arquetipos": [{"nome": "...", "descricao": "1 frase", "papel": "função no grupo em 1 ou 2
-   palavras (combate, suporte, social, investigação...)", "atributos_chave": [ids],
-   "pericias": [nomes], "equipamento": [itens iniciais], "habilidades": [até 5 nomes],
-   "dano_tipico": "fórmula do dano do ataque inicial PRÓPRIO do arquétipo, só se o livro
-   der (ex.: arma inicial da classe); NÃO invente; senão null",
-   "formulas": {"id do derivado": "fórmula própria deste arquétipo (ex.: PV por classe:
-   12 + mod_con + (nivel-1)*(6+mod_con))"} ou {}}]
-   (até 20). Arquétipo é o que o jogador ESCOLHE ao criar o personagem (classe, clã, raça,
-   profissão, estilo). NÃO liste níveis, ranks ou patentes de progressão, nem seções do livro
-   que não são uma escolha (ex.: "Benefícios Gerais", "Aptidões Restritas", "Jutsus Básicos").
-   Preencha atributos_chave com os atributos que o livro associa à opção.
+   (até 40)
 }"""
+
+PROMPT_ESTRUTURA = """Trechos sobre como montar um personagem e o sumário do livro. Monte a
+ESTRUTURA das decisões que o jogador toma, na ordem do livro. Devolva:
+{
+ "nome_arquetipo": "como o livro chama a escolha principal (classe, clã, profissão...)",
+ "etapas": [{"id": "id curto sem acento", "nome": "nome da decisão (Raça, Classe, Subclasse...)",
+   "instrucao": "o que o jogador decide, em 1 frase",
+   "tipo": "escolha (decidir entre opções com nome) | atributos | pericias | equipamento |
+     poderes | outro",
+   "principal": true só na escolha que define o papel do personagem (classe, clã,
+     especialização),
+   "nivel_minimo": int (nível em que esta decisão é tomada; subclasses muitas vezes vêm depois
+     do primeiro nível),
+   "depende_de": "id da etapa cuja escolha limita esta (subclasse depende de classe), ou \"\"",
+   "opcoes": [{"nome": "EXATAMENTE como no livro (não traduza)", "descricao": "1 frase",
+     "pai": "a opção da etapa de que esta depende, se houver",
+     "papel": "função no grupo em 1 ou 2 palavras (combate, suporte, social...)",
+     "atributos_chave": [nomes dos atributos que o livro associa à opção],
+     "formulas": {"nome do valor derivado": "fórmula própria desta opção, com os nomes ou siglas
+       dos atributos e mod_<sigla> para o modificador (ex.: PV por classe:
+       12 + mod_con + (nivel-1)*(6+mod_con))"} ou {},
+     "pagina": número da página onde a opção é descrita}]
+ }]
+}
+Regras: opção é algo que o jogador ESCOLHE. NÃO liste níveis, ranks ou patentes de progressão,
+nem seções do livro que não são escolha (ex.: "Benefícios Gerais", "Aptidões Restritas").
+Use o sumário para achar TODAS as opções, mesmo as que não estão descritas nos trechos.
+Só liste opções que aparecem no texto. Até 40 opções por etapa."""
+
+PROMPT_OPCAO = """Trechos do livro sobre a opção "{opcao}" da decisão "{etapa}"{pai}. Leia como
+quem vai montar a ficha e devolva o que ESTES trechos dizem sobre ela:
+{
+ "descricao": "2 ou 3 frases, com suas palavras",
+ "papel": "função no grupo em 1 ou 2 palavras",
+ "atributos_chave": [nomes dos atributos mais importantes para ela],
+ "bonus_atributos": {"nome do atributo": bônus numérico que ela concede},
+ "pericias": [perícias que ela concede ou recomenda],
+ "equipamento": [equipamento inicial que ela concede],
+ "formulas": {"nome do valor derivado": "fórmula própria desta opção (ex.: PV por classe)"},
+ "dano_tipico": "fórmula do dano do ataque inicial que o livro indica para ela, ou null",
+ "habilidades": [{"nome": "...", "resumo": "1 frase com o efeito", "nivel": int ou null,
+   "pagina": número da página}] (até 12, das iniciais para as avançadas),
+ "poderes": [magias, técnicas ou disciplinas iniciais que ela dá, pelo nome] (até 15),
+ "subopcoes": [{"nome": "...", "descricao": "1 frase"}] (opções que dependem desta, como
+   subclasses ou caminhos; [] se não houver)
+}
+Se um trecho falar de outra opção, ignore. NÃO invente: o que não estiver no texto fica vazio."""
 
 PROMPT_CRIATURAS = """Trechos com criaturas, monstros, inimigos ou NPCs com estatísticas.
 Devolva até 25 criaturas, variando o nível de ameaça (fracas, médias e fortes). O nome de
@@ -372,6 +417,25 @@ def _objeto(modelo: type[BaseModel], dados: object, avisos: list[str], rotulo: s
     except ValidationError:
         avisos.append(f"{rotulo}: a leitura veio incompleta; usando valores padrão.")
         return modelo()
+
+
+def _etapas(itens: object, avisos: list[str]) -> list[Etapa]:
+    """Etapas com as opções validadas uma a uma: uma opção ruim não derruba a etapa."""
+    if not isinstance(itens, list):
+        return []
+    etapas = []
+    for item in itens:
+        if not isinstance(item, dict):
+            continue
+        opcoes = _itens(Opcao, item.get("opcoes"), "Opção", avisos)
+        try:
+            etapa = Etapa.model_validate({**item, "opcoes": []})
+        except ValidationError:
+            avisos.append(f"Etapa de criação ignorada por estar incompleta: {item.get('nome')}.")
+            continue
+        etapa.opcoes = opcoes
+        etapas.append(etapa)
+    return etapas
 
 
 @dataclass
@@ -463,12 +527,13 @@ def ler_sistema(
         selecao["criacao"] = selecao["visao"]
     pedidos = {
         "visao": (PROMPT_VISAO, selecao["visao"], 3000),
-        "criacao": (PROMPT_CRIACAO, selecao["criacao"], 12000),
+        "criacao": (PROMPT_CRIACAO, selecao["criacao"], 9000),
+        "estrutura": (PROMPT_ESTRUTURA, selecao.get("estrutura") or selecao["criacao"], 10000),
         "criaturas": (PROMPT_CRIATURAS, selecao["criaturas"], 10000),
     }
     respostas: dict[str, dict] = {}
     avisos: list[str] = []
-    with ThreadPoolExecutor(max_workers=3) as ex:
+    with ThreadPoolExecutor(max_workers=len(pedidos)) as ex:
         futuros = {
             k: ex.submit(_pedir, cliente, prompt, _trechos(limpas, idx), mx)
             for k, (prompt, idx, mx) in pedidos.items()
@@ -486,6 +551,7 @@ def ler_sistema(
     if not visao:
         raise ErroLeitura("não consegui ler a visão geral do livro; tente de novo")
     criacao = respostas.get("criacao", {})
+    estrutura = respostas.get("estrutura", {})
     criaturas = respostas.get("criaturas", {})
 
     sistema = SistemaLido(
@@ -496,13 +562,16 @@ def ler_sistema(
         resumo=str(visao.get("resumo") or ""),
         mecanica=_objeto(Mecanica, visao.get("mecanica"), avisos, "Mecânica"),
         niveis=_objeto(Niveis, criacao.get("niveis") or visao.get("niveis"), avisos, "Níveis"),
-        nome_arquetipo=str(visao.get("nome_arquetipo") or "arquétipo"),
+        nome_arquetipo=str(
+            estrutura.get("nome_arquetipo") or visao.get("nome_arquetipo") or "arquétipo"
+        ),
         regras_encontro=str(visao.get("regras_encontro") or ""),
         atributos=_itens(Atributo, criacao.get("atributos"), "Atributo", avisos),
         geracao=_objeto(GeracaoAtributos, criacao.get("geracao"), avisos, "Geração"),
         derivados=_itens(Derivado, criacao.get("derivados"), "Valor derivado", avisos),
         pericias=_itens(Pericia, criacao.get("pericias"), "Perícia", avisos),
         arquetipos=_itens(Arquetipo, criacao.get("arquetipos"), "Arquétipo", avisos),
+        etapas=_etapas(estrutura.get("etapas"), avisos),
         criaturas=_itens(Criatura, criaturas.get("criaturas"), "Criatura", avisos),
         paginas_fonte={k: [i + 1 for i in v] for k, v in selecao.items()},
         avisos=avisos,
@@ -517,3 +586,84 @@ def ler_sistema(
             "paginas_lidas": leitura.paginas_lidas,
         }))  # fmt: skip
     return leitura
+
+
+# --------------------------------------------------------------------------- leitura a fundo
+ORCAMENTO_OPCAO = 30_000
+
+
+def _aplicar_detalhes(s: SistemaLido, etapa: Etapa, o: Opcao, dados: dict) -> None:
+    avisos: list[str] = []
+    for campo in ("descricao", "papel"):
+        if dados.get(campo):
+            setattr(o, campo, str(dados[campo]))
+    if isinstance(dados.get("atributos_chave"), list) and dados["atributos_chave"]:
+        o.atributos_chave = [str(x) for x in dados["atributos_chave"]]
+    for campo in ("pericias", "equipamento", "poderes"):
+        if isinstance(dados.get(campo), list) and dados[campo]:
+            setattr(o, campo, [str(x) for x in dados[campo] if x])
+    if isinstance(dados.get("bonus_atributos"), dict):
+        o.bonus_atributos = Opcao._bonus(dados["bonus_atributos"])
+    if isinstance(dados.get("formulas"), dict) and dados["formulas"]:
+        o.formulas = Opcao._formulas(dados["formulas"])
+    if dados.get("dano_tipico"):
+        o.dano_tipico = str(dados["dano_tipico"])
+    o.habilidades_detalhe = _itens(Habilidade, dados.get("habilidades"), "Habilidade", avisos)
+    if o.habilidades_detalhe:
+        o.habilidades = [h.nome for h in o.habilidades_detalhe]
+    normalizar_opcao(s, o, avisos, calculavel_em(s))
+    filha = next((e for e in s.etapas if e.depende_de == etapa.id), None)
+    if filha is not None:
+        for sub in _itens(Opcao, dados.get("subopcoes"), "Subopção", avisos):
+            if filha.opcao(sub.nome) is None:
+                sub.pai = o.nome
+                normalizar_opcao(s, sub, avisos, calculavel_em(s))
+                filha.opcoes.append(sub)
+    o.detalhada = True
+    s.avisos = list(dict.fromkeys([*s.avisos, *avisos]))
+    sincronizar_arquetipos(s)
+
+
+def detalhar_opcao(
+    s: SistemaLido,
+    etapa_id: str,
+    nome: str,
+    paginas: list[str],
+    cliente: ClienteLLM,
+    cache: CacheLeituras | None = None,
+) -> Opcao:
+    """Lê a fundo só as páginas de uma opção (uma vez: depois vem do cache). Altera `s`."""
+    etapa = s.etapa(etapa_id)
+    o = etapa.opcao(nome) if etapa else None
+    if o is None:
+        raise ValueError(f"opção desconhecida: {etapa_id}/{nome}")
+    if o.detalhada:
+        return o
+    limpas = [limpar_texto_pdf(p) for p in paginas]
+    livro = hash_livro(limpas)
+    chave = f"{etapa.id}:{normalizar_id(o.nome)}"
+    if cache is not None:
+        guardado = cache.ler(livro, "opcao", chave, VERSAO_LEITURA)
+        if guardado:
+            _aplicar_detalhes(s, etapa, o, json.loads(guardado))
+            return o
+    indice = IndiceLivro(limpas)
+    achadas = indice.buscar(f"{o.nome} {o.nome} {o.pai} {etapa.nome}", k=8)
+    if o.pagina and 1 <= o.pagina <= len(limpas):
+        achadas = [o.pagina - 1, *achadas]
+    trechos = _trechos(limpas, indice.com_vizinhas(achadas, ORCAMENTO_OPCAO))
+    if not trechos:
+        o.detalhada = True  # nada no livro sobre ela: não adianta tentar de novo
+        return o
+    pai = f" (dentro de {o.pai})" if o.pai else ""
+    prompt = (
+        PROMPT_OPCAO.replace("{opcao}", o.nome).replace("{etapa}", etapa.nome).replace("{pai}", pai)
+    )
+    try:
+        dados = _pedir(cliente, prompt, trechos, 5000)
+    except (ValueError, json.JSONDecodeError) as e:
+        raise ErroLeitura(f"a leitura de {o.nome} não voltou em JSON válido") from e
+    _aplicar_detalhes(s, etapa, o, dados)
+    if cache is not None:
+        cache.gravar(livro, "opcao", chave, VERSAO_LEITURA, json.dumps(dados))
+    return o
