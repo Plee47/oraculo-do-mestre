@@ -37,6 +37,11 @@ from oraculo.sistemas.generico.leitura import (
     selecionar_paginas,
 )
 from oraculo.sistemas.generico.modelo import SistemaLido, normalizar
+from oraculo.sistemas.generico.narrativa import (
+    Narrativa,
+    contexto_lido,
+    sugerir_narrativa,
+)
 
 # --------------------------------------------------------------------------- especificações
 
@@ -714,3 +719,56 @@ def test_ler_mais_criaturas_nao_repete_e_guarda():
     antes = set(s.paginas_fonte["criaturas"])
     ler_mais_criaturas(s, paginas, LLMCriaturas(), cache)
     assert set(s.paginas_fonte["criaturas"]) >= antes
+
+
+# --------------------------------------------------------------------------- narrativa
+
+
+class LLMNarrativa:
+    def __init__(self, resposta=None):
+        self.usuario = ""
+        self.pequeno = None
+        self.resposta = resposta
+
+    def completar(self, sistema, usuario, max_tokens=6000, pequeno=False):
+        self.usuario, self.pequeno = usuario, pequeno
+        return self.resposta or json.dumps(
+            {
+                "aparencia": "Alta, com cicatrizes.",
+                "personalidade": "Teimosa.",
+                "historia": "Cresceu no norte.",
+                "gancho": "Procura o irmão.",
+                "assinatura_rotulo": "Técnica",
+                "assinatura_nome": "Corte Duplo",
+                "assinatura_descricao": "Dois golpes rápidos.",
+            }
+        )
+
+
+def test_narrativa_usa_as_escolhas_o_status_e_o_livro():
+    s = sistema(FANTASIA)
+    s.etapa("classe").opcao("Guerreiro").descricao = "Combatente treinado."
+    f = gerar_ficha(s, nivel=3, seed=1, escolhas={"classe": "Guerreiro", "raca": "Anão"})
+    llm = LLMNarrativa()
+    n = sugerir_narrativa(contexto_lido(s, f), f, llm, _livro_fantasia())
+    assert llm.pequeno  # modelo pequeno: menos cota
+    assert "Classe: Guerreiro" in llm.usuario and "Raça: Anão" in llm.usuario
+    assert "Combatente treinado." in llm.usuario
+    assert f"Força {f.atributos['for']}" in llm.usuario
+    assert "=== PÁGINA 30 ===" in llm.usuario  # trecho do livro sobre a escolha
+    campos = n.para_ficha()
+    assert campos["Aparência"] == "Alta, com cicatrizes."
+    assert campos["Técnica"] == "Corte Duplo: Dois golpes rápidos."
+
+
+def test_narrativa_ruim_nao_vira_ficha():
+    s = sistema(FANTASIA)
+    f = gerar_ficha(s, seed=1)
+    for resposta in ("sem json nenhum", json.dumps({"aparencia": None})):
+        with pytest.raises(ErroLeitura):
+            sugerir_narrativa(contexto_lido(s, f), f, LLMNarrativa(resposta))
+
+
+def test_narrativa_sem_rotulo_e_sem_campos_vazios():
+    n = Narrativa(aparencia="x", assinatura_nome="Golpe", gancho=None)
+    assert n.para_ficha() == {"Aparência": "x", "Assinatura": "Golpe"}

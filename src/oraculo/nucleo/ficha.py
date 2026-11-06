@@ -28,6 +28,7 @@ class Ficha(BaseModel):
     equipamento: list[str] = Field(default_factory=list)
     poderes: list[str] = Field(default_factory=list)  # magias, técnicas, habilidades
     explicacoes: list[str] = Field(default_factory=list)  # por que cada escolha foi feita
+    narrativa: dict[str, str] = Field(default_factory=dict)  # sugestões criativas (aparência...)
     tags: list[str] = Field(default_factory=list)
     notas: str = ""
 

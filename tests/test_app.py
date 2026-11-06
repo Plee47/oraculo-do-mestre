@@ -221,6 +221,20 @@ def test_ficha_por_etapas_com_leitura_a_fundo():
     assert not [e for e in at.error]
 
 
+@pytest.mark.parametrize("sistema", ["dnd5e", "fm", "lido"])
+def test_sugestao_criativa_em_qualquer_sistema(sistema):
+    class LLMCriativo:
+        def completar(self, sistema, usuario, max_tokens=6000, pequeno=False):
+            assert pequeno
+            return json.dumps({"aparencia": "Alta e calada.", "assinatura_nome": "Corte Duplo"})
+
+    at = ir(abrir(sistema, llm=LLMCriativo()), "Gerador de fichas")
+    next(b for b in at.button if b.label.startswith("Sugerir aparência")).click().run()
+    assert not at.exception
+    assert any("Alta e calada." in m.value for m in at.markdown)
+    assert any("Sugestão criativa" in c.value for c in at.caption)
+
+
 def test_sem_credencial_a_leitura_explica_o_motivo(monkeypatch):
     monkeypatch.delenv("DATABRICKS_HOST", raising=False)
     monkeypatch.delenv("DATABRICKS_TOKEN", raising=False)
