@@ -22,7 +22,7 @@ TRECHO_DND = (
     )
     * 2
 )
-SEMPRE = ("Início", "Bastidores do leitor", "Roteiro", "Conteúdo e licenças")
+SEMPRE = ("Início", "Extras", "Bastidores do leitor", "Roteiro", "Conteúdo e licenças")
 COM_LIVRO = ("Resumo do sistema", "Gerador de fichas", "Ficha rápida", "Análises")
 
 SISTEMA_2D8 = {
@@ -387,3 +387,111 @@ def test_bastidores_mostra_a_comparacao_das_buscas():
     at = ir(abrir(), "Bastidores do leitor")
     assert len(at.dataframe) == 2
     assert any("páginas certas" in s.value for s in at.subheader)
+
+
+# --------------------------------------------------------------------------- extras
+def _botao(at: AppTest, chave: str):
+    return next(b for b in at.button if b.key == chave)
+
+
+def _texto_html(at: AppTest) -> str:
+    return "".join(h.proto.body for h in at.get("html"))
+
+
+def test_extras_funciona_sem_livro():
+    at = ir(abrir(), "Extras")
+    assert at.title[0].value == "Extras"
+    assert len(at.tabs) == 3
+
+
+def test_extras_rola_pelo_botao_com_modificador_e_vantagem():
+    at = ir(abrir(), "Extras")
+    at.number_input(key="dados_mod").set_value(3)
+    at.radio(key="dados_modo").set_value("Vantagem")
+    _botao(at, "rolar_d20").click().run()
+    assert not at.exception
+    assert "2d20kh1+3" in _texto_html(at)
+    assert at.dataframe  # histórico
+
+
+def test_extras_rola_o_que_foi_escrito_e_guarda_o_historico():
+    at = ir(abrir(), "Extras")
+    at.text_input(key="dados_expressao").set_value("1d20+5, 2#2d6")
+    at.button(key="FormSubmitter:form_rolagem-Rolar").click().run()
+    assert not at.exception
+    assert _texto_html(at).count('class="rolagem"') == 3
+    assert len(at.session_state["_historico_dados"]) == 3
+
+
+def test_extras_explica_expressao_invalida_sem_derrubar():
+    at = ir(abrir(), "Extras")
+    at.text_input(key="dados_expressao").set_value("1d6>=1>=2")
+    at.button(key="FormSubmitter:form_rolagem-Rolar").click().run()
+    assert not at.exception
+    assert at.error
+
+
+def test_extras_nao_interpreta_html_digitado():
+    at = ir(abrir(), "Extras")
+    at.text_input(key="dados_expressao").set_value("<b>1d6</b>")
+    at.button(key="FormSubmitter:form_rolagem-Rolar").click().run()
+    assert not at.exception
+    assert "<b>" not in _texto_html(at)
+
+
+def test_extras_salva_e_rola_uma_rolagem():
+    at = ir(abrir(), "Extras")
+    at.text_input(key="salvar_nome").set_value("Ataque")
+    at.text_input(key="salvar_expressao").set_value("1d20+7")
+    at.button(key="FormSubmitter:form_salvar-Salvar").click().run()
+    assert not at.exception
+    assert at.session_state["_rolagens_salvas"] == {"Ataque": "1d20+7"}
+    _botao(at, "salva_0").click().run()
+    assert not at.exception
+    assert "1d20+7" in _texto_html(at)
+    _botao(at, "apagar_salva_0").click().run()
+    assert not at.exception
+    assert at.session_state["_rolagens_salvas"] == {}
+
+
+def test_extras_calcula_a_chance_de_atingir_o_alvo():
+    at = ir(abrir(), "Extras")
+    at.text_input(key="prob_expressao").set_value("1d20+5")
+    at.number_input(key="prob_alvo").set_value(15).run()
+    assert not at.exception
+    # As guias de probabilidade e de comparação usam os mesmos rótulos: a primeira é a que importa.
+    assert at.metric[0].label == "Chance de 15 ou mais" and at.metric[0].value == "55,0%"
+    assert at.metric[1].label == "Média" and at.metric[1].value == "15,50"
+
+
+def test_extras_nao_inventa_total_mais_provavel_num_empate():
+    at = ir(abrir(), "Extras")
+    legendas = " ".join(c.value for c in at.caption)
+    assert "Sem total mais provável" in legendas  # 1d20 tem todos os totais empatados
+    at.text_input(key="prob_expressao").set_value("2d6").run()
+    assert "Mais provável: **7**" in " ".join(c.value for c in at.caption)
+
+
+def test_extras_compara_duas_rolagens():
+    at = ir(abrir(), "Extras")
+    at.text_input(key="comparar_a").set_value("2d6")
+    at.text_input(key="comparar_b").set_value("1d12")
+    at.number_input(key="comparar_alvo").set_value(7).run()
+    assert not at.exception
+    # 2d6 chega a 7 em 21/36; 1d12, em 6/12.
+    assert any("2d6" in i.value and "58,3%" in i.value for i in at.info)
+
+
+def test_extras_compara_com_expressao_invalida_sem_derrubar():
+    at = ir(abrir(), "Extras")
+    at.text_input(key="comparar_a").set_value("abc").run()
+    assert not at.exception
+    assert at.error
+
+
+def test_extras_oferece_o_dado_do_livro():
+    at = ir(abrir("lido"), "Extras")
+    assert any(b.key == "rolar_livro" for b in at.button)
+    _botao(at, "rolar_livro").click().run()
+    assert not at.exception
+    assert "2d8" in _texto_html(at)
