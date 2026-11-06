@@ -88,7 +88,7 @@ _RE_LINHA_SUMARIO = re.compile(r"(\.{3,}|\s)\s*\d{1,3}\s*$", re.M)
 _RE_NUMERO = re.compile(r"\b\d{1,3}\b")
 
 # Mudou um prompt, o modelo ou a seleção de páginas? Mude a versão: o cache antigo deixa de valer.
-VERSAO_LEITURA = "2026-11-06.3"
+VERSAO_LEITURA = "2026-11-06.8"
 VERSAO_VETORES = "qwen3-0.6b-1200c"
 ESTRATEGIAS = ("palavras", "bm25", "hibrida")
 # Estratégia do site, escolhida pela avaliação contra o gabarito do SRD (notebook 23).
@@ -223,6 +223,46 @@ def selecionar_por_busca(
     }
 
 
+_RE_TITULO = re.compile(r"^[^\W\d_][\w'’&:,\- ()]{2,48}$")
+ORCAMENTO_MAPA = 25_000
+
+
+def mapa_do_livro(paginas: list[str], por_pagina: int = 7) -> str:
+    """Títulos de cada página, sem LLM: dá ao LLM a visão do livro inteiro mesmo sem sumário.
+
+    Título é uma linha curta sem pontuação final. Linhas repetidas em muitas páginas (cabeçalhos)
+    ficam de fora.
+    """
+    candidatas: list[list[str]] = []
+    frequencia: dict[str, int] = {}
+    for pagina in paginas:
+        linhas = []
+        for linha in pagina.splitlines():
+            linha = linha.strip()
+            if (
+                _RE_TITULO.match(linha)
+                and not linha.endswith((",", ":", ";"))
+                and linha[0].isupper()
+            ):
+                linhas.append(linha)
+        linhas = list(dict.fromkeys(linhas))
+        candidatas.append(linhas)
+        for x in linhas:
+            frequencia[x.lower()] = frequencia.get(x.lower(), 0) + 1
+    limite = max(3, len(paginas) // 25)
+    saida, total = [], 0
+    for i, linhas in enumerate(candidatas):
+        titulos = [x for x in linhas if frequencia[x.lower()] <= limite][:por_pagina]
+        if not titulos:
+            continue
+        texto = f"p.{i + 1}: " + " | ".join(titulos)
+        if total + len(texto) > ORCAMENTO_MAPA:
+            break
+        saida.append(texto)
+        total += len(texto) + 1
+    return "\n".join(saida)
+
+
 def _trechos(paginas: list[str], indices: list[int]) -> str:
     return "\n\n".join(f"=== PÁGINA {i + 1} ===\n{paginas[i]}" for i in indices)
 
@@ -324,18 +364,22 @@ ESTRUTURA das decisões que o jogador toma, na ordem do livro. Devolva:
      "papel": "função no grupo em 1 ou 2 palavras (combate, suporte, social...)",
      "atributos_chave": [nomes dos atributos que o livro associa à opção],
      "formulas": {"nome do valor derivado": "fórmula própria desta opção, com os nomes ou siglas
-       dos atributos e mod_<sigla> para o modificador (ex.: PV por classe:
-       12 + mod_con + (nivel-1)*(6+mod_con))"} ou {},
+       dos atributos e mod_<sigla> para o modificador. Vida que cresce por nível é SEMPRE
+       primeiro nível + (nivel-1)*ganho: "12 + CON no 1º nível e 6 + CON nos seguintes" vira
+       12 + mod_con + (nivel-1)*(6+mod_con)"} ou {},
      "pagina": número da página onde a opção é descrita}]
  }]
 }
 Regras: opção é algo que o jogador ESCOLHE. NÃO liste níveis, ranks ou patentes de progressão,
 nem seções do livro que não são escolha (ex.: "Benefícios Gerais", "Aptidões Restritas").
-Use o sumário para achar TODAS as opções, mesmo as que não estão descritas nos trechos.
+Use o sumário e o MAPA DO LIVRO (títulos de cada página) para achar TODAS as opções e a página
+de cada uma, mesmo as que não estão descritas nos trechos. Classes, raças e clãs costumam
+aparecer como títulos seguidos no mapa.
 Só liste opções que aparecem no texto. Até 40 opções por etapa."""
 
 PROMPT_OPCAO = """Trechos do livro sobre a opção "{opcao}" da decisão "{etapa}"{pai}. Leia como
-quem vai montar a ficha e devolva o que ESTES trechos dizem sobre ela:
+quem vai montar a ficha e devolva o que ESTES trechos dizem sobre ela.
+Atributos do sistema: {atributos}. Valores calculados do sistema: {valores}.
 {
  "descricao": "2 ou 3 frases, com suas palavras",
  "papel": "função no grupo em 1 ou 2 palavras",
@@ -343,7 +387,12 @@ quem vai montar a ficha e devolva o que ESTES trechos dizem sobre ela:
  "bonus_atributos": {"nome do atributo": bônus numérico que ela concede},
  "pericias": [perícias que ela concede ou recomenda],
  "equipamento": [equipamento inicial que ela concede],
- "formulas": {"nome do valor derivado": "fórmula própria desta opção (ex.: PV por classe)"},
+ "formulas": {"nome de um dos valores calculados acima": "como ESTA opção calcula o valor, se
+   os trechos disserem, com nomes dos atributos, mod_<atributo> e nivel. Valor que cresce por
+   nível é SEMPRE primeiro nível + (nivel-1)*ganho: \"10 + Constituição no 1º nível e 1d8 +
+   Constituição (ou 5 + Constituição) nos seguintes\" vira
+   10 + mod_constituicao + (nivel-1)*(5 + mod_constituicao). \"6 PE por nível + atributo-chave\"
+   vira 6*nivel + mod_atributo_chave"},
  "dano_tipico": "fórmula do dano do ataque inicial que o livro indica para ela, ou null",
  "habilidades": [{"nome": "...", "resumo": "1 frase com o efeito", "nivel": int ou null,
    "pagina": número da página}] (até 12, das iniciais para as avançadas),
@@ -438,6 +487,182 @@ def _etapas(itens: object, avisos: list[str]) -> list[Etapa]:
     return etapas
 
 
+PROMPT_COMPLETAR = """Abaixo está o MAPA de um livro de RPG (títulos de cada página) e as decisões
+que o jogador toma ao criar um personagem, com as opções já encontradas. Olhando o mapa, liste as
+opções que FALTAM em cada decisão. Devolva:
+{
+ "faltando": [{"etapa": "id da decisão", "nome": "EXATAMENTE como no mapa",
+   "pai": "para decisões que dependem de outra, a opção a que esta pertence, ou \"\"",
+   "pagina": número da página no mapa}]
+}
+Só liste opções reais dessa decisão (uma classe, uma raça, uma subclasse). Títulos de regras e de
+seções ("Class Features", "Hit Points", "Equipment") NÃO são opções. Se nada faltar, devolva
+{"faltando": []}.
+
+DECISÕES:
+{etapas}
+
+MAPA DO LIVRO:
+{mapa}"""
+
+
+def _sem_marcas(texto: str) -> str:
+    return re.sub(r"\s+", " ", normalizar_id(texto).replace("_", " ")).strip()
+
+
+def _completar_opcoes(
+    s: SistemaLido, originais: list[str], limpas: list[str], cliente: ClienteLLM
+) -> None:
+    """Completa as listas de opções olhando o mapa do livro, com o modelo pequeno.
+
+    Trava contra invenção: um nome novo só entra se aparecer no texto do livro.
+    """
+    etapas = [e for e in s.etapas if e.tipo == "escolha" and e.opcoes]
+    mapa = mapa_do_livro(originais)
+    if not etapas or not mapa:
+        return
+    descricao = "\n".join(
+        f"- {e.id} ({e.nome})"
+        + (f", depende de {e.depende_de}" if e.depende_de else "")
+        + ": "
+        + ", ".join(o.nome for o in e.opcoes)
+        for e in etapas
+    )
+    prompt = PROMPT_COMPLETAR.replace("{etapas}", descricao).replace("{mapa}", mapa)
+    try:
+        dados = extrair_json(cliente.completar(SISTEMA, prompt, 3000, pequeno=True))
+    except (ValueError, json.JSONDecodeError):
+        return  # continua com o que a primeira leitura achou
+    faltando = dados.get("faltando")
+    if not isinstance(faltando, list):
+        return
+    livro = _sem_marcas(" ".join(limpas))
+    novas = 0
+    for item in faltando:
+        if not isinstance(item, dict):
+            continue
+        etapa = s.etapa(normalizar_id(str(item.get("etapa", ""))))
+        nome = str(item.get("nome") or "").strip()
+        if etapa is None or etapa.tipo != "escolha" or not nome or etapa.opcao(nome):
+            continue
+        if _sem_marcas(nome) not in livro:
+            s.avisos.append(f"Opção {nome} descartada: o nome não aparece no texto do livro.")
+            continue
+        try:
+            etapa.opcoes.append(Opcao.model_validate({**item, "nome": nome}))
+            novas += 1
+        except ValidationError:
+            continue
+    if novas:
+        normalizar(s)
+
+
+PROMPT_LACUNAS = """Faltam estas regras na leitura deste livro: {faltam}.
+Procure SÓ isso nos trechos e devolva o que achar:
+{
+ "dano_basico": "fórmula do dano de um ataque básico corpo a corpo, com os NOMES dos atributos,
+   mod_<atributo> e um dado ou número para uma arma simples do livro (ex.: 1d6 + mod_forca), ou
+   null",
+ "dano_explicacao": "1 frase com a regra de dano do livro, ou null",
+ "vida_geral": "fórmula da vida se ela for igual para todos, ou null",
+ "vida_por_opcao": {"nome da opção": "fórmula da vida daquela classe ou especialização, para
+   qualquer nível: primeiro nível + (nivel-1)*ganho"}
+}
+Atributos: {atributos}. Opções: {opcoes}. NÃO invente: o que não estiver no texto fica null."""
+ORCAMENTO_LACUNAS = 30_000
+
+
+def _lacunas(s: SistemaLido) -> list[str]:
+    faltam = []
+    if not s.mecanica.dano_basico:
+        faltam.append("a regra de dano de um ataque")
+    vida = s.derivado_do_tipo("vida")
+    principal = s.etapa_principal()
+    opcoes_com_vida = (
+        vida is not None
+        and principal is not None
+        and all(vida.id in o.formulas for o in principal.opcoes)
+    )
+    if vida is None or (not vida.formula and not opcoes_com_vida):
+        faltam.append("a fórmula de vida ou pontos de vida")
+    return faltam
+
+
+_RE_DADO_TEXTO = re.compile(r"\b(\d*)[dD](\d+)\b")
+
+
+def _dano_da_explicacao(s: SistemaLido) -> None:
+    """Último recurso: o livro explicou o dano em texto com um exemplo de dado, sem fórmula."""
+    texto = s.mecanica.dano_explicacao
+    dado = _RE_DADO_TEXTO.search(texto or "")
+    if not dado:
+        return
+    formula = dado.group(0)
+    if "modificador" in texto.lower():
+        minusculo = texto.lower()
+        for a in s.atributos:
+            if a.nome and a.nome.lower() in minusculo:
+                formula += f" + mod_{a.id}"
+                break
+    if calculavel_em(s)(formula) is None:
+        s.mecanica.dano_basico = formula
+        s.avisos.append(
+            f"Regra de dano montada a partir do texto do livro ({formula}); confira no resumo."
+        )
+
+
+def _preencher_lacunas(
+    s: SistemaLido, limpas: list[str], cliente: ClienteLLM, selecao: dict[str, list[int]]
+) -> None:
+    """Segunda leitura, só quando falta algo essencial para fichas e encontros (a leitura varia
+    entre execuções). Não gasta nada se a primeira leitura já trouxe tudo."""
+    faltam = _lacunas(s)
+    if not faltam:
+        return
+    indice = IndiceLivro(limpas)
+    consulta = CONSULTAS["dano"] + " pontos de vida vitalidade hit points vida inicial"
+    achadas = indice.buscar(consulta, k=20)
+    selecionadas = indice.com_vizinhas(achadas, ORCAMENTO_LACUNAS)
+    selecao["lacunas"] = selecionadas
+    principal = s.etapa_principal()
+    prompt = (
+        PROMPT_LACUNAS.replace("{faltam}", "; ".join(faltam))
+        .replace("{atributos}", ", ".join(a.nome for a in s.atributos) or "—")
+        .replace("{opcoes}", ", ".join(o.nome for o in principal.opcoes) if principal else "—")
+    )
+    try:
+        dados = _pedir(cliente, prompt, _trechos(limpas, selecionadas), 3000)
+    except (ValueError, json.JSONDecodeError):
+        return  # continua com o que tem; o resumo diz o que faltou
+    calculavel = calculavel_em(s)
+    if not s.mecanica.dano_basico and dados.get("dano_basico"):
+        s.mecanica.dano_basico = str(dados["dano_basico"])
+        if dados.get("dano_explicacao"):
+            s.mecanica.dano_explicacao = str(dados["dano_explicacao"])
+    vida = s.derivado_do_tipo("vida")
+    if vida is None and (dados.get("vida_geral") or dados.get("vida_por_opcao")):
+        vida = Derivado(nome="Pontos de Vida", tipo="vida")
+        s.derivados.append(vida)
+        vida.id = normalizar_id(vida.nome)
+    if vida is not None:
+        if (
+            not vida.formula
+            and dados.get("vida_geral")
+            and not calculavel(str(dados["vida_geral"]))
+        ):
+            vida.formula = str(dados["vida_geral"])
+        por_opcao = dados.get("vida_por_opcao")
+        if principal and isinstance(por_opcao, dict):
+            for nome, formula in por_opcao.items():
+                o = principal.opcao(str(nome))
+                if o and vida.id not in o.formulas and not calculavel(str(formula)):
+                    o.formulas[vida.id] = str(formula)
+    normalizar(s)
+    if not s.mecanica.dano_basico:
+        _dano_da_explicacao(s)
+    s.paginas_fonte["lacunas"] = [i + 1 for i in selecionadas]
+
+
 @dataclass
 class Leitura:
     sistema: SistemaLido
@@ -525,10 +750,16 @@ def ler_sistema(
         raise ErroLeitura("o livro não tem texto suficiente para ler")
     if not selecao["criacao"]:
         selecao["criacao"] = selecao["visao"]
+    # O título depende das quebras de linha, que a limpeza do texto não preserva em todo PDF.
+    linhas_originais = [p or "" for p in paginas]
     pedidos = {
         "visao": (PROMPT_VISAO, selecao["visao"], 3000),
         "criacao": (PROMPT_CRIACAO, selecao["criacao"], 9000),
-        "estrutura": (PROMPT_ESTRUTURA, selecao.get("estrutura") or selecao["criacao"], 10000),
+        "estrutura": (
+            PROMPT_ESTRUTURA + "\n\nMAPA DO LIVRO:\n" + mapa_do_livro(linhas_originais),
+            selecao.get("estrutura") or selecao["criacao"],
+            10000,
+        ),
         "criaturas": (PROMPT_CRIATURAS, selecao["criaturas"], 10000),
     }
     respostas: dict[str, dict] = {}
@@ -577,9 +808,11 @@ def ler_sistema(
         avisos=avisos,
     )
     e_rpg = bool(visao.get("e_livro_de_rpg", True))
-    leitura = Leitura(
-        normalizar(sistema), e_rpg, len({i for v in selecao.values() for i in v}), livro=livro
-    )
+    normalizar(sistema)
+    if e_rpg:
+        _completar_opcoes(sistema, linhas_originais, limpas, cliente)
+        _preencher_lacunas(sistema, limpas, cliente, selecao)
+    leitura = Leitura(sistema, e_rpg, len({i for v in selecao.values() for i in v}), livro=livro)
     if cache is not None and e_rpg:
         cache.gravar(livro, "sistema", chave, VERSAO_LEITURA, json.dumps({
             "sistema": json.loads(leitura.sistema.model_dump_json()), "e_rpg": e_rpg,
@@ -657,7 +890,11 @@ def detalhar_opcao(
         return o
     pai = f" (dentro de {o.pai})" if o.pai else ""
     prompt = (
-        PROMPT_OPCAO.replace("{opcao}", o.nome).replace("{etapa}", etapa.nome).replace("{pai}", pai)
+        PROMPT_OPCAO.replace("{opcao}", o.nome)
+        .replace("{etapa}", etapa.nome)
+        .replace("{pai}", pai)
+        .replace("{atributos}", ", ".join(a.nome for a in s.atributos) or "—")
+        .replace("{valores}", ", ".join(d.nome for d in s.derivados) or "—")
     )
     try:
         dados = _pedir(cliente, prompt, trechos, 5000)

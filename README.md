@@ -1,7 +1,7 @@
 # Oráculo do Mestre
 
 **Envie qualquer livro de RPG; o Oráculo confere se é mesmo RPG, lê as regras e entrega o
-resumo do sistema, fichas e encontros dentro das regras dele.** Projeto de portfólio de
+resumo do sistema, fichas e encontros dentro das regras dele, como alguém que leu o livro.** Projeto de portfólio de
 **ciência de dados e engenharia de dados com Databricks**: pipeline medalhão, modelo de
 classificação avaliado sem vazamento, LLMs avaliados contra gabarito e usados em produção com
 validação, e MLOps de ponta a ponta, tudo gratuito.
@@ -39,7 +39,7 @@ de dados, machine learning, LLMs avaliados e uma interface pronta para uso.
 | **Recuperação de informação** | Busca BM25 em Python puro e híbrida com embeddings, comparadas com repetições no MLflow; a melhor virou o padrão do site |
 | **LLM em produção, com validação** | Leitura de qualquer livro em três partes paralelas, saída validada item a item, fórmulas calculadas por um avaliador seguro (sem `eval`) e correções determinísticas para os erros recorrentes do modelo |
 | **Análise de dados aplicada** | Tabelas gold que viram regras: ex. 48% dos monstros de CR 11–16 resistem a dano físico não mágico, e isso muda o peso das dicas |
-| **MLOps e engenharia de software** | Databricks Asset Bundles (dev/prod), GitHub Actions, 285 testes com pytest, pre-commit, ADRs e Conventional Commits |
+| **MLOps e engenharia de software** | Databricks Asset Bundles (dev/prod), GitHub Actions, 360 testes com pytest, pre-commit, ADRs e Conventional Commits |
 | **Governança de dados** | Política de conteúdo automatizada: o "guardião" bloqueia no CI qualquer livro ou dado sem licença aberta; livros privados nunca saem do workspace |
 
 ## Resultados
@@ -52,7 +52,8 @@ de dados, machine learning, LLMs avaliados e uma interface pronta para uso.
 | Catálogo processado | **319** magias · **334** monstros · 12 classes, idêntico no Databricks e localmente |
 | Busca nas páginas de um livro desconhecido | Híbrida (BM25 + embeddings) tirou **0,80** contra 0,72 de BM25 e de palavras-chave, medida contra o gabarito do SRD |
 | Generalização do detector | Livro real de *Feiticeiros & Maldições* (368 páginas) reconhecido com **nota 86%** sem retreinar |
-| Qualquer livro (leitura com IA) | Sistema brasileiro de base **2d8** (*Naruto Shinobi no Sho*, 296 páginas) lido em **~40 s**: mecânica, 9 atributos em dois grupos de pontos, fórmula de Vitalidade, clãs e regra de dano conferidos página a página com o livro |
+| Leitura de um sistema desconhecido (SRD lido sem regras prontas, média de 3 rodadas) | Nota **0,86** (desvio 0,02) · classes **89%** com precisão de **100%** · **98%** dos PV de criaturas certos · **100%** das criaturas reais · raças 52% e subclasses 33% (o ponto mais fraco) |
+| Qualquer livro (leitura com IA) | Sistema brasileiro de base **2d8** (*Naruto Shinobi no Sho*, 296 páginas) lido em cerca de **3 min** na primeira vez e **10 s** depois: mecânica, grupos de pontos, fórmula de Vitalidade, clãs, habilidades com página e regra de dano conferidos com o livro |
 
 ## Como funciona
 
@@ -60,16 +61,21 @@ de dados, machine learning, LLMs avaliados e uma interface pronta para uso.
 2. **O porteiro valida:** o detector diz se é RPG. Um romance não vira ficha. D&D 5e e
    Feiticeiros & Maldições usam regras escritas e testadas à mão; **qualquer outro sistema é
    lido pela IA do Databricks**, que monta a especificação das regras.
-3. **Resumo do sistema:** como se joga, como criar personagem, atributos, fórmulas e
-   arquétipos, com o que a leitura não conseguiu e a opção de corrigir qualquer número.
-4. **Crie e analise:** gerador de fichas, ficha rápida e análises de grupo e encontro (com as
-   criaturas do livro ou, se ele não tiver bestiário, inimigos montados pelas regras dele).
-   Cada dica cita a regra que a gerou: **não há caixa-preta**.
+3. **Resumo do sistema:** como se joga, a sequência de decisões da criação de personagem,
+   atributos, fórmulas e opções, com o que a leitura não conseguiu e a opção de corrigir
+   qualquer número.
+4. **Ficha por etapas:** raça, classe, subclasse no nível certo, clã... As opções escolhidas são
+   lidas a fundo: habilidades por nível **com a página do livro**, bônus, fórmulas e poderes.
+5. **Sugestão criativa e PDF:** aparência, personalidade, história e poder de assinatura coerentes
+   com o livro, marcados como sugestão, e a **ficha em PDF com o tema visual do sistema**.
+6. **Encontros:** sugestão pela dificuldade pedida, com as criaturas do livro ou, se ele não tiver
+   bestiário, inimigos montados pelas regras dele. Cada dica cita a regra: **não há caixa-preta**.
 
 ![Análise de grupo de D&D 5e com dicas que citam a regra](docs/imagens/analises.png)
 
-**Sistemas:** qualquer livro de RPG pela leitura com IA · regras prontas para D&D 5ª edição
-(SRD 5.1) e Feiticeiros & Maldições (v2.5)
+**Sistemas:** qualquer livro de RPG, pela leitura com IA. O livro enviado sempre é lido; as regras
+escritas à mão de D&D 5ª edição (SRD 5.1) e Feiticeiros & Maldições (v2.5) ficam como reserva,
+demonstração e gabarito.
 
 ## Arquitetura
 
@@ -225,8 +231,25 @@ flowchart LR
 | `generico/leitura.py` | Escolhe as páginas de cada parte e faz três leituras em paralelo, pedindo JSON com campos fixos; o texto do livro é tratado como dado, não como instrução |
 | `generico/modelo.py` | A especificação: atributos (rolagem própria, grupos com pontos separados), modificador, valores derivados (inclusive por arquétipo e encadeados), arquétipos, perícias, criaturas |
 | `generico/formulas.py` | Avaliador seguro: `2d8`, `3d6×5`, `4d6kh3` (média exata), `teto(Força/2)`, `mod_des`; recusa qualquer coisa fora da lista |
-| `generico/gerador.py` | Fichas pelo método do livro (rolagem por atributo, valores fixos, compra de pontos) |
-| `generico/analise.py` | Fraquezas do grupo e encontros: dano médio × chance de acerto × multiplicador de dano |
+| `generico/gerador.py` | Fichas pelas etapas do livro e pelo método dele (rolagem por atributo, valores fixos, compra de pontos) |
+| `generico/analise.py` | Fraquezas do grupo, encontros e sugestão por dificuldade: dano médio × chance de acerto × multiplicador de dano |
+| `generico/narrativa.py` | Aparência, personalidade, história e poder de assinatura, marcados como sugestão |
+| `fichas_pdf.py` | Ficha em PDF com seis temas visuais escolhidos pelo gênero do jogo |
+
+**Como a leitura gasta pouco** ([ADR 0009](docs/decisoes/0009-leitura-profunda-e-livro-primeiro.md)):
+
+| Passo | Custo |
+|---|---|
+| Mapa do livro (títulos de todas as páginas) e busca BM25 | Nenhum: sem LLM |
+| Embeddings das páginas | Uma vez por livro, depois vêm do cache |
+| Quatro leituras em paralelo, mais uma para completar opções (modelo pequeno) | Uma vez por livro |
+| Segunda leitura de regra de dano ou de vida | Só se a primeira não trouxe |
+| Leitura a fundo de uma opção | Só quando ela entra numa ficha, uma vez por livro |
+| Sugestão criativa (modelo pequeno) | Só quando alguém pede |
+
+**Como a leitura não foge do livro:** cada opção e habilidade cita a página; um nome de opção
+acrescentado pelo mapa só entra se aparecer no texto; fórmulas passam por um avaliador sem `eval`;
+o que é criativo vem marcado como sugestão; e qualquer número pode ser corrigido no resumo.
 
 **Testado com livros reais** (cada número conferido com a página do livro):
 
@@ -250,10 +273,18 @@ flowchart LR
 - **Variação entre leituras:** o LLM às vezes marca Vitalidade como "recurso" ou esquece o
   modificador d20. Correções determinísticas (tipo pelo nome, modificador padrão quando as
   fórmulas usam `mod_*`) estabilizam o resultado, e o resumo permite corrigir à mão.
+- **Listas de opções incompletas:** classes em 56% e desvio de 0,18 entre rodadas. O passo que
+  completa as opções pelo mapa do livro levou a 89% e 0,02, e a precisão foi a 100% porque nome
+  que não está no livro não entra.
+- **Dano zerado:** `teto(mod_forca/2) + dano_arma` num sistema sem modificador virava constante 0,
+  e nenhum encontro podia ser sugerido. Só o teste com o livro real mostrou isso.
+- **Ficha que mudava sozinha:** a leitura a fundo revelava opções novas, o sorteio mudava e o clique
+  em "Sugerir aparência" se perdia. Achado no teste de ponta a ponta no navegador.
 
-**Limitações:** a leitura varia entre execuções e pode errar números; as contas de encontro
-são estimativas por valor médio; valores que dependem de perícia ou escolha do jogador
-ficam só como texto.
+**Limitações:** a leitura varia entre execuções e pode errar números. Subclasses e raças são o
+ponto mais fraco (33% e 52% no SRD). As contas de encontro são estimativas por valor médio. Valores
+que dependem de perícia ou escolha do jogador ficam só como texto. O plano gratuito do Databricks
+limita o uso do LLM: leituras seguidas podem esperar alguns minutos.
 
 ## Pipeline medalhão no Databricks
 
@@ -385,6 +416,7 @@ linha do tempo, não como uma grade de cards.
 - [x] **Fase 4 · Feiticeiros & Maldições:** segundo sistema (fichas, análise de grupo, porteiro)
 - [x] **Fase 5a · Vitrine:** site que começa pelo livro, design e README de portfólio
 - [x] **Fase 6 · Qualquer livro:** leitura com IA, resumo do sistema, fichas e encontros de qualquer RPG
+- [x] **Fase 7 · Leitura profunda:** etapas de criação, leitura a fundo sob demanda, narrativa sugerida, PDF com tema do sistema e o livro em primeiro lugar
 - [ ] **Fase 5b · Demonstração:** vídeo curto do fluxo completo
 
 ## Estrutura
@@ -396,6 +428,7 @@ linha do tempo, não como uma grade de cards.
 │   ├── sistemas/fm/        # Feiticeiros & Maldições: regras, gerador, análise de grupo
 │   ├── sistemas/generico/  # qualquer livro: leitura com LLM, fórmulas, fichas, encontros
 │   ├── leitor/             # corpus, detector, porteiro, extração com LLM, avaliação
+│   ├── fichas_pdf.py       # ficha em PDF com o tema visual do sistema
 │   └── guardiao.py         # bloqueia livros/dados protegidos no repo (ADR 0002)
 ├── dados/publicos/         # dados exportados pelo Databricks (só licença aberta)
 ├── scripts/

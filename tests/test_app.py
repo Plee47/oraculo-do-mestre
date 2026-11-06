@@ -80,6 +80,7 @@ ETAPAS_2D8 = [
     },
 ]
 DETALHE = {
+    "subopcoes": [{"nome": "Novo Estilo", "descricao": "Revelado na leitura a fundo."}],
     "descricao": "Clã de guerreiros.",
     "equipamento": ["Kunai"],
     "habilidades": [{"nome": "Golpe da Folha", "resumo": "Dano extra.", "nivel": 1, "pagina": 1}],
@@ -89,7 +90,9 @@ DETALHE = {
 class LLMFalso:
     """Responde como o LLM do Databricks, sem rede (usado só nos testes)."""
 
-    def completar(self, sistema: str, usuario: str, max_tokens: int = 6000) -> str:
+    def completar(self, sistema: str, usuario: str, max_tokens: int = 6000, pequeno=False) -> str:
+        if "dar vida" in sistema:  # narrativa
+            return json.dumps({"aparencia": "Alta e calada."})
         if "ESTRUTURA" in usuario:
             return json.dumps({"nome_arquetipo": "clã", "etapas": ETAPAS_2D8})
         if "da decisão" in usuario:
@@ -150,7 +153,9 @@ def test_livro_de_dnd_usa_as_regras_prontas():
     at = abrir()
     at.text_area[0].set_value(TRECHO_DND).run()
     assert any("Livro aceito pelo porteiro" in s.value for s in at.success)
-    at.button[0].click().run()  # "Usar as regras prontas de D&D 5e"
+    # o caminho principal é ler o livro; as regras prontas são a opção rápida
+    assert at.button[0].label == "Ler o livro com IA e montar o sistema"
+    next(b for b in at.button if "regras prontas" in b.label).click().run()
     assert not at.exception
     assert at.session_state.livro["sistema"] == "dnd5e"
     assert at.session_state.pagina == "Resumo do sistema"
@@ -215,7 +220,8 @@ def test_ficha_por_etapas_com_leitura_a_fundo():
     at.selectbox(key="lido_etapa_cla").set_value("Clã da Folha").run()
     assert not at.exception
     # a etapa filha só oferece as opções do clã escolhido
-    assert at.selectbox(key="lido_etapa_estilo").options == ["Automático", "Punho Leve"]
+    opcoes_estilo = at.selectbox(key="lido_etapa_estilo").options
+    assert "Punho Leve" in opcoes_estilo and "Bruma Densa" not in opcoes_estilo
     assert "Clã da Folha" in at.subheader[0].value
     # a leitura a fundo entrou na ficha e ficou guardada no livro da sessão
     opcoes = at.session_state.livro["lido"]["etapas"][0]["opcoes"]
@@ -237,6 +243,25 @@ def test_sugestao_criativa_em_qualquer_sistema(sistema):
     assert not at.exception
     assert any("Alta e calada." in m.value for m in at.markdown)
     assert any("Sugestão criativa" in c.value for c in at.caption)
+
+
+def test_ficha_automatica_nao_muda_sozinha_e_o_clique_nao_se_perde():
+    """Regressão do teste no navegador: a leitura a fundo revelava opções, o sorteio mudava e o
+    botão clicado sumia da página."""
+    at = abrir(llm=LLMFalso())
+    at.text_area[0].set_value(TRECHO_RPG).run()
+    next(b for b in at.button if b.label.startswith("Ler o livro")).click().run()
+    ir(at, "Gerador de fichas")
+    titulo = at.subheader[0].value
+    for _ in range(3):
+        at.run()
+        assert at.subheader[0].value == titulo
+    next(b for b in at.button if b.label.startswith("Sugerir aparência")).click().run()
+    assert not at.exception
+    assert any("Alta e calada." in m.value for m in at.markdown)
+    assert at.subheader[0].value == titulo
+    at.button(key="lido_gerar").click().run()  # "Gerar outra" continua sorteando
+    assert not at.exception
 
 
 def test_sem_credencial_a_leitura_explica_o_motivo(monkeypatch):
@@ -326,6 +351,15 @@ def test_ficha_oferece_pdf_em_qualquer_sistema(sistema):
     at = ir(abrir(sistema), "Gerador de fichas")
     rotulos = [b.proto.label for b in at.get("download_button")]
     assert "Baixar ficha em PDF" in rotulos and "Baixar em JSON" in rotulos
+
+
+def test_dnd_mostra_a_subclasse_quando_o_nivel_permite():
+    at = ir(abrir("dnd5e"), "Gerador de fichas")
+    at.selectbox[1].set_value("Guerreiro").run()
+    at.slider[0].set_value(3).run()
+    assert "(Champion)" in at.subheader[0].value
+    at.slider[0].set_value(2).run()
+    assert "(Champion)" not in at.subheader[0].value
 
 
 def test_bastidores_mostra_a_comparacao_das_buscas():

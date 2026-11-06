@@ -17,6 +17,7 @@ from oraculo.sistemas.generico.analise import (
     analisar_encontro,
     analisar_grupo,
     criatura_de_ficha,
+    perfil,
     sugerir_encontro,
 )
 from oraculo.sistemas.generico.formulas import (
@@ -34,9 +35,10 @@ from oraculo.sistemas.generico.leitura import (
     extrair_json,
     ler_mais_criaturas,
     ler_sistema,
+    mapa_do_livro,
     selecionar_paginas,
 )
-from oraculo.sistemas.generico.modelo import SistemaLido, normalizar
+from oraculo.sistemas.generico.modelo import Opcao, SistemaLido, normalizar
 from oraculo.sistemas.generico.narrativa import (
     Narrativa,
     contexto_lido,
@@ -234,6 +236,7 @@ def test_formulas_com_dados_e_nomes():
     assert media("10 + 3x vigor + 5x nc", v) == 36  # notação "3x Vigor" do próprio livro
     assert media("min(for, 2) + teto(for/2)", v) == 4
     assert media("forca_de_vontade + 1", v) == 6  # nomes com acento e espaço viram id
+    assert media("(for ÷ 2) × 2 − 1", {**v, "mod_for": 1}) == 2  # símbolos do livro
     r = random.Random(1)
     rolagens = [avaliar("4d6kh3", rng=r) for _ in range(200)]
     assert min(rolagens) >= 3 and max(rolagens) <= 18
@@ -429,7 +432,7 @@ class LLMFalso:
         self.ruim_primeiro = ruim_primeiro
         self.criacao = 0
 
-    def completar(self, sistema: str, usuario: str, max_tokens: int = 6000) -> str:
+    def completar(self, sistema: str, usuario: str, max_tokens: int = 6000, pequeno=False) -> str:
         self.chamadas.append(usuario)
         if "Trechos do início" in usuario:
             return json.dumps(
@@ -473,7 +476,7 @@ def test_leitura_completa_com_llm_falso():
     llm = LLMFalso()
     leitura = ler_sistema(_paginas(), llm, "livro.pdf")
     s = leitura.sistema
-    assert leitura.e_rpg and s.nome == "Ninjas 2d8" and len(llm.chamadas) == 4
+    assert leitura.e_rpg and s.nome == "Ninjas 2d8" and len(llm.chamadas) >= 4
     assert [a.nome for a in s.arquetipos] == ["Clã da Folha", "Clã da Névoa"]
     assert any("Arquétipo ignorado" in a for a in s.avisos)  # item malformado vira aviso
     assert s.criaturas[0].nome == "Lobo" and s.niveis.nivel_inicial == 4
@@ -482,7 +485,7 @@ def test_leitura_completa_com_llm_falso():
 def test_leitura_tenta_de_novo_quando_nao_vem_json():
     llm = LLMFalso(ruim_primeiro=True)
     s = ler_sistema(_paginas(), llm).sistema
-    assert len(llm.chamadas) == 5 and s.atributos
+    assert llm.criacao == 2 and s.atributos  # pediu a criação de novo depois da resposta ruim
 
 
 def test_leitura_sem_texto_falha_com_mensagem():
@@ -550,6 +553,7 @@ def test_etapas_normalizadas():
 def test_principal_inferida_quando_o_llm_nao_marca():
     dados = json.loads(json.dumps(FANTASIA))
     dados["etapas"][1]["principal"] = False
+    dados["etapas"][1]["nome"] = "Caminho"  # sem nome de classe, vale quem tem mais opções
     dados["etapas"][0]["opcoes"].append({"nome": "Humano"})
     assert sistema(dados).etapa_principal().id == "raca"  # a escolha livre com mais opções
 
@@ -772,3 +776,366 @@ def test_narrativa_ruim_nao_vira_ficha():
 def test_narrativa_sem_rotulo_e_sem_campos_vazios():
     n = Narrativa(aparencia="x", assinatura_nome="Golpe", gancho=None)
     assert n.para_ficha() == {"Aparência": "x", "Assinatura": "Golpe"}
+
+
+# --------------------------------------------------------------- regressões do livro real
+
+
+def test_dano_negativo_vira_zero_e_nao_quebra_a_sugestao():
+    dados = json.loads(json.dumps(D20))
+    dados["mecanica"]["dano_basico"] = "0 + Modificador de Força"
+    s = sistema(dados)
+    fracos = [gerar_ficha(s, arquetipo="Mago", seed=i) for i in range(2)]
+    for f in fracos:
+        f.atributos["for"] = 6
+    sug = sugerir_encontro(s, fracos)  # grupo sem dano: não há como estimar
+    assert sug is None
+
+
+def test_classe_ganha_de_raca_como_etapa_principal():
+    s = sistema(
+        {
+            "nome": "x",
+            "etapas": [
+                {
+                    "id": "raca",
+                    "nome": "Raça",
+                    "tipo": "escolha",
+                    "principal": True,
+                    "opcoes": [{"nome": f"R{i}"} for i in range(9)],
+                },
+                {"id": "classe", "nome": "Classe", "tipo": "escolha", "opcoes": [{"nome": "Mago"}]},
+            ],
+        }
+    )
+    assert s.etapa_principal().id == "classe"
+    assert not s.etapa("raca").principal
+
+
+def test_formula_acha_o_valor_pelo_tipo():
+    s = sistema(
+        {
+            "nome": "x",
+            "atributos": [{"id": "con", "nome": "Constituição"}],
+            "derivados": [
+                {"nome": "Pontos de Vida Máximos", "formula": ""},
+                {"nome": "Defesa", "formula": "10"},
+            ],
+            "etapas": [
+                {
+                    "nome": "Classe",
+                    "tipo": "escolha",
+                    "opcoes": [
+                        {"nome": "Mago", "formulas": {"PV_max": "6 + con"}},
+                        {"nome": "Bardo", "formulas": {"PV": "8 + con"}},
+                        {"nome": "Monge", "formulas": {"Mana": "1"}},  # não existe esse valor
+                    ],
+                }
+            ],
+        }
+    )
+    e = s.etapa_principal()
+    assert e.opcao("Mago").formulas == {"pontos_de_vida_maximos": "6 + con"}
+    assert e.opcao("Bardo").formulas == {"pontos_de_vida_maximos": "8 + con"}
+    assert e.opcao("Monge").formulas == {}
+
+
+def test_sem_faixa_em_sistema_d20_usa_a_escala_do_modificador():
+    s = sistema(
+        {
+            "nome": "x",
+            "modificador": "piso((valor-10)/2)",
+            "atributos": [{"nome": n} for n in ("Força", "Destreza", "Vigor")],
+        }
+    )
+    f = gerar_ficha(s, seed=1)
+    assert sorted(f.atributos.values(), reverse=True) == [15, 14, 13]
+    assert any("valores típicos" in e for e in f.explicacoes)
+
+
+def test_mapa_do_livro_lista_titulos_e_ignora_cabecalhos():
+    paginas = [
+        f"CABEÇALHO\nParágrafo corrido que termina com ponto final.\nTítulo {i}\n"
+        for i in range(30)
+    ]
+    paginas[7] = "CABEÇALHO\nPaladin\nClass Features\ntexto muito longo " + "palavra " * 40
+    mapa = mapa_do_livro(paginas)
+    assert "p.8: Paladin | Class Features" in mapa
+    assert "CABEÇALHO" not in mapa and "Parágrafo" not in mapa
+
+
+def test_pericias_e_equipamento_nao_sao_escolhas_da_ficha():
+    s = sistema(
+        {
+            "nome": "x",
+            "etapas": [
+                {
+                    "id": "classe",
+                    "nome": "Classe",
+                    "tipo": "escolha",
+                    "opcoes": [{"nome": "Monge"}],
+                },
+                {
+                    "id": "skills",
+                    "nome": "Class Skills",
+                    "tipo": "escolha",
+                    "depende_de": "classe",
+                    "opcoes": [{"nome": "Monge Skills", "pai": "Monge"}],
+                },
+                {
+                    "id": "equip",
+                    "nome": "Equipamento",
+                    "tipo": "escolha",
+                    "opcoes": [{"nome": "Kit"}],
+                },
+            ],
+        }
+    )
+    assert [e.id for e in s.etapas_de_escolha(1)] == ["classe"]
+    assert s.etapa("skills").tipo == "pericias" and s.etapa("equip").tipo == "equipamento"
+
+
+def test_sugestao_aceita_personagem_sem_dano_se_o_grupo_causa_dano():
+    s = sistema(SHINOBI)
+    grupo = [gerar_ficha(s, seed=i) for i in range(3)]
+    grupo[0].atributos["for"] = 0
+    grupo[1].atributos["for"] = 4
+    assert sugerir_encontro(s, grupo) is not None
+
+
+class LLMComLacunas:
+    """Primeira leitura sem dano e sem vida; a segunda, só das lacunas, traz as duas."""
+
+    def __init__(self):
+        self.lacunas = 0
+
+    def completar(self, sistema, usuario, max_tokens=6000, pequeno=False):
+        if "Faltam estas regras" in usuario:
+            self.lacunas += 1
+            return json.dumps(
+                {
+                    "dano_basico": "1d6 + mod_forca",
+                    "dano_explicacao": "Dano da arma + Força.",
+                    "vida_por_opcao": {"Lutador": "12 + mod_vigor", "Inventada": "1"},
+                }
+            )
+        if "Trechos do início" in usuario:
+            return json.dumps(
+                {"e_livro_de_rpg": True, "nome": "Jogo", "mecanica": {"dado_base": "1d20"}}
+            )
+        if "ESTRUTURA" in usuario:
+            return json.dumps(
+                {
+                    "etapas": [
+                        {
+                            "nome": "Classe",
+                            "tipo": "escolha",
+                            "opcoes": [
+                                {"nome": "Lutador"},
+                                {"nome": "Mago", "formulas": {"Vida": "6 + mod_vigor"}},
+                            ],
+                        }
+                    ]
+                }
+            )
+        if "criação de personagem" in usuario:
+            return json.dumps(
+                {
+                    "modificador": "piso((valor-10)/2)",
+                    "atributos": [
+                        {"id": "forca", "nome": "Força"},
+                        {"id": "vigor", "nome": "Vigor"},
+                    ],
+                    "derivados": [{"nome": "Vida", "formula": ""}],
+                }
+            )
+        return "{}"
+
+
+def test_segunda_leitura_so_preenche_o_que_falta():
+    llm = LLMComLacunas()
+    s = ler_sistema(_paginas(), llm).sistema
+    assert llm.lacunas == 1 and s.mecanica.dano_basico == "1d6 + mod_forca"
+    classe = s.etapa_principal()
+    assert classe.opcao("Lutador").formulas == {"vida": "12 + mod_vigor"}
+    assert classe.opcao("Mago").formulas == {"vida": "6 + mod_vigor"}  # a da 1ª leitura fica
+    assert "lacunas" in s.paginas_fonte
+    f = gerar_ficha(s, arquetipo="Lutador", seed=1)
+    vida = dict((d.nome, v) for d, v in calcular_derivados(s, f.atributos, 1, f.classe))["Vida"]
+    assert vida == 12 + (f.atributos["vigor"] - 10) // 2
+
+
+def test_sem_lacunas_nao_gasta_chamada_extra():
+    llm = LLMFalso()
+    ler_sistema(_paginas(), llm)
+    assert not [c for c in llm.chamadas if "Faltam estas regras" in c]
+
+
+def test_atributo_chave_e_apelidos_da_vida_nas_formulas():
+    s = sistema(
+        {
+            "nome": "x",
+            "modificador": "piso((valor-10)/2)",
+            "atributos": [{"id": "pre", "nome": "Presença"}, {"id": "con", "nome": "Constituição"}],
+            "derivados": [
+                {"nome": "Integridade da Alma", "formula": "pv_max"},
+                {"nome": "Pontos de Vida", "formula": ""},
+                {"nome": "Pontos de Energia", "formula": ""},
+            ],
+            "etapas": [
+                {
+                    "nome": "Classe",
+                    "tipo": "escolha",
+                    "opcoes": [
+                        {
+                            "nome": "Controlador",
+                            "atributos_chave": ["Presença"],
+                            "formulas": {
+                                "Pontos de Vida": "10 + mod_con + (nivel-1)*(5+mod_con)",
+                                "Pontos de Energia": "5*nivel + mod_atributo_chave",
+                            },
+                        }
+                    ],
+                }
+            ],
+        }
+    )
+    valores = dict(
+        (d.nome, v) for d, v in calcular_derivados(s, {"pre": 16, "con": 14}, 3, "Controlador")
+    )
+    assert valores["Pontos de Vida"] == 10 + 2 + 2 * (5 + 2)
+    assert valores["Pontos de Energia"] == 15 + 3  # Presença, a chave da classe, não a maior geral
+    assert valores["Integridade da Alma"] == valores["Pontos de Vida"]
+
+
+def test_dano_montado_do_texto_quando_nao_vem_formula():
+    from oraculo.sistemas.generico.leitura import _dano_da_explicacao
+
+    s = sistema(
+        {
+            "nome": "x",
+            "modificador": "piso((valor-10)/2)",
+            "atributos": [{"id": "for", "nome": "Força"}],
+            "mecanica": {
+                "dano_explicacao": "Usa o dado da arma (ex.: 1d6) e o modificador de Força."
+            },
+        }
+    )
+    _dano_da_explicacao(s)
+    assert s.mecanica.dano_basico == "1d6 + mod_for"
+    assert any("montada a partir do texto" in a for a in s.avisos)
+    sem_dado = sistema({"nome": "x", "mecanica": {"dano_explicacao": "O dano varia."}})
+    _dano_da_explicacao(sem_dado)
+    assert sem_dado.mecanica.dano_basico == ""
+
+
+class LLMCompletar:
+    def __init__(self):
+        self.pequeno = None
+
+    def completar(self, sistema, usuario, max_tokens=6000, pequeno=False):
+        if "opções que FALTAM" in usuario:
+            self.pequeno = pequeno
+            return json.dumps(
+                {
+                    "faltando": [
+                        {"etapa": "classe", "nome": "Paladin", "pagina": 8},
+                        {"etapa": "classe", "nome": "Classe Inventada"},
+                        {"etapa": "sub", "nome": "Champion", "pai": "Fighter"},
+                        {"etapa": "classe", "nome": "Fighter"},
+                        {"etapa": "nao_existe", "nome": "Paladin"},
+                        "lixo",
+                    ]
+                }
+            )
+        if "Trechos do início" in usuario:
+            return json.dumps(
+                {"e_livro_de_rpg": True, "nome": "Jogo", "mecanica": {"dano_basico": "1d6"}}
+            )
+        if "ESTRUTURA" in usuario:
+            return json.dumps(
+                {
+                    "etapas": [
+                        {
+                            "id": "classe",
+                            "nome": "Classe",
+                            "tipo": "escolha",
+                            "opcoes": [{"nome": "Fighter"}],
+                        },
+                        {
+                            "id": "sub",
+                            "nome": "Subclasse",
+                            "tipo": "escolha",
+                            "depende_de": "classe",
+                            "opcoes": [{"nome": "Thief", "pai": "Fighter"}],
+                        },
+                    ]
+                }
+            )
+        if "criação de personagem" in usuario:
+            return json.dumps(
+                {"atributos": [{"nome": "Força"}], "derivados": [{"nome": "Vida", "formula": "10"}]}
+            )
+        return "{}"
+
+
+def test_completar_opcoes_so_aceita_nomes_que_estao_no_livro():
+    paginas = _paginas()
+    paginas[8] = "Paladin\nClass Features\nChampion\n" + "texto de regra " * 30
+    llm = LLMCompletar()
+    s = ler_sistema(paginas, llm).sistema
+    assert llm.pequeno  # modelo pequeno: menos cota
+    classe, sub = s.etapa("classe"), s.etapa("sub")
+    assert [o.nome for o in classe.opcoes] == ["Fighter", "Paladin"]
+    assert classe.opcao("Paladin").pagina == 8
+    assert sub.opcao("Champion").pai == "Fighter"
+    assert any("Classe Inventada" in a and "não aparece" in a for a in s.avisos)
+    assert [a.nome for a in s.arquetipos] == ["Fighter", "Paladin"]  # a lista da ficha acompanha
+
+
+def test_em_sistema_sem_modificador_mod_e_o_proprio_atributo():
+    """Regressão do livro real: teto(mod_forca/2) + dano_arma virava constante 0."""
+    s = sistema(
+        {
+            "nome": "x",
+            "atributos": [{"id": "for", "nome": "Força", "maximo": 4}],
+            "mecanica": {"dado_base": "2d8", "dano_basico": "teto(mod_forca/2) + dano_arma"},
+        }
+    )
+    assert s.modificador == ""  # não inventa modificador d20 numa escala de 0 a 4
+    assert "mod_forca" in s.mecanica.dano_basico and "dano_arma" not in s.mecanica.dano_basico
+    f = gerar_ficha(s, seed=1)
+    f.atributos["for"] = 3
+    assert perfil(s, f).dano == 2
+
+
+def test_dano_constante_zero_e_descartado():
+    s = sistema({"nome": "x", "mecanica": {"dano_basico": "dano_arma + 0"}})
+    assert s.mecanica.dano_basico == ""
+    assert any("vale sempre 0" in a for a in s.avisos)
+    com_dado = sistema({"nome": "x", "mecanica": {"dano_basico": "1d6"}})
+    assert com_dado.mecanica.dano_basico == "1d6"
+
+
+def test_comentario_do_llm_sai_da_formula():
+    s = sistema(
+        {
+            "nome": "x",
+            "atributos": [{"id": "for", "nome": "Força"}],
+            "mecanica": {
+                "dano_basico": "(Força ÷ 2) + 1  // para ataques corporais; (Destreza ÷ 2) ao longe"
+            },
+        }
+    )
+    assert s.mecanica.dano_basico == "(Força ÷ 2) + 1"
+    assert media("nivel // 2", {"nivel": 5}) == 2  # divisão inteira continua funcionando
+
+
+def test_sorteio_repetido_nao_muda_com_opcoes_novas():
+    s = sistema(FANTASIA)
+    primeira = gerar_ficha(s, nivel=3, seed=4)
+    s.etapa("sub").opcoes.insert(0, Opcao(nome="Novata"))  # a leitura a fundo revelou uma opção
+    s.etapa("raca").opcoes.insert(0, Opcao(nome="Humano"))
+    repetida = gerar_ficha(s, nivel=3, seed=4, sorteadas=primeira.escolhas)
+    assert repetida.escolhas == primeira.escolhas
+    assert any("sorteada" in e for e in repetida.explicacoes)  # não diz que foi escolha do jogador

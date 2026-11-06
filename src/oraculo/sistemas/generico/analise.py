@@ -39,7 +39,8 @@ def perfil(s: SistemaLido, ficha: Ficha) -> PerfilLido:
     dano = None
     if formula_dano:
         try:
-            dano = avaliar(formula_dano, s.variaveis(ficha.atributos, ficha.nivel))
+            # um modificador negativo não cura o alvo: dano mínimo é 0
+            dano = max(0.0, avaliar(formula_dano, s.variaveis(ficha.atributos, ficha.nivel)))
         except ErroFormula:
             dano = None
     return PerfilLido(
@@ -184,7 +185,7 @@ def dano_por_turno(s: SistemaLido, c: Criatura) -> float | None:
     for at in c.ataques:
         if at.dano:
             try:
-                medias.append(avaliar(at.dano, variaveis))
+                medias.append(max(0.0, avaliar(at.dano, variaveis)))
             except ErroFormula:
                 continue
     return max(medias) if medias else None
@@ -345,7 +346,9 @@ def sugerir_encontro(
     if dificuldade not in ALVOS_DIFICULDADE:
         raise ValueError(f"dificuldade desconhecida: {dificuldade!r}")
     pjs = [perfil(s, f) for f in fichas]
-    if not pjs or any(p.vida is None or not p.dano for p in pjs):
+    if not pjs or any(p.vida is None or p.dano is None for p in pjs):
+        return None
+    if not sum(p.dano for p in pjs):  # ninguém do grupo causa dano: não há como estimar
         return None
     candidatas, origem = _candidatas(s, fichas, seed)
     if not candidatas:
@@ -373,6 +376,8 @@ def sugerir_encontro(
         if not resumo.rodadas_para_vencer or not resumo.rodadas_para_perder:
             return math.inf
         razao = resumo.rodadas_para_perder / resumo.rodadas_para_vencer
+        if razao <= 0:
+            return math.inf
         return abs(math.log(razao / alvo)) + 0.01 * sum(n for _, n in grupo)
 
     melhor = min(grupos, key=custo)

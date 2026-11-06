@@ -44,6 +44,20 @@ extras:
     orcamento: 27
     custo: { 8: 0, 9: 1, 10: 2, 11: 3, 12: 4, 13: 5, 14: 7, 15: 9 }
   conjunto_padrao: [15, 14, 13, 12, 10, 8]
+  # A subclasse aberta de cada classe no SRD 5.1 e o nível em que ela é escolhida.
+  subclasses:
+    barbaro: { nome: Path of the Berserker, nivel: 3, descricao: "Fúria sem freios: ataques extras a custo de exaustão." }
+    bardo: { nome: College of Lore, nivel: 3, descricao: "Conhecimento amplo: mais perícias e magias de outras listas." }
+    bruxo: { nome: The Fiend, nivel: 1, descricao: "Pacto com um demônio: magias de fogo e vigor ao derrubar inimigos." }
+    clerigo: { nome: Life Domain, nivel: 1, descricao: "Devoção à vida: curas mais fortes e armadura pesada." }
+    druida: { nome: Circle of the Land, nivel: 2, descricao: "Ligado a um terreno: magias extras e recuperação de espaços." }
+    feiticeiro: { nome: Draconic Bloodline, nivel: 1, descricao: "Sangue de dragão: mais vida e pele resistente." }
+    guerreiro: { nome: Champion, nivel: 3, descricao: "Força simples: críticos mais frequentes." }
+    ladino: { nome: Thief, nivel: 3, descricao: "Mãos rápidas: usa objetos e escala sem perder tempo." }
+    mago: { nome: School of Evocation, nivel: 2, descricao: "Magia de dano: poupa aliados nas próprias explosões." }
+    monge: { nome: Way of the Open Hand, nivel: 3, descricao: "Técnica pura: derruba e empurra com os golpes." }
+    paladino: { nome: Oath of Devotion, nivel: 3, descricao: "Juramento de honra: armas sagradas e proteção contra o mal." }
+    patrulheiro: { nome: Hunter, nivel: 3, descricao: "Caçador de presas: técnicas contra grupos e gigantes." }
   papeis:
     defensor: "Aguenta dano e protege o grupo"
     atacante: "Causa muito dano em um alvo"

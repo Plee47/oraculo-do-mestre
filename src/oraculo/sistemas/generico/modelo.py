@@ -8,6 +8,7 @@ registrando cada descarte em `avisos`. Nada aqui é específico de um dado: serv
 
 from __future__ import annotations
 
+import re
 from typing import Literal
 
 from pydantic import BaseModel, Field, field_validator, model_validator
@@ -17,6 +18,7 @@ from oraculo.sistemas.generico.formulas import (
     avaliar,
     nomes_desconhecidos,
     normalizar_id,
+    tem_dado,
     zerar_nomes,
 )
 
@@ -337,6 +339,9 @@ class Niveis(_Base):
         return _inteiro_ou_nada(v)
 
 
+APELIDOS_VIDA = ("pv", "pv_max", "pv_maximo", "pv_maximos", "hp", "hp_max", "vida", "vida_maxima")
+
+
 class SistemaLido(_Base):
     nome: str
     autores: str = ""
@@ -412,16 +417,28 @@ class SistemaLido(_Base):
             mod = self.modificador_de(valores[a.id])
             for nome in {normalizar_id(x) for x in (a.id, a.sigla, a.nome) if x}:
                 v[nome] = valores[a.id]
-                if mod is not None:
-                    for alias in (
-                        f"mod_{nome}",
-                        f"{nome}_mod",
-                        f"modificador_de_{nome}",
-                        f"modificador_{nome}",
-                        f"mod{nome}",
-                    ):
-                        v[alias] = mod
+                # Sem modificador no sistema, "mod_força" só pode ser o próprio atributo.
+                for alias in (
+                    f"mod_{nome}",
+                    f"{nome}_mod",
+                    f"modificador_de_{nome}",
+                    f"modificador_{nome}",
+                    f"mod{nome}",
+                ):
+                    v[alias] = valores[a.id] if mod is None else mod
+        if valores:  # "atributo-chave": o melhor deles (calcular() usa os do arquétipo)
+            melhor = max(valores.values())
+            v["atributo_chave"] = melhor
+            mod = self.modificador_de(melhor)
+            v["mod_atributo_chave"] = melhor if mod is None else mod
         return v
+
+    def _com_apelidos(self, variaveis: dict[str, float], d: Derivado, valor: float) -> None:
+        variaveis[normalizar_id(d.id)] = valor
+        variaveis[normalizar_id(d.nome)] = valor
+        if d.tipo == "vida":  # outros valores costumam citar a vida por apelido ("pv_max")
+            for apelido in APELIDOS_VIDA:
+                variaveis.setdefault(apelido, valor)
 
     def formula_de(self, d: Derivado, arquetipo: Arquetipo | None = None) -> str:
         """A fórmula do arquétipo para o derivado, se houver; senão a geral."""
@@ -437,6 +454,13 @@ class SistemaLido(_Base):
         """Todos os derivados. Um derivado pode usar outros (Esquiva → Reação de Esquiva), em
         qualquer ordem: repete até nada mais mudar."""
         variaveis = self.variaveis(valores, nivel)
+        chaves = [
+            valores[c] for c in (arquetipo.atributos_chave if arquetipo else []) if c in valores
+        ]
+        if chaves:
+            variaveis["atributo_chave"] = max(chaves)
+            mod = self.modificador_de(max(chaves))
+            variaveis["mod_atributo_chave"] = max(chaves) if mod is None else mod
         saida: dict[str, float | None] = {d.id: None for d in self.derivados}
         pendentes = [d for d in self.derivados if self.formula_de(d, arquetipo)]
         while pendentes:
@@ -447,8 +471,7 @@ class SistemaLido(_Base):
                 except ErroFormula:
                     continue
                 saida[d.id] = valor
-                variaveis[normalizar_id(d.id)] = valor
-                variaveis[normalizar_id(d.nome)] = valor
+                self._com_apelidos(variaveis, d, valor)
                 feitos.append(d)
             if not feitos:
                 break
@@ -483,6 +506,11 @@ def _tipo_pelo_nome(nome: str) -> str | None:
     return None
 
 
+def _sem_comentario(formula: str) -> str:
+    """Tira comentários que o LLM põe na fórmula ("x + 1 // para ataques corporais; ...")."""
+    return re.sub(r"\s*//\s*[^\W\d_]{2,}\s+[^\W\d_].*$", "", formula or "", flags=re.S).strip()
+
+
 def normalizar_opcao(s: SistemaLido, o: Opcao, avisos: list[str], calculavel) -> None:
     """Atributos e fórmulas de uma opção apontando para o que existe na especificação."""
     chaves = []
@@ -499,9 +527,7 @@ def normalizar_opcao(s: SistemaLido, o: Opcao, avisos: list[str], calculavel) ->
     o.bonus_atributos = bonus
     validas = {}
     for chave, f in o.formulas.items():
-        alvo = next(
-            (d for d in s.derivados if normalizar_id(chave) in (d.id, normalizar_id(d.nome))), None
-        )
+        alvo = alvo_derivado(s, chave)
         if alvo is not None and not calculavel(f):
             validas[alvo.id] = f
         else:
@@ -512,12 +538,35 @@ def normalizar_opcao(s: SistemaLido, o: Opcao, avisos: list[str], calculavel) ->
         o.dano_tipico = None
 
 
+NOMES_PRINCIPAL = (
+    "classe", "class", "especializa", "profiss", "ocupa", "occupation", "arquetipo", "archetype",
+    "vocacao", "carreira", "career",
+)  # fmt: skip
+
+
+def alvo_derivado(s: SistemaLido, chave: str) -> Derivado | None:
+    """O valor derivado a que uma chave se refere: id, nome ou, se único, o tipo ("PV_max")."""
+    norma = normalizar_id(chave)
+    direto = next((d for d in s.derivados if norma in (d.id, normalizar_id(d.nome))), None)
+    if direto:
+        return direto
+    tipo = _tipo_pelo_nome(chave.replace("_", " ").split()[0]) or _tipo_pelo_nome(chave)
+    do_tipo = [d for d in s.derivados if d.tipo == tipo] if tipo else []
+    return do_tipo[0] if len(do_tipo) == 1 else None
+
+
+NOMES_NAO_ESCOLHA = (
+    ("pericia", "pericias"), ("skill", "pericias"), ("equip", "equipamento"),
+    ("atribut", "atributos"), ("ability", "atributos"), ("aspecto", "outro"),
+    ("detalhe", "outro"), ("toque", "outro"),
+)  # fmt: skip
+
+
 def calculavel_em(s: SistemaLido):
     """Função que diz por que uma fórmula não fecha nesta especificação (None se fecha)."""
     teste = s.variaveis({a.id: 10 for a in s.atributos})
     for d in s.derivados:
-        teste[normalizar_id(d.id)] = 10
-        teste[normalizar_id(d.nome)] = 10
+        s._com_apelidos(teste, d, 10)
 
     def calculavel(formula: str | None) -> str | None:
         if not formula:
@@ -561,6 +610,11 @@ def _normalizar_etapas(s: SistemaLido, avisos: list[str], calculavel) -> None:
         e.opcoes = unicas
         if e.opcoes and e.tipo == "outro":
             e.tipo = "escolha"
+        # O LLM às vezes põe "Perícias da classe" ou "Equipamento" como escolha entre opções.
+        nome_etapa = normalizar_id(f"{e.id} {e.nome}")
+        for parte, tipo in NOMES_NAO_ESCOLHA:
+            if e.tipo == "escolha" and parte in nome_etapa:
+                e.tipo = tipo
         etapas.append(e)
     for e in etapas:
         e.depende_de = normalizar_id(e.depende_de) if e.depende_de else ""
@@ -574,12 +628,23 @@ def _normalizar_etapas(s: SistemaLido, avisos: list[str], calculavel) -> None:
                 o.pai = ""
     s.etapas = etapas
     escolhas = [e for e in etapas if e.tipo == "escolha" and e.opcoes]
+    # O nome decide quando é inequívoco: o LLM às vezes marca "Raça" no lugar de "Classe".
+    por_nome = [
+        e for e in escolhas
+        if not e.depende_de and any(p in normalizar_id(e.nome) for p in NOMES_PRINCIPAL)
+    ]  # fmt: skip
     marcadas = [e for e in escolhas if e.principal]
-    for extra in marcadas[1:]:
-        extra.principal = False
-    if escolhas and not marcadas:  # sem marca: a escolha independente com mais opções
-        livres = [e for e in escolhas if not e.depende_de] or escolhas
-        max(livres, key=lambda e: len(e.opcoes)).principal = True
+    livres = [e for e in escolhas if not e.depende_de] or escolhas
+    if por_nome:
+        principal = por_nome[0]
+    elif marcadas:
+        principal = marcadas[0]
+    elif escolhas:  # sem marca: a escolha independente com mais opções
+        principal = max(livres, key=lambda e: len(e.opcoes))
+    else:
+        principal = None
+    for e in escolhas:
+        e.principal = e is principal
     sincronizar_arquetipos(s)
 
 
@@ -622,7 +687,7 @@ def normalizar(s: SistemaLido) -> SistemaLido:
         n.lower().startswith(("mod_", "modificador")) or n.lower().endswith("_mod")
         for f in formulas
         if f
-        for n in nomes_desconhecidos(f, teste)
+        for n in nomes_desconhecidos(f, {})
     )
     escala_d20 = "20" in s.mecanica.dado_base or any((a.maximo or 0) >= 18 for a in s.atributos)
     if usa_mod and not s.modificador and escala_d20:
@@ -676,6 +741,7 @@ def normalizar(s: SistemaLido) -> SistemaLido:
             g.rolagem = None
         grupos.append(g)
     s.geracao.grupos = grupos
+    s.mecanica.dano_basico = _sem_comentario(s.mecanica.dano_basico)
     if s.mecanica.dano_basico and calculavel(s.mecanica.dano_basico):
         faltam = nomes_desconhecidos(s.mecanica.dano_basico, teste)
         sem_eles = zerar_nomes(s.mecanica.dano_basico, faltam) if faltam else ""
@@ -691,6 +757,13 @@ def normalizar(s: SistemaLido) -> SistemaLido:
             s.mecanica.dano_explicacao or f"Regra do livro: {s.mecanica.dano_basico}"
         )
         s.mecanica.dano_basico = ""
+    if s.mecanica.dano_basico and not nomes_desconhecidos(s.mecanica.dano_basico, {}):
+        try:  # sem atributo nenhum e valendo 0: isso não é regra de dano
+            if not tem_dado(s.mecanica.dano_basico) and avaliar(s.mecanica.dano_basico) <= 0:
+                avisos.append(f"Dano básico descartado: {s.mecanica.dano_basico} vale sempre 0.")
+                s.mecanica.dano_basico = ""
+        except ErroFormula:
+            s.mecanica.dano_basico = ""
 
     for d in s.derivados:
         tipo = _tipo_pelo_nome(d.nome)
@@ -713,11 +786,17 @@ def normalizar(s: SistemaLido) -> SistemaLido:
             if calculavel(d.formula) is None:
                 prontos.append(d)
                 pendentes.remove(d)
-                teste[normalizar_id(d.id)] = 10
-                teste[normalizar_id(d.nome)] = 10
+                s._com_apelidos(teste, d, 10)
                 avancou = True
         if not avancou:
             break
+    for d in s.derivados:  # a vida pode vir só do arquétipo: os outros ainda podem citá-la
+        if d.tipo == "vida":
+            s._com_apelidos(teste, d, 10)
+    for d in list(pendentes):
+        if d.formula and calculavel(d.formula) is None:
+            prontos.append(d)
+            pendentes.remove(d)
     for d in pendentes:
         if d.formula:
             avisos.append(
@@ -726,8 +805,7 @@ def normalizar(s: SistemaLido) -> SistemaLido:
             d.formula = ""
     s.derivados = prontos + pendentes
     for d in s.derivados:
-        teste[normalizar_id(d.id)] = 10
-        teste[normalizar_id(d.nome)] = 10
+        s._com_apelidos(teste, d, 10)
     for arq in s.arquetipos:
         validas = {}
         for chave, f in arq.formulas.items():
