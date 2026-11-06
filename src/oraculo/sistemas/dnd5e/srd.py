@@ -182,6 +182,7 @@ def parse_magia(raw: dict) -> Magia:
         dano=_primeiro_dano(dano) if dano else None,
         cura=bool(raw.get("heal_at_slot_level")),
         area=bool(raw.get("area_of_effect")),
+        descricao="\n".join(raw.get("desc") or []),
     )
 
 
@@ -213,7 +214,12 @@ def parse_equipamento(raw: dict) -> Arma | Armadura | None:
 
 
 def parse_pericia(raw: dict) -> Pericia:
-    return Pericia(id=raw["index"], nome=raw["name"], atributo=_atrib(raw["ability_score"]))
+    return Pericia(
+        id=raw["index"],
+        nome=raw["name"],
+        atributo=_atrib(raw["ability_score"]),
+        descricao="\n".join(raw.get("desc") or []),
+    )
 
 
 def media_dado(expr: str) -> float:

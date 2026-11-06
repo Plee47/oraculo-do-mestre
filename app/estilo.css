@@ -129,6 +129,24 @@ h1, h2, h3 { letter-spacing: 0.01em; text-wrap: balance; }
 .itens li:last-child { border-bottom: 0; }
 .itens li span { color: var(--tinta-suave); font-variant-numeric: tabular-nums; }
 
+/* ------------------------------------------------------------ termos com explicação */
+/* A dica se ancora na linha inteira, não no termo: assim nunca passa da borda da coluna.
+   Abre para cima porque estas listas ficam na parte baixa da página. */
+.termos { position: relative; margin: 0.25rem 0 0.75rem; line-height: 1.7; }
+.termo { border-bottom: 1px dotted var(--ouro-suave); cursor: help; outline: none; }
+.termo:focus-visible { outline: 2px solid var(--ouro); outline-offset: 2px; }
+.dica {
+  position: absolute; left: 0; z-index: 50; width: min(100%, 34rem); margin-top: -0.2rem; padding: 0.65rem 0.8rem;
+  background: var(--papel-2); color: var(--tinta); border: 1px solid var(--ouro-fundo); border-radius: 0.2rem;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35); font-size: 0.875rem; line-height: 1.45; font-weight: 400;
+  visibility: hidden; opacity: 0; transform: translateY(calc(-100% + 3px)); pointer-events: none;
+  transition: opacity 120ms var(--ease-out, ease-out), transform 120ms var(--ease-out, ease-out), visibility 120ms;
+}
+.dica-titulo { display: block; margin-bottom: 0.25rem; color: var(--ouro-suave); font-size: 0.8rem; font-weight: 600; }
+.termo:focus .dica { visibility: visible; opacity: 1; transform: translateY(-100%); }
+@media (hover: hover) { .termo:hover .dica { visibility: visible; opacity: 1; transform: translateY(-100%); transition-delay: 80ms; } }
+@media (prefers-reduced-motion: reduce) { .dica { transition: none; transform: translateY(-100%); } }
+
 /* ------------------------------------------------------------ barra lateral */
 .livro-atual { border: 1px solid var(--ouro-fundo); border-radius: 0.2rem; padding: 0.75rem 0.9rem; background: var(--papel); }
 .livro-atual .rotulo { font-size: 0.75rem; color: var(--tinta-suave); }

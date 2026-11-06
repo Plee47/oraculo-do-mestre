@@ -26,6 +26,7 @@ if recarregar_se_mudou([RAIZ / "src", RAIZ / "dados"]):
     st.cache_resource.clear()
     st.cache_data.clear()
 
+from oraculo.dicas import Termo, termos_html
 from oraculo.fichas_pdf import (
     TEMAS,
     BlocoImpresso,
@@ -59,6 +60,7 @@ from oraculo.rolagens import rolar as rolar_dados
 from oraculo.sistemas.dnd5e import ATRIBUTOS, custo_compra_pontos, modificador
 from oraculo.sistemas.dnd5e.analise import TIPOS_PT, analisar_encontro, analisar_grupo, perfil
 from oraculo.sistemas.dnd5e.catalogo import Catalogo
+from oraculo.sistemas.dnd5e.dicas import termo_magia, termo_pericia
 from oraculo.sistemas.dnd5e.gerador import PAPEIS, calcular_ca, gerar_ficha
 from oraculo.sistemas.fm import analise as fm_analise
 from oraculo.sistemas.fm import custo_compra_pontos as fm_custo
@@ -68,7 +70,7 @@ from oraculo.sistemas.generico.analise import analisar_encontro as analisar_enco
 from oraculo.sistemas.generico.analise import analisar_grupo as analisar_grupo_lido
 from oraculo.sistemas.generico.analise import perfil as perfil_lido
 from oraculo.sistemas.generico.formulas import normalizar_id
-from oraculo.sistemas.generico.gerador import SISTEMA_LIDO
+from oraculo.sistemas.generico.gerador import SISTEMA_LIDO, dicas_da_ficha
 from oraculo.sistemas.generico.gerador import calcular_derivados as calcular_derivados_lido
 from oraculo.sistemas.generico.gerador import gerar_ficha as gerar_ficha_lida
 from oraculo.sistemas.generico.gerador import limites as limites_lido
@@ -467,7 +469,7 @@ def mostrar_ficha(ficha: Ficha, cat: Catalogo) -> None:
     e1, e2 = st.columns(2)
     with e1:
         st.markdown("**Perícias**")
-        st.write(", ".join(cat.pericia(p).nome for p in ficha.pericias))
+        st.html(termos_html(termo_pericia(cat.pericia(p)) for p in ficha.pericias))
         st.markdown("**Equipamento**")
         itens = []
         for item_id in ficha.equipamento:
@@ -482,12 +484,13 @@ def mostrar_ficha(ficha: Ficha, cat: Catalogo) -> None:
         if ficha.poderes:
             magias = {m.id: m for m in cat.magias}
             st.markdown("**Magias**")
-            por_circulo: dict[int, list[str]] = {}
+            por_circulo: dict[int, list[Termo]] = {}
             for mid in ficha.poderes:
-                por_circulo.setdefault(magias[mid].circulo, []).append(magias[mid].nome)
-            for circulo, nomes in sorted(por_circulo.items()):
+                por_circulo.setdefault(magias[mid].circulo, []).append(termo_magia(magias[mid]))
+            for circulo, termos in sorted(por_circulo.items()):
                 rotulo = "Truques" if circulo == 0 else f"{circulo}º círculo"
-                st.write(f"**{rotulo}:** {', '.join(nomes)}")
+                st.html(termos_html(termos, rotulo))
+            st.caption(_AVISO_DICAS)
 
     with st.expander("Por que essas escolhas?", expanded=True, icon=":material/lightbulb:"):
         for e in ficha.explicacoes:
@@ -518,6 +521,7 @@ def mostrar_ficha(ficha: Ficha, cat: Catalogo) -> None:
 
 
 _CREDITO_DND = "SRD 5.1, Wizards of the Coast LLC, CC BY 4.0"
+_AVISO_DICAS = "Passe o mouse ou toque nos nomes sublinhados para ver o que fazem."
 
 
 def _impressa_dnd(ficha: Ficha, cat: Catalogo) -> FichaImpressa:
@@ -1684,12 +1688,21 @@ def _gerador_lido() -> None:
     st.subheader(titulo)
     _ficha_lida_html(s, ficha)
     e1, e2 = st.columns(2)
+    dicas = dicas_da_ficha(s, ficha)
+
+    def termos(nomes: list[str]) -> list[Termo]:
+        return [Termo(n, dicas.get(normalizar_id(n), "")) for n in nomes]
+
     if ficha.pericias:
-        e1.markdown(f"**Perícias**  \n{', '.join(ficha.pericias)}")
+        e1.markdown("**Perícias**")
+        e1.html(termos_html(termos(ficha.pericias)))
     if ficha.equipamento:
         e1.markdown(f"**Equipamento**  \n{', '.join(ficha.equipamento)}")
     if ficha.poderes:
-        e2.markdown(f"**Habilidades**  \n{', '.join(ficha.poderes)}")
+        e2.markdown("**Habilidades**")
+        e2.html(termos_html(termos(ficha.poderes)))
+        if any(n in dicas for n in map(normalizar_id, ficha.poderes)):
+            e2.caption(_AVISO_DICAS)
     _habilidades_da_ficha(s, ficha)
     with st.expander("Por que essas escolhas?", expanded=True, icon=":material/lightbulb:"):
         for e in ficha.explicacoes:
