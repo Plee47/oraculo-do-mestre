@@ -281,14 +281,16 @@ def _envio_do_livro() -> None:
         if not paginas and texto.strip():
             paginas, nome = [texto], "trecho colado"
     st.caption(
-        "Funciona com qualquer livro de RPG: a IA do Databricks lê as regras dele. O arquivo não "
-        "é salvo: só trechos selecionados vão ao LLM. O que ela extrai (nunca o texto do livro) "
-        "fica numa tabela privada, para este livro abrir mais rápido da próxima vez."
+        "Qualquer livro de RPG serve. O arquivo não é salvo: só trechos das páginas certas vão à "
+        "IA do Databricks. O que ela aprende (nunca o texto do livro) fica numa tabela privada, "
+        "para o livro abrir mais rápido da próxima vez."
     )
 
     if not paginas:
         _carregar_sistema_salvo()
-        st.markdown("**Sem um livro à mão?** Teste com um sistema que o Oráculo já conhece.")
+        st.markdown(
+            "**Sem um livro à mão?** Veja o Oráculo em ação com um sistema que ele já conhece."
+        )
         for sid, nome_sistema in SISTEMAS_SUPORTADOS.items():
             st.button(
                 f"Testar com {nome_sistema}",
@@ -339,15 +341,16 @@ def pagina_inicio() -> None:
     with texto:
         st.html(
             '<div class="vitrine">'
-            "<h1>Conheceu um sistema de RPG? <em>Envie o livro.</em></h1>"
-            '<p class="lead">Call of Cthulhu, Vampiro, aquele sistema obscuro da sua mesa: o '
-            "Oráculo confere se o PDF é mesmo um livro de RPG, lê as regras e entrega "
-            "<strong>o resumo do sistema, fichas e encontros dentro das regras dele</strong>. "
-            "Por trás, um pipeline de dados e modelos no Databricks.</p>"
+            '<h1>Encontrou algum sistema? <em><span class="inteiro">Entregue-o</span> ao Oráculo '
+            "e veja a base do seu RPG nascer.</em></h1>"
+            '<p class="lead">O Oráculo lê qualquer livro de RPG, de Call of Cthulhu àquele sistema '
+            "obscuro que só a sua mesa conhece. Ele aprende como o jogo funciona e devolve "
+            "<strong>o resumo das regras, fichas prontas para jogar e encontros</strong>, sem "
+            "fugir do que está escrito. Por trás de tudo, um pipeline de dados no Databricks.</p>"
             '<ul class="fluxo">'
-            '<li><span class="n">1</span><span><b>Envie</b> o PDF</span></li>'
-            '<li><span class="n">2</span><span><b>O porteiro</b> valida</span></li>'
-            '<li><span class="n">3</span><span><b>Crie</b> e analise</span></li>'
+            '<li><span class="n">I.</span><span><b>Entregue</b> o livro</span></li>'
+            '<li><span class="n">II.</span><span><b>O Oráculo</b> lê as regras</span></li>'
+            '<li><span class="n">III.</span><span><b>Jogue</b> com a sua ficha</span></li>'
             "</ul></div>"
         )
     with envio:
@@ -375,11 +378,12 @@ def pagina_inicio() -> None:
                 width="stretch",
             )
         else:
-            with st.container(border=True):
+            with st.container(border=True, key="oferenda"):
+                st.html('<div class="oferenda-titulo">Entregue o livro ao Oráculo</div>')
                 _envio_do_livro()
 
     st.html('<div style="height: 2.5rem"></div>')
-    st.header("Por dentro: um pipeline de dados no Databricks")
+    st.header("Por dentro do Oráculo: um pipeline de dados no Databricks")
     st.caption(
         "Cada número abaixo foi produzido pelo pipeline e vem dos dados exportados para este "
         f"repositório. Código, notebooks e decisões de arquitetura: [GitHub]({REPOSITORIO})."
@@ -2152,7 +2156,7 @@ def _grafico_distribuicao(
         if p >= 0.0001
     ]
     eixo_x = alt.Axis(
-        labelOverlap=True, labelAngle=0, grid=False, tickColor="#dccfb9", domainColor="#dccfb9"
+        labelOverlap=True, labelAngle=0, grid=False, tickColor="#46503f", domainColor="#46503f"
     )
     escala_x = alt.Scale(domain=dominio) if dominio else alt.Undefined
     return (
@@ -2165,13 +2169,13 @@ def _grafico_distribuicao(
                 title=None,
                 scale=alt.Scale(domain=[0, teto]) if teto else alt.Undefined,
                 axis=alt.Axis(
-                    format=".0%", grid=True, gridColor="#ebe2d2", domain=False, ticks=False
+                    format=".0%", grid=True, gridColor="#2c3b35", domain=False, ticks=False
                 ),
             ),
             color=alt.Color(
                 "Situação:N",
                 scale=alt.Scale(
-                    domain=["Atinge o alvo", "Abaixo do alvo"], range=["#b5452b", "#9a8a70"]
+                    domain=["Atinge o alvo", "Abaixo do alvo"], range=["#e0c07a", "#7d8f84"]
                 ),
                 legend=alt.Legend(orient="top", title=None) if alvo is not None else None,
             ),
@@ -2182,8 +2186,8 @@ def _grafico_distribuicao(
         )
         .properties(height=260, background="transparent")
         .configure_view(strokeWidth=0)
-        .configure_axis(labelColor="#6b5f50", titleColor="#6b5f50")
-        .configure_legend(labelColor="#6b5f50")
+        .configure_axis(labelColor="#c9bfa8", titleColor="#c9bfa8")
+        .configure_legend(labelColor="#c9bfa8")
     )
 
 
@@ -2344,7 +2348,7 @@ if livro:
         width="stretch",
     )
 else:
-    st.sidebar.caption("Envie um livro no **Início** para liberar o gerador e as análises.")
+    st.sidebar.caption("Entregue um livro no **Início** para liberar o gerador e as análises.")
 st.sidebar.radio("Navegação", paginas, key="pagina")
 st.sidebar.caption(
     f"Projeto de portfólio de ciência de dados · Python, Databricks e GitHub · "

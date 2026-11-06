@@ -1,56 +1,56 @@
-# Identidade visual do site: "grimório de dados".
-# Papel quente, tinta escura e um único destaque cor de brasa. Títulos em Fraunces (serifa
-# com personalidade, lembra livro de regras), texto em Inter e dados em JetBrains Mono.
-# Os alertas usam a mesma família de tons para não destoar do papel.
+# Identidade visual do site: "grimório".
+# Verde quase preto, pergaminho claro e um único destaque dourado. Títulos em Cinzel (capitulares
+# de inscrição), texto em EB Garamond (livro antigo), dados em JetBrains Mono e o nome do site em
+# letra gótica. Os alertas usam tons escuros da mesma família para não destoar da página.
 
 [client]
 toolbarMode = "minimal"
 
 [theme]
-base = "light"
-primaryColor = "#B5452B"
-backgroundColor = "#F7F2E8"
-secondaryBackgroundColor = "#EFE7D8"
-textColor = "#221D17"
-linkColor = "#9C3A24"
+base = "dark"
+primaryColor = "#E0C07A"
+backgroundColor = "#14211D"
+secondaryBackgroundColor = "#1B2C27"
+textColor = "#ECE3CF"
+linkColor = "#E0C07A"
 linkUnderline = false
-borderColor = "#DCCFB9"
+borderColor = "#46503F"
 showWidgetBorder = true
 showSidebarBorder = true
-baseRadius = "0.5rem"
-buttonRadius = "0.5rem"
-baseFontSize = 16
-font = "Inter:https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-headingFont = "Fraunces:https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap"
-headingFontWeights = [600, 600, 600, 600, 600, 600]
+baseRadius = "0.2rem"
+buttonRadius = "0.2rem"
+baseFontSize = 17
+font = "EB Garamond:https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap"
+headingFont = "Cinzel:https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&display=swap"
+headingFontWeights = [500, 500, 500, 500, 500, 500]
 codeFont = "JetBrains Mono:https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap"
-codeBackgroundColor = "#EFE7D8"
-metricValueFontWeight = 600
-dataframeHeaderBackgroundColor = "#EFE7D8"
-dataframeBorderColor = "#DCCFB9"
-chartCategoricalColors = ["#B5452B", "#2B4C66", "#7A8B3C", "#C08A2E", "#5E4B3C", "#3F7F7A"]
-chartSequentialColors = ["#F4DCD4", "#EBC3B4", "#E0A893", "#D38C73", "#C47055", "#B5452B", "#9C3A24", "#82301E", "#682618", "#4E1C12"]
+codeBackgroundColor = "#0D1714"
+metricValueFontWeight = 500
+dataframeHeaderBackgroundColor = "#1B2C27"
+dataframeBorderColor = "#46503F"
+chartCategoricalColors = ["#E0C07A", "#7FA8C9", "#8FB07A", "#D08A5C", "#B7A1D6", "#6FBFB4"]
+chartSequentialColors = ["#3A3524", "#4F4730", "#655A3B", "#7B6E46", "#918251", "#A7965C", "#BDAA67", "#D0B671", "#E0C07A", "#F0D79B"]
 
-greenColor = "#4C7A4F"
-greenTextColor = "#2F5D3A"
-greenBackgroundColor = "#E3EBD8"
-blueColor = "#3E6585"
-blueTextColor = "#2B4C66"
-blueBackgroundColor = "#E1E7EA"
-orangeColor = "#C0742B"
-orangeTextColor = "#8A4B12"
-orangeBackgroundColor = "#F5E3CC"
-redColor = "#B5452B"
-redTextColor = "#8E2B1C"
-redBackgroundColor = "#F4DCD4"
-yellowColor = "#B8952B"
-yellowTextColor = "#6F5A12"
-yellowBackgroundColor = "#F3EACB"
-grayColor = "#8A7D6B"
-grayTextColor = "#6B5F50"
-grayBackgroundColor = "#EAE2D3"
+greenColor = "#7FA86A"
+greenTextColor = "#B9D6A6"
+greenBackgroundColor = "#1F3327"
+blueColor = "#7FA8C9"
+blueTextColor = "#B5CFE0"
+blueBackgroundColor = "#1C2F3A"
+orangeColor = "#D08A5C"
+orangeTextColor = "#E8C08F"
+orangeBackgroundColor = "#3A2A1A"
+redColor = "#C96A55"
+redTextColor = "#EDA99A"
+redBackgroundColor = "#3B1F1C"
+yellowColor = "#C9A961"
+yellowTextColor = "#E8D48F"
+yellowBackgroundColor = "#33301A"
+grayColor = "#8D9186"
+grayTextColor = "#C9BFA8"
+grayBackgroundColor = "#22302B"
 
 [theme.sidebar]
-backgroundColor = "#EFE7D8"
-secondaryBackgroundColor = "#E6DCCA"
-borderColor = "#D3C4AA"
+backgroundColor = "#0D1714"
+secondaryBackgroundColor = "#14211D"
+borderColor = "#5C4E2C"
