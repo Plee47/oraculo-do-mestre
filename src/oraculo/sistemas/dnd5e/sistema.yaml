@@ -32,6 +32,14 @@ classes:
   - { id: patrulheiro, nome: Patrulheiro, srd: ranger, papel: atacante, dado_vida: 10, atributos_principais: [des, sab], resistencias: [for, des], conjuracao: sab, prioridade: [des, sab, con, for, int, car] }
 
 extras:
+  resumo: >-
+    Fantasia heroica: um grupo de aventureiros explora masmorras, enfrenta monstros e cresce
+    do nível 1 ao 20. Todo teste é 1d20 + modificador de atributo (+ bônus de proficiência
+    quando o personagem é treinado) contra uma dificuldade ou a Classe de Armadura do alvo; com
+    vantagem ou desvantagem, rolam-se dois d20 e fica o maior ou o menor. São seis atributos
+    (modificador = (valor − 10) ÷ 2), 12 classes com dado de vida próprio, magias por círculo
+    com espaços de magia, e encontros equilibrados pelo XP dos monstros conforme o nível de
+    desafio.
   compra_pontos:
     orcamento: 27
     custo: { 8: 0, 9: 1, 10: 2, 11: 3, 12: 4, 13: 5, 14: 7, 15: 9 }

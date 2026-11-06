@@ -123,13 +123,15 @@ RPG = (
 
 def test_porteiro():
     modelo = ModeloDetector.carregar(MODELO)
-    assert decidir(modelo, [RPG]).aceito
+    # Qualquer RPG é aceito: sistema desconhecido vai para a leitura com LLM.
+    outro = decidir(modelo, [RPG])
+    assert outro.aceito and outro.caminho == "leitura" and not outro.incerto
     romance = decidir(modelo, ["The old knight walked home and she said goodbye. " * 30])
-    assert not romance.aceito and "não parece" in romance.motivo
+    assert not romance.aceito and romance.caminho == "barrado" and "não parece" in romance.motivo
     tagmar = decidir(modelo, [RPG + " Tagmar karma estágio tabela de resolução " * 5])
-    assert not tagmar.aceito and "não suportado" in tagmar.motivo
-    fm = decidir(modelo, [RPG + " energia amaldiçoada, técnica inata, expansão de domínio. " * 20])
-    assert fm.aceito and "Feiticeiros & Maldições" in fm.motivo
+    assert tagmar.aceito and tagmar.caminho == "leitura"
+    fm = decidir(modelo, [RPG + " Feiticeiros & Maldições, energia amaldiçoada. " * 25])
+    assert fm.aceito and fm.caminho == "pronto" and "Feiticeiros & Maldições" in fm.motivo
     vazio = decidir(modelo, ["", " "])
     assert not vazio.aceito and "escaneado" in vazio.motivo
 

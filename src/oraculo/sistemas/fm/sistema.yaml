@@ -34,6 +34,13 @@ classes:
   - { id: restringido, nome: Restringido, papel: combatente, dado_vida: 12, pv_primeiro_nivel: 16, energia_por_nivel: 4, atributos_principais: [for, des, con, int, sab, pre], resistencias: [fortitude, reflexos], prioridade: [for, des, con, sab, int, pre] }
 
 extras:
+  resumo: >-
+    RPG de fãs de fantasia urbana sobrenatural: feiticeiros enfrentam maldições nascidas das
+    emoções negativas das pessoas. Os testes são 1d20 + modificador + metade do nível + bônus
+    de treinamento contra a Defesa ou uma CD. São seis atributos (com Presença no lugar de
+    Carisma), seis especializações e sete origens. Os PV vêm da especialização e da
+    Constituição; a energia amaldiçoada (PE) alimenta as técnicas, que cada jogador cria com as
+    regras do livro. Há cinco testes de resistência, incluindo a Integridade da alma.
   conjunto_padrao: [15, 14, 13, 12, 10, 8]
   compra_pontos:
     orcamento: 17

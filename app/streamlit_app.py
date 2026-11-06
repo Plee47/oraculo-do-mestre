@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import html
 import io
 import json
@@ -30,6 +31,7 @@ from oraculo.leitor.detector import (
     Veredito,
     avaliar_documento,
 )
+from oraculo.leitor.llm import ErroLLM, cliente_configurado
 from oraculo.leitor.porteiro import SISTEMAS_SUPORTADOS, Decisao, decidir
 from oraculo.nucleo import Ficha, obter_regras
 from oraculo.nucleo.analise import Achado
@@ -40,6 +42,18 @@ from oraculo.sistemas.dnd5e.gerador import PAPEIS, calcular_ca, gerar_ficha
 from oraculo.sistemas.fm import analise as fm_analise
 from oraculo.sistemas.fm import custo_compra_pontos as fm_custo
 from oraculo.sistemas.fm import gerador as fm_gerador
+from oraculo.sistemas.generico.analise import analisar_encontro as analisar_encontro_lido
+from oraculo.sistemas.generico.analise import analisar_grupo as analisar_grupo_lido
+from oraculo.sistemas.generico.analise import criatura_de_ficha
+from oraculo.sistemas.generico.analise import perfil as perfil_lido
+from oraculo.sistemas.generico.formulas import normalizar_id
+from oraculo.sistemas.generico.gerador import SISTEMA_LIDO
+from oraculo.sistemas.generico.gerador import calcular_derivados as calcular_derivados_lido
+from oraculo.sistemas.generico.gerador import gerar_ficha as gerar_ficha_lida
+from oraculo.sistemas.generico.gerador import limites as limites_lido
+from oraculo.sistemas.generico.gerador import validar as validar_lido
+from oraculo.sistemas.generico.leitura import ErroLeitura, ler_sistema
+from oraculo.sistemas.generico.modelo import SistemaLido, normalizar
 
 st.set_page_config(
     page_title="Oráculo do Mestre", page_icon=":material/auto_stories:", layout="wide"
@@ -53,13 +67,14 @@ AVALIACAO_LEITOR = (
     Path(__file__).parents[1] / "dados" / "publicos" / "avaliacoes" / "leitor_srd51.json"
 )
 INICIO = "Início"
+RESUMO = "Resumo do sistema"
 GERADOR = "Gerador de fichas"
 FICHA = "Ficha rápida"
 ANALISES = "Análises"
 BASTIDORES = "Bastidores do leitor"
 ROTEIRO = "Roteiro"
 CONTEUDO = "Conteúdo e licenças"
-LIMITE_PAGINAS = 200
+LIMITE_PAGINAS = 600  # livros de regras inteiros (o bestiário costuma estar no fim)
 NOMES_SISTEMAS = {"dnd5e": "D&D 5e", "fm": "Feiticeiros & Maldições", "tagmar": "Tagmar"}
 REPOSITORIO = "https://github.com/Plee47/oraculo-do-mestre"
 CREDITO_FM = (
@@ -105,7 +120,7 @@ def _ir_para(pagina: str) -> None:
 
 def _usar_livro(sistema: str, nome: str, nota: float | None = None, demo: bool = False) -> None:
     st.session_state.livro = {"sistema": sistema, "nome": nome, "nota": nota, "demo": demo}
-    st.session_state.pagina = GERADOR
+    st.session_state.pagina = RESUMO
 
 
 def _trocar_livro() -> None:
@@ -164,11 +179,13 @@ def _envio_do_livro() -> None:
         if not paginas and texto.strip():
             paginas, nome = [texto], "trecho colado"
     st.caption(
-        "O arquivo é lido só na memória deste servidor: não é salvo nem enviado a nenhum LLM. "
-        f"Sistemas com fichas e análises: {', '.join(SISTEMAS_SUPORTADOS.values())}."
+        "Qualquer livro de RPG: D&D 5e e Feiticeiros & Maldições usam regras prontas; os outros "
+        "são lidos pela IA do Databricks. O arquivo não é salvo: só trechos selecionados vão ao "
+        "LLM, e o resultado fica apenas na sua sessão."
     )
 
     if not paginas:
+        _carregar_sistema_salvo()
         st.markdown("**Sem um livro à mão?** Teste com um sistema que o Oráculo já conhece.")
         for sid, nome_sistema in SISTEMAS_SUPORTADOS.items():
             st.button(
@@ -185,14 +202,28 @@ def _envio_do_livro() -> None:
     v = avaliar_documento(modelo, paginas)
     decisao = decidir(modelo, paginas)
     mostrar_veredito(v, decisao, paginas, modelo)
-    if decisao.aceito:
+    ler = {"on_click": _ler_livro, "args": (paginas, nome, v.nota, decisao.incerto)}
+    if decisao.caminho == "pronto":
         st.button(
-            f"Usar este livro e criar fichas de {SISTEMAS_SUPORTADOS[v.sistema]}",
+            f"Usar as regras prontas de {SISTEMAS_SUPORTADOS[v.sistema]}",
             type="primary",
             icon=":material/arrow_forward:",
             on_click=_usar_livro,
             args=(v.sistema, nome, v.nota),
         )
+        st.button(
+            "Não é esse sistema? Ler como sistema novo", icon=":material/auto_awesome:", **ler
+        )
+    elif decisao.caminho == "leitura":
+        st.button(
+            "Ler o livro com IA e montar o sistema",
+            type="primary",
+            icon=":material/auto_awesome:",
+            **ler,
+        )
+        st.caption("Leva cerca de um minuto: a IA lê a mecânica, a criação e as criaturas.")
+    if st.session_state.get("_erro_leitura"):
+        st.error(st.session_state["_erro_leitura"], icon=":material/error:")
 
 
 def pagina_inicio() -> None:
@@ -201,9 +232,10 @@ def pagina_inicio() -> None:
         st.html(
             '<div class="vitrine">'
             "<h1>Conheceu um sistema de RPG? <em>Envie o livro.</em></h1>"
-            '<p class="lead">O Oráculo confere se o PDF é mesmo um livro de RPG, descobre de qual '
-            "sistema ele é e libera <strong>gerador de fichas e análises de grupo dentro das "
-            "regras dele</strong>. Por trás, um pipeline de dados e modelos no Databricks.</p>"
+            '<p class="lead">Call of Cthulhu, Vampiro, aquele sistema obscuro da sua mesa: o '
+            "Oráculo confere se o PDF é mesmo um livro de RPG, lê as regras e entrega "
+            "<strong>o resumo do sistema, fichas e encontros dentro das regras dele</strong>. "
+            "Por trás, um pipeline de dados e modelos no Databricks.</p>"
             '<ul class="fluxo">'
             '<li><span class="n">1</span><span><b>Envie</b> o PDF</span></li>'
             '<li><span class="n">2</span><span><b>O porteiro</b> valida</span></li>'
@@ -216,7 +248,7 @@ def pagina_inicio() -> None:
             origem = "modo demonstração" if livro["demo"] else f"nota {livro['nota']:.0%}"
             st.success(
                 f"Livro validado: **{livro['nome']}** · sistema "
-                f"**{SISTEMAS_SUPORTADOS[livro['sistema']]}** ({origem}).",
+                f"**{nome_do_sistema(livro)}** ({origem}).",
                 icon=":material/check_circle:",
             )
             b1, b2 = st.columns(2)
@@ -363,13 +395,17 @@ _ICONE = {
 
 
 def atributos_html(valores: dict[str, int], mod) -> str:
-    """Bloco de atributos: sigla, valor e modificador (sem títulos Markdown com âncora)."""
+    """Bloco de atributos: sigla, valor e modificador, se o sistema tiver (sem títulos
+    Markdown com âncora). A grade se ajusta à quantidade de atributos do sistema."""
     celulas = "".join(
         f'<div><div class="sigla">{html.escape(sigla)}</div><div class="valor">{v}</div>'
-        f'<div class="mod">{mod(v):+d}</div></div>'
+        + (f'<div class="mod">{mod(v):+d}</div>' if mod else "")
+        + "</div>"
         for sigla, v in valores.items()
     )
-    return f'<div class="atributos">{celulas}</div>'
+    colunas = max(1, min(len(valores), 9))
+    estilo = f"grid-template-columns: repeat({colunas}, minmax(0, 1fr))"
+    return f'<div class="atributos" style="{estilo}">{celulas}</div>'
 
 
 def itens_html(itens: list[tuple[str, str]]) -> str:
@@ -475,13 +511,6 @@ def mostrar_veredito(
         return
     if decisao.aceito:
         st.success(f"**Livro aceito pelo porteiro:** {decisao.motivo}.", icon=":material/verified:")
-    elif v.e_rpg:
-        st.warning(
-            f"**É um livro de RPG, mas o Oráculo ainda não conhece este sistema** "
-            f"({NOMES_SISTEMAS.get(v.sistema, 'não identificado')}). Hoje as fichas e análises "
-            f"existem para: {', '.join(SISTEMAS_SUPORTADOS.values())}.",
-            icon=":material/extension:",
-        )
     else:
         st.info(
             f"**Não parece um livro de RPG** (nota {v.nota:.0%}), então não vira ficha.",
@@ -507,15 +536,22 @@ def pagina_bastidores() -> None:
 **O porteiro** é um detector treinado no Databricks. Ele dá uma nota a cada página com base em
 **6 sinais que um mestre reconheceria**: notação de dados (`1d20`), modificadores (`+2`),
 siglas de atributos, vocabulário de regras, blocos de estatísticas e texto que fala com o
-leitor. A nota do livro é a média das páginas, e palavras típicas de cada sistema dizem qual
-é o sistema.
+leitor. A nota do livro é a média das páginas. D&D 5e e Feiticeiros & Maldições são
+reconhecidos por evidência forte (as 12 classes e termos da 5ª edição; o título e a "energia
+amaldiçoada") e usam regras prontas; qualquer outro RPG segue para a leitura com IA.
 
 Ele foi avaliado com *leave-one-book-out*: cada livro é julgado por um modelo que nunca viu
 nenhuma página dele. Resultado: **12 de 12 livros certos**, incluindo romances de fantasia e um
 livro de regras de xadrez.
 
-**A extração** dos livros aceitos roda no Databricks, com os LLMs da própria plataforma, sobre
-os livros que você coloca no seu workspace. O que vem de livros protegidos nunca sai de lá.
+**A leitura com IA** seleciona, sem LLM, as páginas de visão geral, mecânica, criação de
+personagem e criaturas (palavras-chave e o sumário do livro) e faz três leituras em paralelo
+com o LLM do Databricks. A saída vira uma especificação validada: fórmulas passam por um
+avaliador seguro (nada de `eval`), itens malformados viram aviso, e você pode corrigir qualquer
+número no resumo do sistema.
+
+**A extração em lote** (magias e monstros do SRD) roda no Databricks com `ai_query`, sobre os
+livros do seu workspace. O que vem de livros protegidos nunca sai de lá.
 """
     )
     mostrar_avaliacao_leitor()
@@ -776,8 +812,17 @@ def _fm_grupo(regras) -> None:
     mostrar_achados(fm_analise.analisar_grupo(grupo))
 
 
+def pagina_resumo() -> None:
+    if sistema_atual() == SISTEMA_LIDO:
+        _resumo_lido()
+    else:
+        _resumo_pronto(sistema_atual())
+
+
 def pagina_gerador() -> None:
-    if sistema_atual() == "fm":
+    if sistema_atual() == SISTEMA_LIDO:
+        _gerador_lido()
+    elif sistema_atual() == "fm":
         st.title("Gerador de fichas · Feiticeiros & Maldições")
         st.caption(CREDITO_FM)
         _fm_gerador(obter_regras("fm"))
@@ -786,7 +831,9 @@ def pagina_gerador() -> None:
 
 
 def pagina_ficha() -> None:
-    if sistema_atual() == "fm":
+    if sistema_atual() == SISTEMA_LIDO:
+        _ficha_rapida_lida()
+    elif sistema_atual() == "fm":
         st.title("Ficha rápida · Feiticeiros & Maldições")
         st.caption(CREDITO_FM)
         _fm_ficha_rapida(obter_regras("fm"))
@@ -795,7 +842,9 @@ def pagina_ficha() -> None:
 
 
 def pagina_analises() -> None:
-    if sistema_atual() == "fm":
+    if sistema_atual() == SISTEMA_LIDO:
+        _analises_lido()
+    elif sistema_atual() == "fm":
         st.title("Análises · Feiticeiros & Maldições")
         _fm_grupo(obter_regras("fm"))
         st.info(
@@ -805,6 +854,532 @@ def pagina_analises() -> None:
         )
     else:
         _dnd_analise()
+
+
+# --------------------------------------------------------------------------- sistema lido
+# Qualquer livro de RPG: o LLM do Databricks lê o livro e devolve a especificação do sistema
+# (oraculo.sistemas.generico). Tudo abaixo usa só essa especificação.
+MAX_LEITURAS_POR_SESSAO = 3
+
+
+def cliente_llm():
+    """Cliente do LLM a partir dos segredos do site (ou do ambiente, rodando localmente)."""
+    if "_cliente_llm_teste" in st.session_state:  # testes automatizados do site
+        return st.session_state["_cliente_llm_teste"]
+    try:
+        segredos = dict(st.secrets)
+    except Exception:  # sem secrets.toml: tenta as variáveis de ambiente
+        segredos = {}
+    return cliente_configurado(segredos)
+
+
+def sistema_lido() -> SistemaLido:
+    return SistemaLido.model_validate(livro_atual()["lido"])
+
+
+def nome_do_sistema(livro: dict) -> str:
+    if livro["sistema"] == SISTEMA_LIDO:
+        return livro["lido"]["nome"]
+    return SISTEMAS_SUPORTADOS[livro["sistema"]]
+
+
+def _usar_sistema_lido(s: SistemaLido, nome_arquivo: str, nota: float | None) -> None:
+    st.session_state.livro = {
+        "sistema": SISTEMA_LIDO,
+        "nome": nome_arquivo,
+        "nota": nota,
+        "demo": False,
+        "lido": json.loads(s.model_dump_json()),
+    }
+    st.session_state.pagina = RESUMO
+
+
+def _ler_livro(paginas: list[str], nome: str, nota: float | None, incerto: bool) -> None:
+    """Lê o livro com o LLM (uma vez por arquivo na sessão) e abre o resumo do sistema."""
+    chave = hashlib.sha256("\n".join(paginas).encode()).hexdigest()
+    lidos = st.session_state.setdefault("_lidos", {})
+    if chave not in lidos:
+        feitas = st.session_state.get("_leituras", 0)
+        if feitas >= MAX_LEITURAS_POR_SESSAO:
+            st.session_state["_erro_leitura"] = (
+                f"Limite de {MAX_LEITURAS_POR_SESSAO} leituras por sessão atingido (a cota de "
+                "LLM é compartilhada). Recarregue a página mais tarde ou use um sistema salvo."
+            )
+            return
+        cliente = cliente_llm()
+        if cliente is None:
+            st.session_state["_erro_leitura"] = (
+                "A leitura com IA não está configurada neste servidor (faltam DATABRICKS_HOST e "
+                "DATABRICKS_TOKEN nos segredos)."
+            )
+            return
+        st.session_state["_leituras"] = feitas + 1
+        try:
+            leitura = ler_sistema(paginas, cliente, nome)
+        except (ErroLLM, ErroLeitura) as e:
+            st.session_state["_erro_leitura"] = f"Não consegui ler o livro: {e}"
+            return
+        if incerto and not leitura.e_rpg:
+            st.session_state["_erro_leitura"] = (
+                "A leitura confirmou que este arquivo não é um livro de regras de RPG."
+            )
+            return
+        lidos[chave] = leitura.sistema.model_dump_json()
+    st.session_state.pop("_erro_leitura", None)
+    _usar_sistema_lido(SistemaLido.model_validate_json(lidos[chave]), nome, nota)
+
+
+def _carregar_sistema_salvo() -> None:
+    with st.expander("Já leu este livro antes? Carregue o sistema salvo (.json)"):
+        arquivo = st.file_uploader(
+            "Sistema salvo pelo Oráculo",
+            type=["json"],
+            key="sistema_salvo",
+            label_visibility="collapsed",
+        )
+        if arquivo is None:
+            return
+        try:
+            s = normalizar(SistemaLido.model_validate_json(arquivo.getvalue()))
+        except ValueError:
+            st.error("Esse arquivo não é um sistema salvo pelo Oráculo.")
+            return
+        st.button(
+            f"Usar {s.nome}",
+            icon=":material/arrow_forward:",
+            type="primary",
+            on_click=_usar_sistema_lido,
+            args=(s, Path(arquivo.name).stem, None),
+        )
+
+
+def _faixa(s: SistemaLido, a) -> str:
+    mn, mx = limites_lido(s, a)
+    if mn is None and mx is None:
+        return "—"
+    return f"{mn if mn is not None else '…'} a {mx if mx is not None else '…'}"
+
+
+def _paginas_html(paginas: list[int]) -> str:
+    return ", ".join(str(p) for p in paginas[:12]) + ("…" if len(paginas) > 12 else "")
+
+
+def _resumo_lido() -> None:
+    s = sistema_lido()
+    st.title(f"Resumo do sistema · {s.nome}")
+    linha = " · ".join(x for x in (s.genero, s.autores) if x)
+    if linha:
+        st.caption(linha)
+    st.caption(
+        "Resumo escrito pela IA a partir do livro que você enviou (nada foi salvo). Confira e, "
+        "se algo estiver errado, corrija em **Corrigir a leitura** no fim da página."
+    )
+    if s.resumo:
+        st.markdown(s.resumo)
+    if s.ambientacao:
+        st.markdown(f"**Ambientação.** {s.ambientacao}")
+
+    st.subheader("Como se joga")
+    m = s.mecanica
+    c = st.columns(3)
+    c[0].metric("Dado base", m.dado_base or "—")
+    c[1].metric("Acerto típico (estimado)", f"{m.chance_acerto_estimada:.0%}")
+    c[2].metric(
+        s.niveis.nome.capitalize() if s.niveis.usa_niveis else "Níveis",
+        s.niveis.nivel_inicial if s.niveis.usa_niveis else "não usa",
+    )
+    if m.resolucao:
+        st.markdown(f"**Teste.** {m.resolucao}")
+    if m.criticos:
+        st.markdown(f"**Críticos.** {m.criticos}")
+    if m.dano_basico or m.dano_explicacao:
+        extra = f" Fórmula usada nas análises: `{m.dano_basico}`." if m.dano_basico else ""
+        st.markdown(f"**Dano.** {m.dano_explicacao}{extra}")
+
+    st.subheader("Criação de personagem")
+    if s.geracao.explicacao:
+        st.markdown(s.geracao.explicacao)
+    for g in s.geracao.grupos:
+        st.markdown(f"- **{g.nome or 'Grupo'}:** {g.explicacao or g.metodo}")
+    if s.modificador:
+        st.markdown(f"**Modificador de atributo:** `{s.modificador}` (valor = atributo).")
+    if s.atributos:
+        st.dataframe(
+            [
+                {
+                    "Atributo": a.nome,
+                    "Sigla": a.sigla,
+                    "Faixa": _faixa(s, a),
+                    "Rolagem": a.rolagem or "",
+                    "O que mede": a.descricao,
+                }
+                for a in s.atributos
+            ],
+            hide_index=True,
+            use_container_width=True,
+        )
+    if s.derivados:
+        st.markdown("**Valores calculados**")
+        st.dataframe(
+            [
+                {
+                    "Valor": d.nome,
+                    "Fórmula": d.formula or "(não calculável: ver explicação)",
+                    "Tipo": d.tipo,
+                    "Explicação": d.explicacao,
+                }
+                for d in s.derivados
+            ],
+            hide_index=True,
+            use_container_width=True,
+        )
+    if s.arquetipos:
+        st.markdown(f"**{s.nome_arquetipo.capitalize()}s** ({len(s.arquetipos)})")
+        st.dataframe(
+            [
+                {
+                    "Nome": a.nome,
+                    "Papel": a.papel,
+                    "Atributos-chave": ", ".join(s.atributo(x).nome for x in a.atributos_chave),
+                    "Descrição": a.descricao,
+                }
+                for a in s.arquetipos
+            ],
+            hide_index=True,
+            use_container_width=True,
+        )
+    cols = st.columns(3)
+    cols[0].metric("Perícias", len(s.pericias))
+    cols[1].metric("Criaturas com estatísticas", len(s.criaturas))
+    cols[2].metric("Páginas lidas pela IA", sum(len(v) for v in s.paginas_fonte.values()))
+    if s.regras_encontro:
+        st.markdown(f"**Encontros, segundo o livro.** {s.regras_encontro}")
+    if s.avisos:
+        with st.expander(
+            f"O que a leitura não conseguiu ({len(s.avisos)})", icon=":material/info:"
+        ):
+            for a in s.avisos:
+                st.write(f"- {a}")
+    with st.expander("Páginas usadas em cada parte da leitura"):
+        rotulos = {
+            "visao": "Visão geral e mecânica",
+            "criacao": "Criação de personagem",
+            "criaturas": "Criaturas",
+        }
+        for k, v in s.paginas_fonte.items():
+            st.write(f"- {rotulos.get(k, k)}: {_paginas_html(v) or '—'}")
+    _corrigir_leitura(s)
+    st.download_button(
+        "Salvar o sistema lido (.json)",
+        s.model_dump_json(indent=1),
+        file_name=f"{normalizar_id(s.nome)}.json",
+        mime="application/json",
+        icon=":material/download:",
+    )
+
+
+def _corrigir_leitura(s: SistemaLido) -> None:
+    with st.expander("Corrigir a leitura", icon=":material/edit:"):
+        st.caption(
+            "A IA pode errar um número. Ajuste aqui e as fichas e análises passam a usar a "
+            "correção. As fórmulas usam os ids dos atributos (coluna id), mod_<id> para o "
+            "modificador e nivel para o nível."
+        )
+        c = st.columns(3)
+        nivel = c[0].number_input("Nível inicial", 1, 100, s.niveis.nivel_inicial)
+        dano = c[1].text_input("Dano de um ataque básico (fórmula)", s.mecanica.dano_basico)
+        mult = c[2].number_input(
+            "Multiplicador médio de dano",
+            0.1,
+            10.0,
+            float(s.mecanica.multiplicador_dano_medio),
+            step=0.1,
+        )
+        modificador = st.text_input("Modificador de atributo (fórmula com valor)", s.modificador)
+        atributos = st.data_editor(
+            [
+                {
+                    "id": a.id,
+                    "nome": a.nome,
+                    "minimo": a.minimo,
+                    "maximo": a.maximo,
+                    "rolagem": a.rolagem or "",
+                }
+                for a in s.atributos
+            ],
+            hide_index=True,
+            use_container_width=True,
+            key="editor_atributos",
+            disabled=["id", "nome"],
+        )
+        derivados = st.data_editor(
+            [
+                {"id": d.id, "nome": d.nome, "formula": d.formula, "tipo": d.tipo}
+                for d in s.derivados
+            ],
+            hide_index=True,
+            use_container_width=True,
+            key="editor_derivados",
+            disabled=["id", "nome"],
+            column_config={
+                "tipo": st.column_config.SelectboxColumn(
+                    options=["vida", "defesa", "recurso", "iniciativa", "movimento", "outro"]
+                )
+            },
+        )
+        if st.button("Aplicar correções", icon=":material/check:"):
+            dados = json.loads(s.model_dump_json())
+            dados["niveis"]["nivel_inicial"] = int(nivel)
+            dados["mecanica"]["dano_basico"] = dano
+            dados["mecanica"]["multiplicador_dano_medio"] = mult
+            dados["modificador"] = modificador
+            por_id = {linha["id"]: linha for linha in atributos}
+            for a in dados["atributos"]:
+                linha = por_id.get(a["id"], {})
+                for campo in ("minimo", "maximo"):
+                    v = linha.get(campo)
+                    a[campo] = None if v in (None, "") or v != v else int(v)
+                a["rolagem"] = linha.get("rolagem") or None
+            por_id = {linha["id"]: linha for linha in derivados}
+            for d in dados["derivados"]:
+                linha = por_id.get(d["id"], {})
+                d["formula"] = linha.get("formula") or ""
+                d["tipo"] = linha.get("tipo") or "outro"
+            dados["avisos"] = []
+            corrigido = normalizar(SistemaLido.model_validate(dados))
+            st.session_state.livro["lido"] = json.loads(corrigido.model_dump_json())
+            st.success("Correções aplicadas.", icon=":material/check_circle:")
+            for a in corrigido.avisos:
+                st.warning(a)
+
+
+def _resumo_pronto(sistema: str) -> None:
+    defn = obter_regras(sistema).definicao
+    st.title(f"Resumo do sistema · {SISTEMAS_SUPORTADOS[sistema]}")
+    st.caption(f"{defn.fonte} · {defn.licenca}")
+    st.markdown(defn.extras.get("resumo", ""))
+    st.markdown("**Atributos:** " + ", ".join(f"{a.nome} ({a.abrev})" for a in defn.atributos))
+    rotulo = "Especializações" if sistema == "fm" else "Classes"
+    st.markdown(f"**{rotulo}:** " + ", ".join(c.nome for c in defn.classes))
+    st.caption("Regras prontas do Oráculo: escritas e testadas à mão, não lidas por IA.")
+
+
+def _ficha_lida_html(s: SistemaLido, ficha: Ficha) -> None:
+    derivados = calcular_derivados_lido(s, ficha.atributos, ficha.nivel, ficha.classe)
+    principais = [(d, v) for d, v in derivados if v is not None][:5]
+    if principais:
+        for col, (d, v) in zip(st.columns(len(principais)), principais, strict=True):
+            col.metric(d.nome, v)
+    rotulos: dict[str, int] = {}
+    for a in s.atributos:
+        rotulo = (a.sigla or a.nome).upper()
+        while rotulo in rotulos:  # siglas repetidas no livro não somem do bloco
+            rotulo += "·"
+        rotulos[rotulo] = ficha.atributos.get(a.id, 0)
+    mod = (lambda v: int(s.modificador_de(v) or 0)) if s.modificador else None
+    st.html(atributos_html(rotulos, mod))
+    sem_valor = [d.nome for d, v in derivados if v is None]
+    if sem_valor:
+        st.caption(f"Sem fórmula calculável no livro: {', '.join(sem_valor)} (veja o resumo).")
+
+
+def _gerador_lido() -> None:
+    s = sistema_lido()
+    st.title(f"Gerador de fichas · {s.nome}")
+    st.caption("Fichas pelas regras lidas do seu livro, com cada escolha explicada.")
+    c1, c2 = st.columns(2)
+    opcoes = ["Automático", *(a.nome for a in s.arquetipos)]
+    escolha = c1.selectbox(s.nome_arquetipo.capitalize(), opcoes, key="lido_arq")
+    nivel = None
+    if s.niveis.usa_niveis:
+        topo = s.niveis.nivel_maximo or max(20, s.niveis.nivel_inicial)
+        nivel = c2.slider(
+            s.niveis.nome.capitalize(), 1, topo, s.niveis.nivel_inicial, key="lido_nivel"
+        )
+    if "lido_semente" not in st.session_state:
+        st.session_state.lido_semente = 1
+    if st.button("Gerar outra", key="lido_gerar", icon=":material/casino:"):
+        st.session_state.lido_semente += 1
+    ficha = gerar_ficha_lida(
+        s,
+        arquetipo=None if escolha == "Automático" else escolha,
+        nivel=nivel,
+        seed=st.session_state.lido_semente,
+    )
+    titulo = " · ".join(x for x in (ficha.nome, ficha.classe) if x)
+    if s.niveis.usa_niveis:
+        titulo += f" · {s.niveis.nome} {ficha.nivel}"
+    st.subheader(titulo)
+    _ficha_lida_html(s, ficha)
+    e1, e2 = st.columns(2)
+    if ficha.pericias:
+        e1.markdown(f"**Perícias**  \n{', '.join(ficha.pericias)}")
+    if ficha.equipamento:
+        e1.markdown(f"**Equipamento**  \n{', '.join(ficha.equipamento)}")
+    if ficha.poderes:
+        e2.markdown(f"**Habilidades**  \n{', '.join(ficha.poderes)}")
+    with st.expander("Por que essas escolhas?", expanded=True, icon=":material/lightbulb:"):
+        for e in ficha.explicacoes:
+            st.write(f"- {e}")
+    for p in validar_lido(s, ficha):
+        (st.error if p.gravidade == "erro" else st.warning)(p.mensagem)
+    st.download_button(
+        "Baixar ficha (JSON)",
+        ficha.model_dump_json(indent=2),
+        file_name=f"{ficha.nome.lower()}.json",
+        mime="application/json",
+        key="lido_baixar",
+    )
+
+
+def _ficha_rapida_lida() -> None:
+    s = sistema_lido()
+    st.title(f"Ficha rápida · {s.nome}")
+    st.caption("Digite os atributos e veja os valores calculados pelas fórmulas do livro.")
+    c1, c2 = st.columns(2)
+    arquetipos = ["—", *(a.nome for a in s.arquetipos)]
+    arq = c1.selectbox(s.nome_arquetipo.capitalize(), arquetipos, key="lido_r_arq")
+    nivel = 1
+    if s.niveis.usa_niveis:
+        nivel = int(
+            c2.number_input(
+                s.niveis.nome.capitalize(), 1, 100, s.niveis.nivel_inicial, key="lido_r_nivel"
+            )
+        )
+    base = gerar_ficha_lida(s, seed=1, nivel=nivel).atributos
+    atributos = {}
+    colunas = st.columns(max(1, min(len(s.atributos), 6)))
+    for i, a in enumerate(s.atributos):
+        mn, mx = limites_lido(s, a)
+        atributos[a.id] = int(
+            colunas[i % len(colunas)].number_input(
+                f"{a.nome} ({a.sigla})" if a.sigla else a.nome,
+                min_value=mn if mn is not None else -100,
+                max_value=mx if mx is not None else 1000,
+                value=base.get(a.id, mn or 0),
+                key=f"lido_attr_{a.id}",
+            )
+        )
+    ficha = Ficha(
+        nome="Ficha rápida",
+        sistema=SISTEMA_LIDO,
+        nivel=nivel,
+        atributos=atributos,
+        classe=None if arq == "—" else arq,
+    )
+    st.divider()
+    _ficha_lida_html(s, ficha)
+    problemas = validar_lido(s, ficha)
+    if not problemas:
+        st.success("Ficha dentro das regras lidas do livro.", icon=":material/check_circle:")
+    for p in problemas:
+        (st.error if p.gravidade == "erro" else st.warning)(p.mensagem)
+
+
+def _analises_lido() -> None:
+    s = sistema_lido()
+    st.title(f"Análises · {s.nome}")
+    st.caption(
+        "Cada dica cita a regra lida do livro. As contas de encontro são estimativas por valor "
+        "médio; quando o livro não deu um número, a análise diz o que falta."
+    )
+    st.subheader("Grupo")
+    nivel = None
+    if s.niveis.usa_niveis:
+        topo = s.niveis.nivel_maximo or max(20, s.niveis.nivel_inicial)
+        nivel = st.slider(
+            f"{s.niveis.nome.capitalize()} do grupo",
+            1,
+            topo,
+            s.niveis.nivel_inicial,
+            key="lido_g_nivel",
+        )
+    nomes = ["—", *(a.nome for a in s.arquetipos)] if s.arquetipos else ["—", "Personagem"]
+    padrao = (nomes[1:] * 3)[:3] + ["—"]
+    grupo = []
+    for i, col in enumerate(st.columns(4)):
+        escolha = col.selectbox(
+            f"PJ {i + 1}", nomes, index=nomes.index(padrao[i]), key=f"lido_pj_{i}"
+        )
+        if escolha != "—":
+            arq = escolha if s.arquetipos else None
+            grupo.append(
+                gerar_ficha_lida(s, arquetipo=arq, nivel=nivel, seed=i + 1, nome=f"PJ {i + 1}")
+            )
+    if not grupo:
+        st.info("Escolha ao menos um personagem.")
+        return
+    linhas = []
+    for f in grupo:
+        p = perfil_lido(s, f)
+        linhas.append(
+            {
+                "PJ": p.nome,
+                s.nome_arquetipo.capitalize(): p.arquetipo,
+                "Vida": p.vida,
+                "Defesa": p.defesa,
+                "Dano por ataque": None if p.dano is None else round(p.dano, 1),
+            }
+        )
+    # Colunas que o livro não permitiu calcular para ninguém somem; células vazias viram "—".
+    vazias = {k for k in linhas[0] if all(linha[k] is None for linha in linhas)}
+    linhas = [{k: ("—" if v is None else str(v)) for k, v in linha.items() if k not in vazias}
+              for linha in linhas]  # fmt: skip
+    st.dataframe(linhas, hide_index=True, use_container_width=True)
+    with st.expander("Fraquezas e forças do grupo", expanded=True):
+        mostrar_achados(analisar_grupo_lido(s, grupo))
+
+    st.subheader("Encontro")
+    fontes = ["Inimigos montados com as regras do livro"]
+    if s.criaturas:
+        fontes.insert(0, "Criaturas do livro")
+    fonte = st.radio("Inimigos", fontes, horizontal=True, key="lido_fonte")
+    criaturas = []
+    if fonte == "Criaturas do livro":
+        rotulos = {f"{c.nome}" + (f" ({c.ameaca})" if c.ameaca else ""): c for c in s.criaturas}
+        escolhidos = st.multiselect(
+            "Criaturas", list(rotulos), default=list(rotulos)[:1], key="lido_criaturas"
+        )
+        if escolhidos:
+            for r, col in zip(escolhidos, st.columns(len(escolhidos)), strict=True):
+                qtd = int(col.number_input(f"Qtd. {rotulos[r].nome}", 1, 20, 1, key=f"lq_{r}"))
+                criaturas.append((rotulos[r], qtd))
+    else:
+        st.caption(
+            "Sem bestiário (ou para PdMs): cada inimigo é montado como um personagem, com as "
+            "mesmas regras de criação do livro."
+        )
+        c1, c2 = st.columns(2)
+        arq_inimigo = c1.selectbox(
+            f"{s.nome_arquetipo.capitalize()} dos inimigos",
+            nomes[1:] if s.arquetipos else ["Personagem"],
+            key="lido_arq_ini",
+        )
+        qtd = int(c2.number_input("Quantidade", 1, 10, 2, key="lido_qtd_ini"))
+        for i in range(qtd):
+            ficha = gerar_ficha_lida(
+                s,
+                arquetipo=arq_inimigo if s.arquetipos else None,
+                nivel=nivel,
+                seed=100 + i,
+                nome=f"Inimigo {i + 1}",
+            )
+            criaturas.append((criatura_de_ficha(s, ficha), 1))
+    if not criaturas:
+        st.info("Escolha ao menos um inimigo.")
+        return
+    resumo, achados = analisar_encontro_lido(s, grupo, criaturas)
+    m = st.columns(3)
+    m[0].metric("Balanço estimado", resumo.veredito)
+    m[1].metric(
+        "Rodadas para vencer",
+        "—" if resumo.rodadas_para_vencer is None else f"{resumo.rodadas_para_vencer:.1f}",
+    )
+    m[2].metric(
+        "Rodadas até o grupo cair",
+        "—" if resumo.rodadas_para_perder is None else f"{resumo.rodadas_para_perder:.1f}",
+    )
+    mostrar_achados(achados)
 
 
 # --------------------------------------------------------------------------- roteiro
@@ -820,7 +1395,9 @@ def pagina_roteiro() -> None:
 | 3a · Detector de livros | "É livro de RPG?" com modelo explicável, avaliado no MLflow | Feito |
 | 3b · Leitor de livros | Porteiro + extração com LLM avaliada contra o gabarito do SRD | Feito |
 | 4 · Feiticeiros & Maldições | Segundo sistema: fichas, análise de grupo e porteiro | Feito |
-| 5 · Polimento | Resultados, vídeo de demonstração | ⏳ |
+| 5a · Vitrine | Site que começa pelo livro, design de portfólio | Feito |
+| 6 · Qualquer livro | Leitura com IA: resumo, fichas e encontros de qualquer sistema | Feito |
+| 5b · Demonstração | Vídeo curto do fluxo completo | ⏳ |
 """
     )
 
@@ -830,9 +1407,12 @@ def pagina_conteudo() -> None:
     st.title("Conteúdo e licenças")
     st.markdown(
         """
-Este site publica **apenas conteúdo com licença aberta**. O leitor de livros funciona com
-qualquer PDF, mas o que é extraído de livros protegidos fica só no ambiente de quem o
-processou, e nunca neste site ou no repositório.
+Este site e o repositório publicam **apenas conteúdo com licença aberta**.
+
+**Livros que você envia:** o PDF é lido na memória do servidor e não é salvo. Para montar o
+sistema, trechos selecionados vão ao LLM do Databricks (Foundation Model APIs), e o resultado
+(resumo, regras, fichas) fica só na sua sessão; você pode baixá-lo, mas ele nunca é publicado
+aqui. Use livros que você tem o direito de ler.
 
 Este trabalho inclui material do *System Reference Document 5.1* da Wizards of the Coast LLC,
 licenciado sob [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/legalcode).
@@ -846,7 +1426,9 @@ resumidas, sem texto do livro.
 
 
 livro = livro_atual()
-paginas = [INICIO, *([GERADOR, FICHA, ANALISES] if livro else []), BASTIDORES, ROTEIRO, CONTEUDO]
+paginas = [
+    INICIO, *([RESUMO, GERADOR, FICHA, ANALISES] if livro else []), BASTIDORES, ROTEIRO, CONTEUDO
+]  # fmt: skip
 if st.session_state.get("pagina") not in paginas:
     st.session_state.pagina = INICIO
 st.sidebar.html('<div class="marca">Oráculo <span>do Mestre</span></div>')
@@ -854,7 +1436,7 @@ if livro:
     st.sidebar.html(
         '<div class="livro-atual"><div class="rotulo">Livro em uso</div>'
         f'<div class="nome">{html.escape(livro["nome"])}</div>'
-        f'<div class="sistema">{SISTEMAS_SUPORTADOS[livro["sistema"]]}</div></div>'
+        f'<div class="sistema">{html.escape(nome_do_sistema(livro))}</div></div>'
     )
     st.sidebar.button(
         "Trocar de livro",
@@ -872,6 +1454,7 @@ st.sidebar.caption(
 
 {
     INICIO: pagina_inicio,
+    RESUMO: pagina_resumo,
     GERADOR: pagina_gerador,
     FICHA: pagina_ficha,
     ANALISES: pagina_analises,

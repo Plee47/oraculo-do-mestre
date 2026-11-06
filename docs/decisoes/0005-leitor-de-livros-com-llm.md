@@ -33,8 +33,9 @@ gerador de fichas e pelas análises. Restrições:
    precisão, recall e acerto por campo, com um run do MLflow por modelo, e o melhor vira o
    modelo do leitor.
 7. **Privacidade:** livros em `livros_privados` passam pelo mesmo fluxo, mas suas tabelas têm
-   `privado = true` e nada delas é exportado. O site público não envia livros a LLM nenhum:
-   ele só mostra a decisão do porteiro e as métricas da avaliação no SRD.
+   `privado = true` e nada delas é exportado. O site público não enviava livros a LLM nenhum:
+   só mostrava a decisão do porteiro e as métricas da avaliação no SRD. (A ADR 0007 mudou
+   isso: trechos vão ao LLM do Databricks, só durante a sessão de quem enviou o livro.)
 
 ## Consequências
 
