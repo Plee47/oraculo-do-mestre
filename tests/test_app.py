@@ -12,6 +12,7 @@ PAGINAS = (
     "Análise de grupo e encontro (D&D 5e)",
     "Leitor de livros de RPG",
     "Ficha rápida (D&D 5e)",
+    "Feiticeiros & Maldições",
     "Roteiro",
     "Conteúdo e licenças",
 )
@@ -70,3 +71,18 @@ def test_detector_com_texto_colado():
     assert any("Parece um livro de RPG" in s.value for s in at.success)
     assert any("Seguiria para a extração" in s.value for s in at.success)  # porteiro
     assert at.dataframe  # tabela com a comparação dos LLMs
+
+
+def test_feiticeiros_e_maldicoes():
+    at = AppTest.from_file(APP, default_timeout=30).run()
+    at.sidebar.radio[0].set_value("Feiticeiros & Maldições").run()
+    assert not at.exception
+    # Achados da análise começam com o título em negrito; o resto seriam erros de validação.
+    erros_de_ficha = [e.value for e in at.error if not e.value.startswith("**")]
+    assert not erros_de_ficha  # ficha gerada e ficha rápida (valores fixos) são válidas
+    assert any(m.label == "PV máximo" for m in at.metric)
+    assert at.dataframe  # tabela do grupo
+    assert any("Ninguém cura" in e.value for e in at.error)  # grupo padrão não tem Suporte
+
+    at.selectbox(key="fm_r_classe").set_value("Restringido").run()
+    assert any("exige a origem Restringido" in e.value for e in at.error)

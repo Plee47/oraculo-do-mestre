@@ -128,6 +128,8 @@ def test_porteiro():
     assert not romance.aceito and "não parece" in romance.motivo
     tagmar = decidir(modelo, [RPG + " Tagmar karma estágio tabela de resolução " * 5])
     assert not tagmar.aceito and "não suportado" in tagmar.motivo
+    fm = decidir(modelo, [RPG + " energia amaldiçoada, técnica inata, expansão de domínio. " * 20])
+    assert fm.aceito and "Feiticeiros & Maldições" in fm.motivo
     vazio = decidir(modelo, ["", " "])
     assert not vazio.aceito and "escaneado" in vazio.motivo
 
