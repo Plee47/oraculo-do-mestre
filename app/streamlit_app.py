@@ -71,6 +71,9 @@ st.html(f"<style>{(Path(__file__).parent / 'estilo.css').read_text(encoding='utf
 
 CATALOGO_DND5E = Path(__file__).parents[1] / "dados" / "publicos" / "dnd5e" / "catalogo.json"
 MODELO_DETECTOR = Path(__file__).parents[1] / "dados" / "publicos" / "modelos" / "detector_rpg.json"
+AVALIACAO_GENERICA = (
+    Path(__file__).parents[1] / "dados" / "publicos" / "avaliacoes" / "leitor_generico_srd51.json"
+)
 AVALIACAO_LEITOR = (
     Path(__file__).parents[1] / "dados" / "publicos" / "avaliacoes" / "leitor_srd51.json"
 )
@@ -618,6 +621,35 @@ livros do seu workspace. O que vem de livros protegidos nunca sai de lá.
 """
     )
     mostrar_avaliacao_leitor()
+    mostrar_avaliacao_generica()
+
+
+def mostrar_avaliacao_generica() -> None:
+    if not AVALIACAO_GENERICA.exists():
+        return
+    dados = json.loads(AVALIACAO_GENERICA.read_text(encoding="utf-8"))
+    st.subheader("Como achar as páginas certas de um livro desconhecido?")
+    st.caption(
+        f"{dados['livro']} lido como se fosse um sistema desconhecido e comparado com o catálogo "
+        f"oficial, {dados['repeticoes']} rodadas por estratégia. Rodado no Databricks; métricas "
+        "no MLflow."
+    )
+    nomes = {"palavras": "Palavras-chave", "bm25": "BM25", "hibrida": "Híbrida (BM25 + embeddings)"}
+    st.dataframe(
+        [
+            {
+                "Estratégia": nomes.get(e["estrategia"], e["estrategia"]),
+                "Nota geral": round(e["media_nota_geral"], 2),
+                "Classes achadas": f"{e['media_classes_recall']:.0%}",
+                "Criaturas reais": f"{e['media_criaturas_precisao']:.0%}",
+                "PV das criaturas certos": f"{e['media_criaturas_pv_acerto']:.0%}",
+                "Fórmulas calculáveis": f"{e['media_derivados_calculaveis']:.0%}",
+            }
+            for e in dados["estrategias"]
+        ],
+        hide_index=True,
+        width="stretch",
+    )
 
 
 def mostrar_avaliacao_leitor() -> None:
