@@ -707,7 +707,6 @@ def ler_mais_criaturas(
         if normalizar_id(c.nome) not in conhecidas
     ]
     s.criaturas += novas
-    s.paginas_fonte["criaturas"] = sorted(lidas | set(lote))
-    s.paginas_fonte["criaturas"] = [i + 1 for i in s.paginas_fonte["criaturas"]]
+    s.paginas_fonte["criaturas"] = [i + 1 for i in sorted(lidas | set(lote))]
     normalizar(s)
     return len(novas)

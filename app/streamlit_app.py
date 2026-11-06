@@ -61,6 +61,7 @@ from oraculo.sistemas.generico.leitura import (
     ler_sistema,
 )
 from oraculo.sistemas.generico.modelo import SistemaLido, normalizar
+from oraculo.sistemas.generico.narrativa import ContextoFicha, contexto_lido, sugerir_narrativa
 
 st.set_page_config(
     page_title="Oráculo do Mestre", page_icon=":material/auto_stories:", layout="wide"
@@ -126,6 +127,42 @@ def sistema_atual() -> str:
 
 def _ir_para(pagina: str) -> None:
     st.session_state.pagina = pagina
+
+
+def _acoes_da_ficha(ficha: Ficha, ctx: ContextoFicha) -> None:
+    """Sugestão criativa e downloads: iguais para qualquer sistema."""
+    chave = hashlib.sha256(ficha.model_dump_json().encode()).hexdigest()
+    guardadas = st.session_state.setdefault("_narrativas", {})
+    cliente = cliente_llm()
+    if cliente is not None and st.button(
+        "Sugerir aparência, personalidade e história",
+        icon=":material/auto_awesome:",
+        key=f"narrativa_{chave[:12]}",
+    ):
+        try:
+            with st.spinner("Imaginando o personagem dentro das regras do livro…"):
+                narrativa = sugerir_narrativa(
+                    ctx, ficha, cliente, st.session_state.get("_paginas_livro")
+                )
+            guardadas[chave] = narrativa.para_ficha()
+        except (ErroLLM, ErroLeitura) as erro:
+            st.warning(f"Não consegui sugerir agora: {erro}")
+    if chave in guardadas:
+        ficha = ficha.model_copy(update={"narrativa": guardadas[chave]})
+        with st.container(border=True):
+            st.caption(
+                "Sugestão criativa da IA, baseada nas escolhas, nos atributos e no livro. "
+                "Não é regra: mude à vontade."
+            )
+            for rotulo, texto in ficha.narrativa.items():
+                st.markdown(f"**{rotulo}.** {texto}")
+    st.download_button(
+        "Baixar ficha (JSON)",
+        ficha.model_dump_json(indent=2),
+        file_name=f"{normalizar_id(ficha.nome)}.json",
+        mime="application/json",
+        key=f"baixar_{chave[:12]}",
+    )
 
 
 def _usar_livro(sistema: str, nome: str, nota: float | None = None, demo: bool = False) -> None:
@@ -397,11 +434,19 @@ def mostrar_ficha(ficha: Ficha, cat: Catalogo) -> None:
     for p in problemas:
         (st.error if p.gravidade == "erro" else st.warning)(p.mensagem)
 
-    st.download_button(
-        "Baixar ficha (JSON)",
-        ficha.model_dump_json(indent=2),
-        file_name=f"{ficha.nome.lower()}.json",
-        mime="application/json",
+    defn_racas = defn.extras["racas"]
+    _acoes_da_ficha(
+        ficha,
+        ContextoFicha(
+            sistema=defn.nome,
+            contexto=defn.extras.get("resumo", ""),
+            escolhas={
+                "Raça": defn_racas.get(ficha.origem, ficha.origem or ""),
+                "Classe": classe.nome,
+            },
+            atributos=[(a.nome, ficha.atributos[a.id]) for a in defn.atributos],
+            valores=[("Pontos de Vida", d["pv_maximo"])],
+        ),
     )
 
 
@@ -776,12 +821,16 @@ def _fm_gerador(regras) -> None:
             st.write(f"- {e}")
     for p in regras.validar(ficha):
         (st.error if p.gravidade == "erro" else st.warning)(p.mensagem)
-    st.download_button(
-        "Baixar ficha (JSON)",
-        ficha.model_dump_json(indent=2),
-        file_name=f"{ficha.nome.lower()}.json",
-        mime="application/json",
-        key="fm_baixar",
+    d = regras.derivados(ficha)
+    _acoes_da_ficha(
+        ficha,
+        ContextoFicha(
+            sistema=defn.nome,
+            contexto=defn.extras.get("resumo", ""),
+            escolhas={"Origem": origens[ficha.origem]["nome"], "Especialização": cls.nome},
+            atributos=[(a.nome, ficha.atributos[a.id]) for a in defn.atributos],
+            valores=[("Pontos de Vida", d["pv_maximo"])],
+        ),
     )
 
 
@@ -1376,13 +1425,7 @@ def _gerador_lido() -> None:
             st.write(f"- {e}")
     for p in validar_lido(s, ficha):
         (st.error if p.gravidade == "erro" else st.warning)(p.mensagem)
-    st.download_button(
-        "Baixar ficha (JSON)",
-        ficha.model_dump_json(indent=2),
-        file_name=f"{ficha.nome.lower()}.json",
-        mime="application/json",
-        key="lido_baixar",
-    )
+    _acoes_da_ficha(ficha, contexto_lido(s, ficha))
 
 
 def _ficha_rapida_lida() -> None:
