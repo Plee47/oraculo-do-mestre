@@ -126,11 +126,28 @@ def test_paginas_curtas_ou_vazias(modelo):
     assert "escaneado" in v.motivos[0]
 
 
-def test_sistema_provavel():
-    assert sistema_provavel(RPG_EN)[0] == "dnd5e"
+CLASSES_EN = "Barbarian, Bard, Cleric, Druid, Fighter, Monk, Paladin, Ranger, Rogue, Sorcerer."
+TEXTO_FM = (
+    "Feiticeiros & Maldições é um RPG. A técnica amaldiçoada consome energia amaldiçoada. "
+) * 25
+# Sistema brasileiro de base 2d8 com vocabulário comum a muitos RPGs em português.
+TEXTO_2D8 = (
+    "Role 2d8 e some a precisão. Faça um teste de resistência de Vigor contra a dificuldade. "
+    "O mestre define o nível de desafio da cena. "
+) * 30
+
+
+def test_sistema_provavel_so_com_evidencia_forte():
+    assert sistema_provavel(RPG_EN + CLASSES_EN * 2)[0] == "dnd5e"
+    assert sistema_provavel(TEXTO_FM)[0] == "fm"
     assert sistema_provavel(ROMANCE)[0] is None
-    texto_fm = "A técnica amaldiçoada consome energia amaldiçoada. " * 3
-    assert sistema_provavel(texto_fm)[0] == "fm"
+    # Regressão: termos comuns ("teste de resistência") faziam um sistema 2d8 virar D&D 5e.
+    assert sistema_provavel(TEXTO_2D8)[0] is None
+    # Termos de 5e sem as classes (ex.: um RPG derivado do D&D) também não bastam.
+    assert sistema_provavel(RPG_EN)[0] is None
+    # Quebras de linha do PDF no meio do termo não atrapalham a contagem.
+    _, evid = sistema_provavel("proficiency\nbonus " * 3)
+    assert evid["dnd5e_termos"] == 3
 
 
 def test_modelo_json_ida_e_volta(modelo, tmp_path):

@@ -1,9 +1,10 @@
 # Oráculo do Mestre
 
-**Envie o livro de um sistema de RPG; o Oráculo confere se é mesmo RPG, descobre o sistema e
-monta fichas e análises dentro das regras dele.** Projeto de portfólio de **ciência de dados e
-engenharia de dados com Databricks**: pipeline medalhão, modelo de classificação avaliado sem
-vazamento, avaliação de LLMs contra gabarito e MLOps de ponta a ponta, tudo gratuito.
+**Envie qualquer livro de RPG; o Oráculo confere se é mesmo RPG, lê as regras e entrega o
+resumo do sistema, fichas e encontros dentro das regras dele.** Projeto de portfólio de
+**ciência de dados e engenharia de dados com Databricks**: pipeline medalhão, modelo de
+classificação avaliado sem vazamento, LLMs avaliados contra gabarito e usados em produção com
+validação, e MLOps de ponta a ponta, tudo gratuito.
 
 [![CI/CD](https://github.com/Plee47/oraculo-do-mestre/actions/workflows/ci.yml/badge.svg)](https://github.com/Plee47/oraculo-do-mestre/actions/workflows/ci.yml)
 [![Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://oraculo-do-mestre.streamlit.app/)
@@ -13,6 +14,20 @@ this app back up!* e aguarde alguns segundos)
 
 ![Início do site: envio do livro e o pipeline de dados no Databricks](docs/imagens/inicio.png)
 
+## Por que este projeto existe
+
+Jogo RPG de mesa há mais de seis anos e, como muitos jogadores e mestres, gosto de testar
+sistemas diferentes, inclusive os mais obscuros, que quase ninguém conhece. O obstáculo é sempre
+o mesmo: antes da primeira sessão alguém precisa ler o livro inteiro, entender a mecânica,
+montar as fichas e preparar encontros que não sejam fáceis nem mortais demais. Muita mesa
+desiste de experimentar por causa disso.
+
+O Oráculo do Mestre nasceu dessa necessidade. **O objetivo é receber qualquer livro de RPG e
+montar o básico para começar a jogar: o resumo do sistema, as fichas iniciais e os
+encontros**, sempre dentro das regras daquele livro e explicando de onde veio cada número.
+Como projeto de portfólio, ele percorre o caminho completo de um produto de dados: engenharia
+de dados, machine learning, LLMs avaliados e uma interface pronta para uso.
+
 ## O que este projeto demonstra
 
 | Competência | Onde está a prova |
@@ -21,8 +36,9 @@ this app back up!* e aguarde alguns segundos)
 | **Machine learning com avaliação honesta** | Classificador "é livro de RPG?" com *feature engineering* explicável e validação **leave-one-book-out**, para não vazar estilo do mesmo livro entre treino e teste |
 | **MLflow e registro de modelos** | Experimentos versionados, modelo no Unity Catalog com alias `champion` e **portão de qualidade** que só promove versões que acertam todos os livros |
 | **Avaliação de LLMs** | Três LLMs do Databricks (`ai_query` em lote no Spark) medidos em precisão, recall e acerto por campo contra um **gabarito** oficial, com um run do MLflow por modelo |
+| **LLM em produção, com validação** | Leitura de qualquer livro em três partes paralelas, saída validada item a item, fórmulas calculadas por um avaliador seguro (sem `eval`) e correções determinísticas para os erros recorrentes do modelo |
 | **Análise de dados aplicada** | Tabelas gold que viram regras: ex. 48% dos monstros de CR 11–16 resistem a dano físico não mágico, e isso muda o peso das dicas |
-| **MLOps e engenharia de software** | Databricks Asset Bundles (dev/prod), GitHub Actions, 247 testes com pytest, pre-commit, ADRs e Conventional Commits |
+| **MLOps e engenharia de software** | Databricks Asset Bundles (dev/prod), GitHub Actions, 285 testes com pytest, pre-commit, ADRs e Conventional Commits |
 | **Governança de dados** | Política de conteúdo automatizada: o "guardião" bloqueia no CI qualquer livro ou dado sem licença aberta; livros privados nunca saem do workspace |
 
 ## Resultados
@@ -33,19 +49,25 @@ this app back up!* e aguarde alguns segundos)
 | Leitor com LLM (gpt-oss-120b, escolhido entre 3) | nota **0,90** · **98% / 99%** dos campos de magias / monstros certos |
 | Livro inteiro (SRD 5.1, 313 páginas) | **100%** das magias e **98,7%** dos monstros encontrados, zero erros de API |
 | Catálogo processado | **319** magias · **334** monstros · 12 classes, idêntico no Databricks e localmente |
-| Generalização | Livro real de *Feiticeiros & Maldições* (368 páginas) reconhecido com **nota 86%** sem retreinar o detector |
+| Generalização do detector | Livro real de *Feiticeiros & Maldições* (368 páginas) reconhecido com **nota 86%** sem retreinar |
+| Qualquer livro (leitura com IA) | Sistema brasileiro de base **2d8** (*Naruto Shinobi no Sho*, 296 páginas) lido em **~40 s**: mecânica, 9 atributos em dois grupos de pontos, fórmula de Vitalidade, clãs e regra de dano conferidos página a página com o livro |
 
 ## Como funciona
 
-1. **Envie o livro** (PDF ou trecho colado). O arquivo é lido só em memória.
-2. **O porteiro valida:** o detector diz se é RPG e de qual sistema. Um romance não vira ficha;
-   um RPG de sistema não suportado recebe o motivo.
-3. **Crie e analise:** gerador de fichas, ficha rápida e análises de grupo e encontro, todos
-   nas regras do sistema validado. Cada dica cita a regra que a gerou: **não há caixa-preta**.
+1. **Envie o livro** (PDF ou trecho colado). O arquivo não é salvo.
+2. **O porteiro valida:** o detector diz se é RPG. Um romance não vira ficha. D&D 5e e
+   Feiticeiros & Maldições usam regras escritas e testadas à mão; **qualquer outro sistema é
+   lido pela IA do Databricks**, que monta a especificação das regras.
+3. **Resumo do sistema:** como se joga, como criar personagem, atributos, fórmulas e
+   arquétipos, com o que a leitura não conseguiu e a opção de corrigir qualquer número.
+4. **Crie e analise:** gerador de fichas, ficha rápida e análises de grupo e encontro (com as
+   criaturas do livro ou, se ele não tiver bestiário, inimigos montados pelas regras dele).
+   Cada dica cita a regra que a gerou: **não há caixa-preta**.
 
 ![Análise de grupo de D&D 5e com dicas que citam a regra](docs/imagens/analises.png)
 
-**Sistemas:** D&D 5ª edição (SRD 5.1) · Feiticeiros & Maldições (v2.5)
+**Sistemas:** qualquer livro de RPG pela leitura com IA · regras prontas para D&D 5ª edição
+(SRD 5.1) e Feiticeiros & Maldições (v2.5)
 
 ## Arquitetura
 
@@ -174,6 +196,59 @@ Os 20 monstros "sem par" não são invenções: são blocos que existem no PDF m
 oraculo_dev → livros_privados → *Upload*) e rode o job. O porteiro decide, e o que for
 extraído fica nas tabelas com `privado = true`, que **nunca são exportadas**
 ([ADR 0005](docs/decisoes/0005-leitor-de-livros-com-llm.md)).
+
+## Qualquer livro: leitura com IA e motor de regras genérico
+
+O porteiro aceita qualquer RPG. Se não for um dos sistemas com regras prontas, o LLM do
+Databricks lê o livro e devolve uma **especificação validada** do sistema (`SistemaLido`), e um
+motor genérico gera fichas, calcula valores e monta encontros a partir dela
+([ADR 0007](docs/decisoes/0007-qualquer-livro-com-llm.md)).
+
+```mermaid
+flowchart LR
+    PDF[/PDF/] --> SEL[seleção de páginas<br/>sem LLM: palavras-chave + sumário]
+    SEL --> V[visão geral e mecânica<br/>dado, teste, dano, encontros]
+    SEL --> C[criação de personagem<br/>atributos, fórmulas, arquétipos]
+    SEL --> K[criaturas<br/>vida, defesa, ataques]
+    V & C & K --> VAL[validação item a item<br/>+ correções determinísticas]
+    VAL --> S[(SistemaLido)]
+    S --> R[resumo · fichas · encontros]
+```
+
+| Peça | O que faz |
+|---|---|
+| `generico/leitura.py` | Escolhe as páginas de cada parte e faz três leituras em paralelo, pedindo JSON com campos fixos; o texto do livro é tratado como dado, não como instrução |
+| `generico/modelo.py` | A especificação: atributos (rolagem própria, grupos com pontos separados), modificador, valores derivados (inclusive por arquétipo e encadeados), arquétipos, perícias, criaturas |
+| `generico/formulas.py` | Avaliador seguro: `2d8`, `3d6×5`, `4d6kh3` (média exata), `teto(Força/2)`, `mod_des`; recusa qualquer coisa fora da lista |
+| `generico/gerador.py` | Fichas pelo método do livro (rolagem por atributo, valores fixos, compra de pontos) |
+| `generico/analise.py` | Fraquezas do grupo e encontros: dano médio × chance de acerto × multiplicador de dano |
+
+**Testado com livros reais** (cada número conferido com a página do livro):
+
+| Livro | Base | O que a leitura entregou |
+|---|---|---|
+| *Naruto Shinobi no Sho* | 2d8 | Teste 2d8 + precisão; 7 atributos de 0 a 4 com 12 pontos + 2 atributos sociais com 2 pontos separados; Vitalidade = 10 + 3×Vigor + 5×Nível de Campanha (começa em 4); 11 clãs e os hijutsus; dano = metade da Força + arma, multiplicado pelo grau do acerto |
+| *Feiticeiros & Maldições* (lido como sistema novo) | d20 | Defesa = 10 + mod DES + nível÷2; PV por especialização (Lutador 12 + mod CON, Restringido 16 + mod CON…) |
+| *SRD 5.1* (inglês) | d20 | Mecânica, modificador, 20 perícias e 12 criaturas com PV e dano certos; mas trouxe 2 subclasses no lugar das 12 classes (no site, o SRD usa as regras prontas) |
+
+**O que deu errado no caminho (e como corrigi):**
+
+- **Sistema errado:** o sistema 2d8 era classificado como D&D 5e porque usa "teste de
+  resistência". A identificação passou a exigir evidência forte (as 12 classes e termos
+  exclusivos da 5ª edição) e o caso virou teste automatizado.
+- **"for" é palavra reservada do Python:** "1d8+for" (dano com Força) não era calculável. O
+  avaliador passou a renomear todo nome antes de interpretar a fórmula.
+- **Dano inventado:** o LLM criou "1d6+agi" para cada clã, mas no livro o dano não usa dados. A
+  regra de dano passou a ser lida das páginas de combate, e o prompt proíbe inventar.
+- **Pontos separados:** os 2 pontos sociais seriam misturados aos 12 dos outros atributos. A
+  especificação ganhou grupos de geração.
+- **Variação entre leituras:** o LLM às vezes marca Vitalidade como "recurso" ou esquece o
+  modificador d20. Correções determinísticas (tipo pelo nome, modificador padrão quando as
+  fórmulas usam `mod_*`) estabilizam o resultado, e o resumo permite corrigir à mão.
+
+**Limitações:** a leitura varia entre execuções e pode errar números; as contas de encontro
+são estimativas por valor médio; valores que dependem de perícia ou escolha do jogador
+ficam só como texto.
 
 ## Pipeline medalhão no Databricks
 
@@ -304,6 +379,7 @@ linha do tempo, não como uma grade de cards.
 - [x] **Fase 3b · Leitor de livros:** porteiro + extração com LLM (modelos do Databricks) avaliada contra o SRD
 - [x] **Fase 4 · Feiticeiros & Maldições:** segundo sistema (fichas, análise de grupo, porteiro)
 - [x] **Fase 5a · Vitrine:** site que começa pelo livro, design e README de portfólio
+- [x] **Fase 6 · Qualquer livro:** leitura com IA, resumo do sistema, fichas e encontros de qualquer RPG
 - [ ] **Fase 5b · Demonstração:** vídeo curto do fluxo completo
 
 ## Estrutura
@@ -313,6 +389,7 @@ linha do tempo, não como uma grade de cards.
 │   ├── nucleo/             # ficha genérica, achados de análise, contrato de sistema
 │   ├── sistemas/dnd5e/     # regras, catálogo, parser do SRD, gerador, análises
 │   ├── sistemas/fm/        # Feiticeiros & Maldições: regras, gerador, análise de grupo
+│   ├── sistemas/generico/  # qualquer livro: leitura com LLM, fórmulas, fichas, encontros
 │   ├── leitor/             # corpus, detector, porteiro, extração com LLM, avaliação
 │   └── guardiao.py         # bloqueia livros/dados protegidos no repo (ADR 0002)
 ├── dados/publicos/         # dados exportados pelo Databricks (só licença aberta)
@@ -349,7 +426,14 @@ O código vai para um volume do Unity Catalog em vez da pasta do workspace. O mo
 [ADR 0004](docs/decisoes/0004-codigo-em-volume.md).
 
 **Site público:** em [share.streamlit.io](https://share.streamlit.io), faça login com o GitHub
-e escolha este repositório e o arquivo `app/streamlit_app.py`.
+e escolha este repositório e o arquivo `app/streamlit_app.py`. Para a leitura com IA, em
+*Settings → Secrets* do app, informe o workspace e um token do Databricks (nunca no
+repositório; localmente, use variáveis de ambiente com os mesmos nomes):
+
+```toml
+DATABRICKS_HOST = "https://<seu-workspace>.cloud.databricks.com"
+DATABRICKS_TOKEN = "<token pessoal do Databricks>"
+```
 
 ## Como trabalhamos
 

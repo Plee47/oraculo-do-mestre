@@ -85,25 +85,60 @@ NOMES_FEATURES = {
 
 # --------------------------------------------------------------------------- sistema provável
 
-ASSINATURAS_SISTEMA = {
-    "dnd5e": (
-        "armor class", "saving throw", "proficiency bonus", "spell slot", "bonus action",
-        "challenge", "short rest", "long rest", "classe de armadura", "teste de resistência",
-        "bônus de proficiência", "espaço de magia", "ação bônus", "nível de desafio",
-    ),
-    "fm": (
-        "energia amaldiçoada", "técnica amaldiçoada", "expansão de domínio", "maldição",
-        "feiticeiro jujutsu", "técnica inata",
-    ),
-    "tagmar": ("tagmar", "karma", "estágio", "tabela de resolução"),
-}  # fmt: skip
+# Só os sistemas com regras PRONTAS no Oráculo são identificados aqui; qualquer outro RPG vai
+# para a leitura com LLM (oraculo.sistemas.generico). A identificação exige evidência forte:
+# uma versão anterior usava termos comuns ("teste de resistência") e classificava RPGs
+# brasileiros de outros sistemas (ex.: Naruto Shinobi no Sho, base 2d8) como D&D 5e.
+CLASSES_DND5E = (
+    ("barbarian", "bárbaro"), ("bard", "bardo"), ("cleric", "clérigo"), ("druid", "druida"),
+    ("fighter", "guerreiro"), ("monk", "monge"), ("paladin", "paladino"),
+    ("ranger", "patrulheiro"), ("rogue", "ladino"), ("sorcerer", "feiticeiro"),
+    ("warlock", "bruxo"), ("wizard", "mago"),
+)  # fmt: skip
+TERMOS_5E = (
+    "proficiency bonus", "spell slot", "spell slots", "bonus action", "short rest", "long rest",
+    "bônus de proficiência", "espaço de magia", "espaços de magia", "ação bônus",
+    "descanso curto", "descanso longo",
+)  # fmt: skip
+TITULO_FM = ("feiticeiros & maldições", "feiticeiros e maldições")
+MINIMO_CLASSES_DND5E = 9
+MINIMO_TERMOS_5E = 5
+MINIMO_TITULO_FM = 5
+MINIMO_ENERGIA_FM = 20
+
+
+def _contar_flexivel(texto: str, termos: tuple[str, ...]) -> int:
+    """Conta termos aceitando qualquer espaço entre as palavras (o PDF quebra linhas)."""
+    total = 0
+    for termo in termos:
+        padrao = r"\s+".join(re.escape(p) for p in termo.split())
+        total += len(re.findall(rf"(?<!\w){padrao}(?!\w)", texto))
+    return total
 
 
 def sistema_provavel(texto: str) -> tuple[str | None, dict[str, int]]:
-    minusculo = texto.lower()
-    contagens = {s: _contar(minusculo, termos) for s, termos in ASSINATURAS_SISTEMA.items()}
-    melhor = max(contagens, key=contagens.get)
-    return (melhor if contagens[melhor] >= 5 else None), contagens
+    """Sistema com regras prontas no Oráculo, ou None (qualquer outro RPG: leitura com LLM)."""
+    t = texto.lower()
+    classes = sum(
+        1 for en, pt in CLASSES_DND5E if _contar_flexivel(t, (en,)) or _contar_flexivel(t, (pt,))
+    )
+    evidencias = {
+        "dnd5e_classes": classes,
+        "dnd5e_termos": _contar_flexivel(t, TERMOS_5E),
+        "fm_titulo": _contar_flexivel(t, TITULO_FM),
+        "fm_energia": _contar_flexivel(t, ("energia amaldiçoada",)),
+    }
+    if (
+        evidencias["dnd5e_classes"] >= MINIMO_CLASSES_DND5E
+        and evidencias["dnd5e_termos"] >= MINIMO_TERMOS_5E
+    ):
+        return "dnd5e", evidencias
+    if (
+        evidencias["fm_titulo"] >= MINIMO_TITULO_FM
+        and evidencias["fm_energia"] >= MINIMO_ENERGIA_FM
+    ):
+        return "fm", evidencias
+    return None, evidencias
 
 
 # --------------------------------------------------------------------------- modelo
