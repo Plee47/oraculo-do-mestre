@@ -250,3 +250,9 @@ def test_fm_analises():
 def test_bastidores_mostra_a_comparacao_dos_llms():
     at = ir(abrir(), "Bastidores do leitor")
     assert at.dataframe
+
+
+def test_bastidores_mostra_a_comparacao_das_buscas():
+    at = ir(abrir(), "Bastidores do leitor")
+    assert len(at.dataframe) == 2
+    assert any("páginas certas" in s.value for s in at.subheader)
