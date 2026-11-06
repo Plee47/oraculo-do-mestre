@@ -136,3 +136,11 @@ def test_calculo_de_ca():
     assert calcular_ca(attrs, "barbaro", None, None) == 10 + 3 + 2
     assert calcular_ca(attrs, "monge", None, None) == 10 + 3 + 2
     assert calcular_ca(attrs, "monge", None, escudo) == 10 + 3 + 2  # monge com escudo perde SAB
+
+
+def test_subclasse_do_srd_entra_no_nivel_certo(cat):
+    assert "subclasse" not in gerar_ficha(cat, 2, classe="guerreiro", seed=1).escolhas
+    f = gerar_ficha(cat, 3, classe="guerreiro", seed=1)
+    assert f.escolhas["subclasse"] == "Champion"
+    assert any("Champion" in e for e in f.explicacoes)
+    assert gerar_ficha(cat, 1, classe="clerigo", seed=1).escolhas["subclasse"] == "Life Domain"

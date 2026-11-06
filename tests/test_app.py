@@ -152,7 +152,9 @@ def test_livro_de_dnd_usa_as_regras_prontas():
     at = abrir()
     at.text_area[0].set_value(TRECHO_DND).run()
     assert any("Livro aceito pelo porteiro" in s.value for s in at.success)
-    at.button[0].click().run()  # "Usar as regras prontas de D&D 5e"
+    # o caminho principal é ler o livro; as regras prontas são a opção rápida
+    assert at.button[0].label == "Ler o livro com IA e montar o sistema"
+    next(b for b in at.button if "regras prontas" in b.label).click().run()
     assert not at.exception
     assert at.session_state.livro["sistema"] == "dnd5e"
     assert at.session_state.pagina == "Resumo do sistema"
@@ -322,3 +324,12 @@ def test_ficha_oferece_pdf_em_qualquer_sistema(sistema):
     at = ir(abrir(sistema), "Gerador de fichas")
     rotulos = [b.proto.label for b in at.get("download_button")]
     assert "Baixar ficha em PDF" in rotulos and "Baixar em JSON" in rotulos
+
+
+def test_dnd_mostra_a_subclasse_quando_o_nivel_permite():
+    at = ir(abrir("dnd5e"), "Gerador de fichas")
+    at.selectbox[1].set_value("Guerreiro").run()
+    at.slider[0].set_value(3).run()
+    assert "(Champion)" in at.subheader[0].value
+    at.slider[0].set_value(2).run()
+    assert "(Champion)" not in at.subheader[0].value

@@ -240,9 +240,9 @@ def _envio_do_livro() -> None:
         if not paginas and texto.strip():
             paginas, nome = [texto], "trecho colado"
     st.caption(
-        "Qualquer livro de RPG: D&D 5e e Feiticeiros & Maldições usam regras prontas; os outros "
-        "são lidos pela IA do Databricks. O arquivo não é salvo: só trechos selecionados vão ao "
-        "LLM, e o resultado fica apenas na sua sessão."
+        "Funciona com qualquer livro de RPG: a IA do Databricks lê as regras dele. O arquivo não "
+        "é salvo: só trechos selecionados vão ao LLM. O que ela extrai (nunca o texto do livro) "
+        "fica numa tabela privada, para este livro abrir mais rápido da próxima vez."
     )
 
     if not paginas:
@@ -255,7 +255,7 @@ def _envio_do_livro() -> None:
                 icon=":material/play_arrow:",
                 on_click=_usar_livro,
                 args=(sid, f"Demonstração de {nome_sistema}", None, True),
-                use_container_width=True,
+                width="stretch",
             )
         return
 
@@ -264,23 +264,19 @@ def _envio_do_livro() -> None:
     decisao = decidir(modelo, paginas)
     mostrar_veredito(v, decisao, paginas, modelo)
     pediu_leitura = False
-    if decisao.caminho == "pronto":
-        st.button(
-            f"Usar as regras prontas de {SISTEMAS_SUPORTADOS[v.sistema]}",
-            type="primary",
-            icon=":material/arrow_forward:",
-            on_click=_usar_livro,
-            args=(v.sistema, nome, v.nota),
-        )
-        pediu_leitura = st.button(
-            "Não é esse sistema? Ler como sistema novo", icon=":material/auto_awesome:"
-        )
-    elif decisao.caminho == "leitura":
+    if decisao.aceito:
         pediu_leitura = st.button(
             "Ler o livro com IA e montar o sistema",
             type="primary",
             icon=":material/auto_awesome:",
         )
+        if decisao.caminho == "pronto":
+            st.button(
+                f"Usar as regras prontas de {SISTEMAS_SUPORTADOS[v.sistema]} (sem IA)",
+                icon=":material/bolt:",
+                on_click=_usar_livro,
+                args=(v.sistema, nome, v.nota),
+            )
         st.caption(
             "Na primeira vez leva de 1 a 3 minutos: a IA indexa o livro e lê a mecânica, a "
             "criação e as criaturas. Depois, este livro abre em segundos."
@@ -329,13 +325,13 @@ def pagina_inicio() -> None:
                 on_click=_ir_para,
                 args=(GERADOR,),
                 type="primary",
-                use_container_width=True,
+                width="stretch",
             )
             b2.button(
                 "Enviar outro livro",
                 icon=":material/upload_file:",
                 on_click=_trocar_livro,
-                use_container_width=True,
+                width="stretch",
             )
         else:
             with st.container(border=True):
@@ -402,7 +398,11 @@ def mostrar_ficha(ficha: Ficha, cat: Catalogo) -> None:
                    and armaduras[i].categoria == "escudo"), None)  # fmt: skip
     raca = defn.extras["racas"].get(ficha.origem, ficha.origem)
 
-    st.subheader(f"{ficha.nome} · {raca} {classe.nome} de nível {ficha.nivel}")
+    subclasse = ficha.escolhas.get("subclasse")
+    titulo = f"{ficha.nome} · {raca} {classe.nome}"
+    if subclasse:
+        titulo += f" ({subclasse})"
+    st.subheader(f"{titulo} de nível {ficha.nivel}")
     st.caption(f"Papel: {classe.papel} — {defn.extras['papeis'][classe.papel]}")
 
     m = st.columns(5)
@@ -456,6 +456,7 @@ def mostrar_ficha(ficha: Ficha, cat: Catalogo) -> None:
             escolhas={
                 "Raça": defn_racas.get(ficha.origem, ficha.origem or ""),
                 "Classe": classe.nome,
+                **({"Subclasse": subclasse} if subclasse else {}),
             },
             atributos=[(a.nome, ficha.atributos[a.id]) for a in defn.atributos],
             valores=[("Pontos de Vida", d["pv_maximo"])],
@@ -509,7 +510,11 @@ def _impressa_dnd(ficha: Ficha, cat: Catalogo) -> FichaImpressa:
     return FichaImpressa(
         nome=ficha.nome,
         sistema=SISTEMAS_SUPORTADOS["dnd5e"],
-        subtitulo=f"{raca} {classe.nome} de nível {ficha.nivel}",
+        subtitulo=(
+            f"{raca} {classe.nome}"
+            + (f" ({ficha.escolhas['subclasse']})" if "subclasse" in ficha.escolhas else "")
+            + f" de nível {ficha.nivel}"
+        ),
         atributos=[(a.abrev, ficha.atributos[a.id], d[f"mod_{a.id}"]) for a in defn.atributos],
         valores=valores,
         secoes=secoes,
@@ -603,7 +608,7 @@ def _dnd_analise() -> None:
             for p in perfis
         ],
         hide_index=True,
-        use_container_width=True,
+        width="stretch",
     )
     with st.expander("Fraquezas e forças do grupo", expanded=True):
         mostrar_achados(analisar_grupo(fichas, cat))
@@ -715,7 +720,7 @@ def mostrar_avaliacao_leitor() -> None:
                 "Tempo (s)": round(m["segundos"]),
             }
         )
-    st.dataframe(linhas, hide_index=True, use_container_width=True)
+    st.dataframe(linhas, hide_index=True, width="stretch")
     st.caption(
         f"Escolhido para o leitor: **{dados['modelo_escolhido'].removeprefix('databricks-')}**"
     )
@@ -990,7 +995,7 @@ def _fm_grupo(regras) -> None:
                 sorted(defn.extras["resistencias"][r]["nome"] for r in p.treinado_em)
             ),
         })  # fmt: skip
-    st.dataframe(linhas, hide_index=True, use_container_width=True)
+    st.dataframe(linhas, hide_index=True, width="stretch")
     mostrar_achados(fm_analise.analisar_grupo(grupo))
 
 
@@ -1226,7 +1231,7 @@ def _resumo_lido() -> None:
                 for a in s.atributos
             ],
             hide_index=True,
-            use_container_width=True,
+            width="stretch",
         )
     if s.derivados:
         st.markdown("**Valores calculados**")
@@ -1241,7 +1246,7 @@ def _resumo_lido() -> None:
                 for d in s.derivados
             ],
             hide_index=True,
-            use_container_width=True,
+            width="stretch",
         )
     if s.arquetipos:
         st.markdown(f"**{s.nome_arquetipo.capitalize()}s** ({len(s.arquetipos)})")
@@ -1256,7 +1261,7 @@ def _resumo_lido() -> None:
                 for a in s.arquetipos
             ],
             hide_index=True,
-            use_container_width=True,
+            width="stretch",
         )
     cols = st.columns(3)
     cols[0].metric("Perícias", len(s.pericias))
@@ -1318,7 +1323,7 @@ def _corrigir_leitura(s: SistemaLido) -> None:
                 for a in s.atributos
             ],
             hide_index=True,
-            use_container_width=True,
+            width="stretch",
             key="editor_atributos",
             disabled=["id", "nome"],
         )
@@ -1328,7 +1333,7 @@ def _corrigir_leitura(s: SistemaLido) -> None:
                 for d in s.derivados
             ],
             hide_index=True,
-            use_container_width=True,
+            width="stretch",
             key="editor_derivados",
             disabled=["id", "nome"],
             column_config={
@@ -1450,7 +1455,7 @@ def _habilidades_da_ficha(s: SistemaLido, ficha: Ficha) -> None:
                 })  # fmt: skip
     if linhas:
         st.markdown("**Habilidades deste nível, segundo o livro**")
-        st.dataframe(linhas, hide_index=True, use_container_width=True)
+        st.dataframe(linhas, hide_index=True, width="stretch")
 
 
 def _gerador_lido() -> None:
@@ -1643,7 +1648,7 @@ def _analises_lido() -> None:
     vazias = {k for k in linhas[0] if all(linha[k] is None for linha in linhas)}
     linhas = [{k: ("—" if v is None else str(v)) for k, v in linha.items() if k not in vazias}
               for linha in linhas]  # fmt: skip
-    st.dataframe(linhas, hide_index=True, use_container_width=True)
+    st.dataframe(linhas, hide_index=True, width="stretch")
     with st.expander("Fraquezas e forças do grupo", expanded=True):
         mostrar_achados(analisar_grupo_lido(s, grupo))
 
@@ -1756,9 +1761,10 @@ def pagina_conteudo() -> None:
 Este site e o repositório publicam **apenas conteúdo com licença aberta**.
 
 **Livros que você envia:** o PDF é lido na memória do servidor e não é salvo. Para montar o
-sistema, trechos selecionados vão ao LLM do Databricks (Foundation Model APIs), e o resultado
-(resumo, regras, fichas) fica só na sua sessão; você pode baixá-lo, mas ele nunca é publicado
-aqui. Use livros que você tem o direito de ler.
+sistema, trechos selecionados vão ao LLM do Databricks (Foundation Model APIs). O que é extraído
+(regras resumidas, nunca o texto do livro) fica na sua sessão e numa tabela privada do dono do
+site, para o mesmo arquivo não ser lido de novo; nada disso é publicado aqui. Use livros que
+você tem o direito de ler.
 
 Este trabalho inclui material do *System Reference Document 5.1* da Wizards of the Coast LLC,
 licenciado sob [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/legalcode).
@@ -1790,7 +1796,7 @@ if livro:
         "Trocar de livro",
         icon=":material/swap_horiz:",
         on_click=_trocar_livro,
-        use_container_width=True,
+        width="stretch",
     )
 else:
     st.sidebar.caption("Envie um livro no **Início** para liberar o gerador e as análises.")
