@@ -499,9 +499,7 @@ def normalizar_opcao(s: SistemaLido, o: Opcao, avisos: list[str], calculavel) ->
     o.bonus_atributos = bonus
     validas = {}
     for chave, f in o.formulas.items():
-        alvo = next(
-            (d for d in s.derivados if normalizar_id(chave) in (d.id, normalizar_id(d.nome))), None
-        )
+        alvo = alvo_derivado(s, chave)
         if alvo is not None and not calculavel(f):
             validas[alvo.id] = f
         else:
@@ -510,6 +508,29 @@ def normalizar_opcao(s: SistemaLido, o: Opcao, avisos: list[str], calculavel) ->
     if o.dano_tipico and calculavel(o.dano_tipico):
         avisos.append(f"Dano de {o.nome} não entendido ({o.dano_tipico}).")
         o.dano_tipico = None
+
+
+NOMES_PRINCIPAL = (
+    "classe", "class", "especializa", "profiss", "ocupa", "occupation", "arquetipo", "archetype",
+    "vocacao", "carreira", "career",
+)  # fmt: skip
+
+
+def alvo_derivado(s: SistemaLido, chave: str) -> Derivado | None:
+    """O valor derivado a que uma chave se refere: id, nome ou, se único, o tipo ("PV_max")."""
+    norma = normalizar_id(chave)
+    direto = next((d for d in s.derivados if norma in (d.id, normalizar_id(d.nome))), None)
+    if direto:
+        return direto
+    tipo = _tipo_pelo_nome(chave.replace("_", " ").split()[0]) or _tipo_pelo_nome(chave)
+    do_tipo = [d for d in s.derivados if d.tipo == tipo] if tipo else []
+    return do_tipo[0] if len(do_tipo) == 1 else None
+
+
+NOMES_NAO_ESCOLHA = (
+    ("pericia", "pericias"), ("skill", "pericias"), ("equip", "equipamento"),
+    ("atribut", "atributos"), ("ability", "atributos"),
+)  # fmt: skip
 
 
 def calculavel_em(s: SistemaLido):
@@ -561,6 +582,11 @@ def _normalizar_etapas(s: SistemaLido, avisos: list[str], calculavel) -> None:
         e.opcoes = unicas
         if e.opcoes and e.tipo == "outro":
             e.tipo = "escolha"
+        # O LLM às vezes põe "Perícias da classe" ou "Equipamento" como escolha entre opções.
+        nome_etapa = normalizar_id(f"{e.id} {e.nome}")
+        for parte, tipo in NOMES_NAO_ESCOLHA:
+            if e.tipo == "escolha" and parte in nome_etapa:
+                e.tipo = tipo
         etapas.append(e)
     for e in etapas:
         e.depende_de = normalizar_id(e.depende_de) if e.depende_de else ""
@@ -574,12 +600,23 @@ def _normalizar_etapas(s: SistemaLido, avisos: list[str], calculavel) -> None:
                 o.pai = ""
     s.etapas = etapas
     escolhas = [e for e in etapas if e.tipo == "escolha" and e.opcoes]
+    # O nome decide quando é inequívoco: o LLM às vezes marca "Raça" no lugar de "Classe".
+    por_nome = [
+        e for e in escolhas
+        if not e.depende_de and any(p in normalizar_id(e.nome) for p in NOMES_PRINCIPAL)
+    ]  # fmt: skip
     marcadas = [e for e in escolhas if e.principal]
-    for extra in marcadas[1:]:
-        extra.principal = False
-    if escolhas and not marcadas:  # sem marca: a escolha independente com mais opções
-        livres = [e for e in escolhas if not e.depende_de] or escolhas
-        max(livres, key=lambda e: len(e.opcoes)).principal = True
+    livres = [e for e in escolhas if not e.depende_de] or escolhas
+    if por_nome:
+        principal = por_nome[0]
+    elif marcadas:
+        principal = marcadas[0]
+    elif escolhas:  # sem marca: a escolha independente com mais opções
+        principal = max(livres, key=lambda e: len(e.opcoes))
+    else:
+        principal = None
+    for e in escolhas:
+        e.principal = e is principal
     sincronizar_arquetipos(s)
 
 

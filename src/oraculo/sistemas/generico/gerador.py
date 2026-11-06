@@ -115,6 +115,16 @@ def _com_regra(
             texto += f"; sobraram {restantes} pontos porque todos chegaram ao máximo"
         return valores, texto
 
+    sem_faixa = all(limites(s, por_id[a]) == (None, None) for a in ordem)
+    if s.modificador and sem_faixa and s.modificador_de(10) == 0:
+        tipicos = (15, 14, 13, 12, 10, 8)
+        for i, aid in enumerate(ordem):
+            valores[aid] = tipicos[i] if i < len(tipicos) else 10
+        return valores, (
+            "o livro não traz um método de geração nos trechos lidos; usei valores típicos da "
+            "escala do modificador dele (10 vale +0), os maiores nos atributos do arquétipo"
+        )
+
     # Método que o Oráculo não automatiza: valores proporcionais à faixa do atributo.
     fracoes = [0.75, 0.7, 0.6, 0.55]
     for i, aid in enumerate(ordem):

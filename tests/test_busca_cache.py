@@ -94,9 +94,9 @@ class LLMContador:
 def test_livro_lido_uma_vez_nao_gasta_llm_de_novo():
     llm, cache = LLMContador(), CacheMemoria()
     primeira = ler_sistema(_paginas(), llm, cache=cache, estrategia="bm25")
-    assert not primeira.do_cache and llm.chamadas == 4
+    assert not primeira.do_cache and llm.chamadas == 5  # 4 leituras + lacunas (sem dano e vida)
     segunda = ler_sistema(_paginas(), llm, cache=cache, estrategia="bm25")
-    assert segunda.do_cache and llm.chamadas == 4
+    assert segunda.do_cache and llm.chamadas == 5
     assert segunda.sistema == primeira.sistema
     assert leitura_guardada(_paginas(), cache, "bm25") is not None
     assert leitura_guardada(["outro livro"], cache, "bm25") is None
