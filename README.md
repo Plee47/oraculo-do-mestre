@@ -36,6 +36,7 @@ de dados, machine learning, LLMs avaliados e uma interface pronta para uso.
 | **Machine learning com avaliação honesta** | Classificador "é livro de RPG?" com *feature engineering* explicável e validação **leave-one-book-out**, para não vazar estilo do mesmo livro entre treino e teste |
 | **MLflow e registro de modelos** | Experimentos versionados, modelo no Unity Catalog com alias `champion` e **portão de qualidade** que só promove versões que acertam todos os livros |
 | **Avaliação de LLMs** | Três LLMs do Databricks (`ai_query` em lote no Spark) medidos em precisão, recall e acerto por campo contra um **gabarito** oficial, com um run do MLflow por modelo |
+| **Recuperação de informação** | Busca BM25 em Python puro e híbrida com embeddings, comparadas com repetições no MLflow; a melhor virou o padrão do site |
 | **LLM em produção, com validação** | Leitura de qualquer livro em três partes paralelas, saída validada item a item, fórmulas calculadas por um avaliador seguro (sem `eval`) e correções determinísticas para os erros recorrentes do modelo |
 | **Análise de dados aplicada** | Tabelas gold que viram regras: ex. 48% dos monstros de CR 11–16 resistem a dano físico não mágico, e isso muda o peso das dicas |
 | **MLOps e engenharia de software** | Databricks Asset Bundles (dev/prod), GitHub Actions, 285 testes com pytest, pre-commit, ADRs e Conventional Commits |
@@ -49,6 +50,7 @@ de dados, machine learning, LLMs avaliados e uma interface pronta para uso.
 | Leitor com LLM (gpt-oss-120b, escolhido entre 3) | nota **0,90** · **98% / 99%** dos campos de magias / monstros certos |
 | Livro inteiro (SRD 5.1, 313 páginas) | **100%** das magias e **98,7%** dos monstros encontrados, zero erros de API |
 | Catálogo processado | **319** magias · **334** monstros · 12 classes, idêntico no Databricks e localmente |
+| Busca nas páginas de um livro desconhecido | Híbrida (BM25 + embeddings) tirou **0,80** contra 0,72 de BM25 e de palavras-chave, medida contra o gabarito do SRD |
 | Generalização do detector | Livro real de *Feiticeiros & Maldições* (368 páginas) reconhecido com **nota 86%** sem retreinar |
 | Qualquer livro (leitura com IA) | Sistema brasileiro de base **2d8** (*Naruto Shinobi no Sho*, 296 páginas) lido em **~40 s**: mecânica, 9 atributos em dois grupos de pontos, fórmula de Vitalidade, clãs e regra de dano conferidos página a página com o livro |
 
@@ -217,6 +219,9 @@ flowchart LR
 
 | Peça | O que faz |
 |---|---|
+| `leitor/indice.py` | Acha as páginas de cada assunto: BM25 em Python puro e busca híbrida com embeddings do Databricks |
+| `leitor/cache.py` | Cache em tabela Delta privada: guarda só o que foi extraído, nunca o texto do livro; livro já lido não gasta LLM |
+| `leitor/avaliacao_generica.py` | Lê o SRD como sistema desconhecido e compara com o catálogo (notebook 23, MLflow) |
 | `generico/leitura.py` | Escolhe as páginas de cada parte e faz três leituras em paralelo, pedindo JSON com campos fixos; o texto do livro é tratado como dado, não como instrução |
 | `generico/modelo.py` | A especificação: atributos (rolagem própria, grupos com pontos separados), modificador, valores derivados (inclusive por arquétipo e encadeados), arquétipos, perícias, criaturas |
 | `generico/formulas.py` | Avaliador seguro: `2d8`, `3d6×5`, `4d6kh3` (média exata), `teto(Força/2)`, `mod_des`; recusa qualquer coisa fora da lista |

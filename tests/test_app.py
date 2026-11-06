@@ -1,6 +1,7 @@
 """Smoke tests do site: o fluxo começa pelo livro, e as ferramentas seguem o sistema validado."""
 
 import json
+import sys
 from pathlib import Path
 
 import pytest
@@ -150,6 +151,29 @@ def test_qualquer_rpg_e_lido_pela_ia_e_libera_as_ferramentas():
     assert any(m.label == "Balanço estimado" for m in at.metric)
 
 
+def test_livro_ja_lido_vem_do_cache_sem_gastar_llm():
+    # Importa aqui: o job "só requirements.txt" prova que o site acha o código sozinho, sem o pacote
+    # instalado, então este arquivo não pode depender dele logo ao ser carregado.
+    sys.path.insert(0, str(Path(__file__).parents[1] / "src"))
+    from oraculo.leitor.cache import CacheMemoria
+    from oraculo.sistemas.generico.leitura import ler_sistema
+
+    class LLMProibido:
+        def completar(self, *a, **k):
+            raise AssertionError("não devia chamar o LLM")
+
+    cache = CacheMemoria()
+    ler_sistema([TRECHO_RPG], LLMFalso(), cache=cache)  # alguém já leu este livro
+    at = AppTest.from_file(APP, default_timeout=60)
+    at.session_state["_cliente_llm_teste"] = LLMProibido()
+    at.session_state["_cache_teste"] = cache
+    at.run()
+    at.text_area[0].set_value(TRECHO_RPG).run()
+    next(b for b in at.button if b.label.startswith("Ler o livro")).click().run()
+    assert not at.exception
+    assert at.title[0].value == "Resumo do sistema · Ninjas 2d8"
+
+
 def test_sem_credencial_a_leitura_explica_o_motivo(monkeypatch):
     monkeypatch.delenv("DATABRICKS_HOST", raising=False)
     monkeypatch.delenv("DATABRICKS_TOKEN", raising=False)
@@ -230,3 +254,9 @@ def test_fm_analises():
 def test_bastidores_mostra_a_comparacao_dos_llms():
     at = ir(abrir(), "Bastidores do leitor")
     assert at.dataframe
+
+
+def test_bastidores_mostra_a_comparacao_das_buscas():
+    at = ir(abrir(), "Bastidores do leitor")
+    assert len(at.dataframe) == 2
+    assert any("páginas certas" in s.value for s in at.subheader)

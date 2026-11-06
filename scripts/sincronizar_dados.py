@@ -46,6 +46,10 @@ ARQUIVOS = {
         lambda c: validar_catalogo(Catalogo.carregar(c)),
     ),
     "modelos/detector_rpg.json": (PUBLICOS / "modelos" / "detector_rpg.json", _validar_detector),
+    "avaliacoes/leitor_generico_srd51.json": (
+        PUBLICOS / "avaliacoes" / "leitor_generico_srd51.json",
+        "métricas da leitura genérica contra o gabarito do SRD",
+    ),
     "avaliacoes/leitor_srd51.json": (
         PUBLICOS / "avaliacoes" / "leitor_srd51.json",
         lambda c: _validar_avaliacao(c),

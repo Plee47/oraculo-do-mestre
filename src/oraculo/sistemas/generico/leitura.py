@@ -22,7 +22,9 @@ from dataclasses import dataclass
 
 from pydantic import BaseModel, ValidationError
 
+from oraculo.leitor.cache import CacheLeituras, hash_livro
 from oraculo.leitor.extracao import limpar_texto_pdf
+from oraculo.leitor.indice import IndiceLivro, texto_para_vetores, vetores_para_texto
 from oraculo.leitor.llm import ClienteLLM, ErroLLM
 from oraculo.sistemas.generico.modelo import (
     Arquetipo,
@@ -78,6 +80,27 @@ _RE_SUMARIO = re.compile(r"\b(sum[aá]rio|[ií]ndice|contents|table of contents)
 _RE_LINHA_SUMARIO = re.compile(r"(\.{3,}|\s)\s*\d{1,3}\s*$", re.M)
 _RE_NUMERO = re.compile(r"\b\d{1,3}\b")
 
+# Mudou um prompt, o modelo ou a seleção de páginas? Mude a versão: o cache antigo deixa de valer.
+VERSAO_LEITURA = "2026-11-06.2"
+VERSAO_VETORES = "qwen3-0.6b-1200c"
+ESTRATEGIAS = ("palavras", "bm25", "hibrida")
+# Estratégia do site, escolhida pela avaliação contra o gabarito do SRD (notebook 23).
+ESTRATEGIA_PADRAO = "hibrida"
+# Consultas da busca (BM25 e semântica), em português e inglês.
+CONSULTAS = {
+    "mecanica": "regras básicas teste rolagem de dados dificuldade sucesso falha crítico "
+    "como jogar mecânica básica basic rules ability check roll dice difficulty success failure",
+    "dano": "dano de ataque dano base cálculo do dano arma acerto dano final "
+    "damage attack weapon damage roll hit",
+    "encontros": "planejando combates encontros equilibrar dificuldade personagens do mestre "
+    "inimigos capangas encounter building balance challenge rating difficulty",
+    "criacao": "criação de personagem passo a passo atributos distribuir pontos escolher "
+    "classe raça clã origem pontos de vida iniciais nível inicial character creation "
+    "ability scores choose class race hit points starting level",
+    "criaturas": "bestiário criaturas monstros inimigos estatísticas ataque pontos de vida "
+    "defesa bestiary monster creature statistics armor class hit points actions",
+}
+
 
 def _nota(texto: str, palavras: tuple[str, ...]) -> float:
     t = texto.lower()
@@ -132,6 +155,59 @@ def selecionar_paginas(paginas: list[str]) -> dict[str, list[int]]:
         "visao": sorted(set(inicio) | set(mecanica) | set(encontros) | set(dano)),
         "criacao": sorted(set(sumario) | set(criacao)),
         "criaturas": criaturas,
+    }
+
+
+def _inicio(paginas: list[str], uteis: list[int]) -> list[int]:
+    inicio, total = [], 0
+    for i in uteis[:15]:  # créditos, sumário e introdução
+        if total + len(paginas[i]) > ORCAMENTO["visao"] // 2:
+            break
+        inicio.append(i)
+        total += len(paginas[i])
+    return inicio
+
+
+def _sumario(paginas: list[str], uteis: list[int]) -> list[int]:
+    """Páginas de sumário: listam classes, clãs e capítulos mesmo quando são longos demais."""
+
+    def nota(i: int) -> float:
+        linhas = len(_RE_LINHA_SUMARIO.findall(paginas[i]))
+        return linhas * (3 if _RE_SUMARIO.search(paginas[i][:400]) else 1) if linhas >= 8 else 0
+
+    escolhidas, total = [], 0
+    for i in sorted(uteis, key=nota, reverse=True):
+        if nota(i) <= 0 or total + len(paginas[i]) > ORCAMENTO["sumario"]:
+            break
+        escolhidas.append(i)
+        total += len(paginas[i])
+    return sorted(escolhidas)
+
+
+def selecionar_por_busca(
+    indice: IndiceLivro, vetores_consulta: dict[str, list[float]] | None = None
+) -> dict[str, list[int]]:
+    """Seleção pelas consultas de cada parte (BM25, ou híbrida se houver vetores)."""
+    paginas = indice.paginas
+    uteis = [i for i, p in enumerate(paginas) if len(p.strip()) >= 200]
+    vetores_consulta = vetores_consulta or {}
+
+    def parte(nome: str, orcamento: int) -> list[int]:
+        achadas = indice.buscar(CONSULTAS[nome], k=25, vetor_consulta=vetores_consulta.get(nome))
+        return indice.com_vizinhas(achadas, orcamento)
+
+    inicio = _inicio(paginas, uteis)
+    return {
+        "visao": sorted(
+            set(inicio)
+            | set(parte("mecanica", ORCAMENTO["mecanica"]))
+            | set(parte("dano", ORCAMENTO["dano"]))
+            | set(parte("encontros", ORCAMENTO["encontros"]))
+        ),
+        "criacao": sorted(
+            set(_sumario(paginas, uteis)) | set(parte("criacao", ORCAMENTO["criacao"]))
+        ),
+        "criaturas": parte("criaturas", ORCAMENTO["criaturas"]),
     }
 
 
@@ -233,7 +309,8 @@ não aparecem descritos nos trechos). Devolva:
 }"""
 
 PROMPT_CRIATURAS = """Trechos com criaturas, monstros, inimigos ou NPCs com estatísticas.
-Devolva até 25 criaturas, variando o nível de ameaça (fracas, médias e fortes):
+Devolva até 25 criaturas, variando o nível de ameaça (fracas, médias e fortes). O nome de
+cada criatura é EXATAMENTE como está no livro (não traduza):
 {
  "criaturas": [{"nome": "...", "descricao": "1 frase", "ameaca": "nível/categoria como o livro
    escreve", "atributos": {"sigla ou id": valor}, "vida": int ou null, "defesa": int ou null,
@@ -302,12 +379,84 @@ class Leitura:
     sistema: SistemaLido
     e_rpg: bool
     paginas_lidas: int
+    do_cache: bool = False
+    livro: str = ""  # hash do texto do livro (chave do cache)
 
 
-def ler_sistema(paginas: list[str], cliente: ClienteLLM, nome_arquivo: str = "") -> Leitura:
-    """Lê o livro e devolve o sistema validado. Levanta `ErroLeitura` se não der."""
+def vetores_do_livro(
+    limpas: list[str], cliente: ClienteLLM, cache: CacheLeituras | None, livro: str
+) -> list[list[float]]:
+    """Vetores das páginas: do cache, ou calculados uma vez e guardados."""
+    if cache is not None:
+        guardado = cache.ler(livro, "vetores", "", VERSAO_VETORES)
+        if guardado:
+            return texto_para_vetores(guardado)
+    vetores = cliente.embutir(limpas)
+    if cache is not None:
+        cache.gravar(livro, "vetores", "", VERSAO_VETORES, vetores_para_texto(vetores))
+    return vetores
+
+
+def selecionar(
+    limpas: list[str],
+    estrategia: str,
+    cliente: ClienteLLM | None = None,
+    cache: CacheLeituras | None = None,
+    livro: str = "",
+) -> dict[str, list[int]]:
+    if estrategia not in ESTRATEGIAS:
+        raise ValueError(f"estratégia desconhecida: {estrategia!r}")
+    if estrategia == "palavras":
+        return selecionar_paginas(limpas)
+    if estrategia == "bm25" or cliente is None or not hasattr(cliente, "embutir"):
+        return selecionar_por_busca(IndiceLivro(limpas))
+    try:
+        vetores = vetores_do_livro(limpas, cliente, cache, livro)
+        nomes = list(CONSULTAS)
+        consultas = dict(zip(nomes, cliente.embutir([CONSULTAS[n] for n in nomes]), strict=True))
+    except ErroLLM:  # sem embeddings a busca continua funcionando, só com BM25
+        return selecionar_por_busca(IndiceLivro(limpas))
+    return selecionar_por_busca(IndiceLivro(limpas, vetores), consultas)
+
+
+def leitura_guardada(
+    paginas: list[str], cache: CacheLeituras | None, estrategia: str = ESTRATEGIA_PADRAO
+) -> Leitura | None:
+    """A leitura deste livro no cache, sem gastar LLM. None se ele nunca foi lido."""
+    if cache is None:
+        return None
+    livro = hash_livro([limpar_texto_pdf(p) for p in paginas])
+    guardado = cache.ler(livro, "sistema", estrategia, VERSAO_LEITURA)
+    if not guardado:
+        return None
+    dados = json.loads(guardado)
+    return Leitura(
+        SistemaLido.model_validate(dados["sistema"]),
+        dados["e_rpg"],
+        dados["paginas_lidas"],
+        do_cache=True,
+        livro=livro,
+    )
+
+
+def ler_sistema(
+    paginas: list[str],
+    cliente: ClienteLLM,
+    nome_arquivo: str = "",
+    *,
+    estrategia: str = ESTRATEGIA_PADRAO,
+    cache: CacheLeituras | None = None,
+) -> Leitura:
+    """Lê o livro e devolve o sistema validado. Levanta `ErroLeitura` se não der.
+
+    Com `cache`, um livro já lido (mesmo texto, mesma versão dos prompts) não gasta LLM."""
+    guardada = leitura_guardada(paginas, cache, estrategia)
+    if guardada is not None:
+        return guardada
     limpas = [limpar_texto_pdf(p) for p in paginas]
-    selecao = selecionar_paginas(limpas)
+    livro = hash_livro(limpas)
+    chave = estrategia
+    selecao = selecionar(limpas, estrategia, cliente, cache, livro)
     if not selecao["visao"]:
         raise ErroLeitura("o livro não tem texto suficiente para ler")
     if not selecao["criacao"]:
@@ -359,4 +508,12 @@ def ler_sistema(paginas: list[str], cliente: ClienteLLM, nome_arquivo: str = "")
         avisos=avisos,
     )
     e_rpg = bool(visao.get("e_livro_de_rpg", True))
-    return Leitura(normalizar(sistema), e_rpg, len({i for v in selecao.values() for i in v}))
+    leitura = Leitura(
+        normalizar(sistema), e_rpg, len({i for v in selecao.values() for i in v}), livro=livro
+    )
+    if cache is not None and e_rpg:
+        cache.gravar(livro, "sistema", chave, VERSAO_LEITURA, json.dumps({
+            "sistema": json.loads(leitura.sistema.model_dump_json()), "e_rpg": e_rpg,
+            "paginas_lidas": leitura.paginas_lidas,
+        }))  # fmt: skip
+    return leitura
