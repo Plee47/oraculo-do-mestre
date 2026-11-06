@@ -337,6 +337,9 @@ class Niveis(_Base):
         return _inteiro_ou_nada(v)
 
 
+APELIDOS_VIDA = ("pv", "pv_max", "pv_maximo", "pv_maximos", "hp", "hp_max", "vida", "vida_maxima")
+
+
 class SistemaLido(_Base):
     nome: str
     autores: str = ""
@@ -421,7 +424,19 @@ class SistemaLido(_Base):
                         f"mod{nome}",
                     ):
                         v[alias] = mod
+        if valores:  # "atributo-chave": o melhor deles (calcular() usa os do arquétipo)
+            melhor = max(valores.values())
+            v["atributo_chave"] = melhor
+            mod = self.modificador_de(melhor)
+            v["mod_atributo_chave"] = melhor if mod is None else mod
         return v
+
+    def _com_apelidos(self, variaveis: dict[str, float], d: Derivado, valor: float) -> None:
+        variaveis[normalizar_id(d.id)] = valor
+        variaveis[normalizar_id(d.nome)] = valor
+        if d.tipo == "vida":  # outros valores costumam citar a vida por apelido ("pv_max")
+            for apelido in APELIDOS_VIDA:
+                variaveis.setdefault(apelido, valor)
 
     def formula_de(self, d: Derivado, arquetipo: Arquetipo | None = None) -> str:
         """A fórmula do arquétipo para o derivado, se houver; senão a geral."""
@@ -437,6 +452,13 @@ class SistemaLido(_Base):
         """Todos os derivados. Um derivado pode usar outros (Esquiva → Reação de Esquiva), em
         qualquer ordem: repete até nada mais mudar."""
         variaveis = self.variaveis(valores, nivel)
+        chaves = [
+            valores[c] for c in (arquetipo.atributos_chave if arquetipo else []) if c in valores
+        ]
+        if chaves:
+            variaveis["atributo_chave"] = max(chaves)
+            mod = self.modificador_de(max(chaves))
+            variaveis["mod_atributo_chave"] = max(chaves) if mod is None else mod
         saida: dict[str, float | None] = {d.id: None for d in self.derivados}
         pendentes = [d for d in self.derivados if self.formula_de(d, arquetipo)]
         while pendentes:
@@ -447,8 +469,7 @@ class SistemaLido(_Base):
                 except ErroFormula:
                     continue
                 saida[d.id] = valor
-                variaveis[normalizar_id(d.id)] = valor
-                variaveis[normalizar_id(d.nome)] = valor
+                self._com_apelidos(variaveis, d, valor)
                 feitos.append(d)
             if not feitos:
                 break
@@ -529,7 +550,8 @@ def alvo_derivado(s: SistemaLido, chave: str) -> Derivado | None:
 
 NOMES_NAO_ESCOLHA = (
     ("pericia", "pericias"), ("skill", "pericias"), ("equip", "equipamento"),
-    ("atribut", "atributos"), ("ability", "atributos"),
+    ("atribut", "atributos"), ("ability", "atributos"), ("aspecto", "outro"),
+    ("detalhe", "outro"), ("toque", "outro"),
 )  # fmt: skip
 
 
@@ -537,8 +559,7 @@ def calculavel_em(s: SistemaLido):
     """Função que diz por que uma fórmula não fecha nesta especificação (None se fecha)."""
     teste = s.variaveis({a.id: 10 for a in s.atributos})
     for d in s.derivados:
-        teste[normalizar_id(d.id)] = 10
-        teste[normalizar_id(d.nome)] = 10
+        s._com_apelidos(teste, d, 10)
 
     def calculavel(formula: str | None) -> str | None:
         if not formula:
@@ -750,11 +771,17 @@ def normalizar(s: SistemaLido) -> SistemaLido:
             if calculavel(d.formula) is None:
                 prontos.append(d)
                 pendentes.remove(d)
-                teste[normalizar_id(d.id)] = 10
-                teste[normalizar_id(d.nome)] = 10
+                s._com_apelidos(teste, d, 10)
                 avancou = True
         if not avancou:
             break
+    for d in s.derivados:  # a vida pode vir só do arquétipo: os outros ainda podem citá-la
+        if d.tipo == "vida":
+            s._com_apelidos(teste, d, 10)
+    for d in list(pendentes):
+        if d.formula and calculavel(d.formula) is None:
+            prontos.append(d)
+            pendentes.remove(d)
     for d in pendentes:
         if d.formula:
             avisos.append(
@@ -763,8 +790,7 @@ def normalizar(s: SistemaLido) -> SistemaLido:
             d.formula = ""
     s.derivados = prontos + pendentes
     for d in s.derivados:
-        teste[normalizar_id(d.id)] = 10
-        teste[normalizar_id(d.nome)] = 10
+        s._com_apelidos(teste, d, 10)
     for arq in s.arquetipos:
         validas = {}
         for chave, f in arq.formulas.items():

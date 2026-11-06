@@ -88,7 +88,7 @@ _RE_LINHA_SUMARIO = re.compile(r"(\.{3,}|\s)\s*\d{1,3}\s*$", re.M)
 _RE_NUMERO = re.compile(r"\b\d{1,3}\b")
 
 # Mudou um prompt, o modelo ou a seleção de páginas? Mude a versão: o cache antigo deixa de valer.
-VERSAO_LEITURA = "2026-11-06.5"
+VERSAO_LEITURA = "2026-11-06.6"
 VERSAO_VETORES = "qwen3-0.6b-1200c"
 ESTRATEGIAS = ("palavras", "bm25", "hibrida")
 # Estratégia do site, escolhida pela avaliação contra o gabarito do SRD (notebook 23).
@@ -364,8 +364,9 @@ ESTRUTURA das decisões que o jogador toma, na ordem do livro. Devolva:
      "papel": "função no grupo em 1 ou 2 palavras (combate, suporte, social...)",
      "atributos_chave": [nomes dos atributos que o livro associa à opção],
      "formulas": {"nome do valor derivado": "fórmula própria desta opção, com os nomes ou siglas
-       dos atributos e mod_<sigla> para o modificador (ex.: PV por classe:
-       12 + mod_con + (nivel-1)*(6+mod_con))"} ou {},
+       dos atributos e mod_<sigla> para o modificador. Vida que cresce por nível é SEMPRE
+       primeiro nível + (nivel-1)*ganho: "12 + CON no 1º nível e 6 + CON nos seguintes" vira
+       12 + mod_con + (nivel-1)*(6+mod_con)"} ou {},
      "pagina": número da página onde a opção é descrita}]
  }]
 }
@@ -387,8 +388,11 @@ Atributos do sistema: {atributos}. Valores calculados do sistema: {valores}.
  "pericias": [perícias que ela concede ou recomenda],
  "equipamento": [equipamento inicial que ela concede],
  "formulas": {"nome de um dos valores calculados acima": "como ESTA opção calcula o valor, se
-   os trechos disserem, com nomes dos atributos, mod_<atributo> e nivel (ex.: \"Pontos de Vida no
-   primeiro nível: 10 + Constituição\" vira 10 + mod_constituicao)"},
+   os trechos disserem, com nomes dos atributos, mod_<atributo> e nivel. Valor que cresce por
+   nível é SEMPRE primeiro nível + (nivel-1)*ganho: \"10 + Constituição no 1º nível e 1d8 +
+   Constituição (ou 5 + Constituição) nos seguintes\" vira
+   10 + mod_constituicao + (nivel-1)*(5 + mod_constituicao). \"6 PE por nível + atributo-chave\"
+   vira 6*nivel + mod_atributo_chave"},
  "dano_tipico": "fórmula do dano do ataque inicial que o livro indica para ela, ou null",
  "habilidades": [{"nome": "...", "resumo": "1 frase com o efeito", "nivel": int ou null,
    "pagina": número da página}] (até 12, das iniciais para as avançadas),
@@ -491,7 +495,8 @@ Procure SÓ isso nos trechos e devolva o que achar:
    null",
  "dano_explicacao": "1 frase com a regra de dano do livro, ou null",
  "vida_geral": "fórmula da vida se ela for igual para todos, ou null",
- "vida_por_opcao": {"nome da opção": "fórmula da vida daquela classe ou especialização"}
+ "vida_por_opcao": {"nome da opção": "fórmula da vida daquela classe ou especialização, para
+   qualquer nível: primeiro nível + (nivel-1)*ganho"}
 }
 Atributos: {atributos}. Opções: {opcoes}. NÃO invente: o que não estiver no texto fica null."""
 ORCAMENTO_LACUNAS = 30_000
@@ -511,6 +516,29 @@ def _lacunas(s: SistemaLido) -> list[str]:
     if vida is None or (not vida.formula and not opcoes_com_vida):
         faltam.append("a fórmula de vida ou pontos de vida")
     return faltam
+
+
+_RE_DADO_TEXTO = re.compile(r"\b(\d*)[dD](\d+)\b")
+
+
+def _dano_da_explicacao(s: SistemaLido) -> None:
+    """Último recurso: o livro explicou o dano em texto com um exemplo de dado, sem fórmula."""
+    texto = s.mecanica.dano_explicacao
+    dado = _RE_DADO_TEXTO.search(texto or "")
+    if not dado:
+        return
+    formula = dado.group(0)
+    if "modificador" in texto.lower():
+        minusculo = texto.lower()
+        for a in s.atributos:
+            if a.nome and a.nome.lower() in minusculo:
+                formula += f" + mod_{a.id}"
+                break
+    if calculavel_em(s)(formula) is None:
+        s.mecanica.dano_basico = formula
+        s.avisos.append(
+            f"Regra de dano montada a partir do texto do livro ({formula}); confira no resumo."
+        )
 
 
 def _preencher_lacunas(
@@ -560,6 +588,8 @@ def _preencher_lacunas(
                 if o and vida.id not in o.formulas and not calculavel(str(formula)):
                     o.formulas[vida.id] = str(formula)
     normalizar(s)
+    if not s.mecanica.dano_basico:
+        _dano_da_explicacao(s)
     s.paginas_fonte["lacunas"] = [i + 1 for i in selecionadas]
 
 

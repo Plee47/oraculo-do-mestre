@@ -967,3 +967,61 @@ def test_sem_lacunas_nao_gasta_chamada_extra():
     llm = LLMFalso()
     ler_sistema(_paginas(), llm)
     assert not [c for c in llm.chamadas if "Faltam estas regras" in c]
+
+
+def test_atributo_chave_e_apelidos_da_vida_nas_formulas():
+    s = sistema(
+        {
+            "nome": "x",
+            "modificador": "piso((valor-10)/2)",
+            "atributos": [{"id": "pre", "nome": "Presença"}, {"id": "con", "nome": "Constituição"}],
+            "derivados": [
+                {"nome": "Integridade da Alma", "formula": "pv_max"},
+                {"nome": "Pontos de Vida", "formula": ""},
+                {"nome": "Pontos de Energia", "formula": ""},
+            ],
+            "etapas": [
+                {
+                    "nome": "Classe",
+                    "tipo": "escolha",
+                    "opcoes": [
+                        {
+                            "nome": "Controlador",
+                            "atributos_chave": ["Presença"],
+                            "formulas": {
+                                "Pontos de Vida": "10 + mod_con + (nivel-1)*(5+mod_con)",
+                                "Pontos de Energia": "5*nivel + mod_atributo_chave",
+                            },
+                        }
+                    ],
+                }
+            ],
+        }
+    )
+    valores = dict(
+        (d.nome, v) for d, v in calcular_derivados(s, {"pre": 16, "con": 14}, 3, "Controlador")
+    )
+    assert valores["Pontos de Vida"] == 10 + 2 + 2 * (5 + 2)
+    assert valores["Pontos de Energia"] == 15 + 3  # Presença, a chave da classe, não a maior geral
+    assert valores["Integridade da Alma"] == valores["Pontos de Vida"]
+
+
+def test_dano_montado_do_texto_quando_nao_vem_formula():
+    from oraculo.sistemas.generico.leitura import _dano_da_explicacao
+
+    s = sistema(
+        {
+            "nome": "x",
+            "modificador": "piso((valor-10)/2)",
+            "atributos": [{"id": "for", "nome": "Força"}],
+            "mecanica": {
+                "dano_explicacao": "Usa o dado da arma (ex.: 1d6) e o modificador de Força."
+            },
+        }
+    )
+    _dano_da_explicacao(s)
+    assert s.mecanica.dano_basico == "1d6 + mod_for"
+    assert any("montada a partir do texto" in a for a in s.avisos)
+    sem_dado = sistema({"nome": "x", "mecanica": {"dano_explicacao": "O dano varia."}})
+    _dano_da_explicacao(sem_dado)
+    assert sem_dado.mecanica.dano_basico == ""

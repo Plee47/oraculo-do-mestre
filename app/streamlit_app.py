@@ -281,7 +281,7 @@ def _envio_do_livro() -> None:
                 args=(v.sistema, nome, v.nota),
             )
         st.caption(
-            "Na primeira vez leva de 1 a 3 minutos: a IA indexa o livro e lê a mecânica, a "
+            "Na primeira vez leva de 2 a 6 minutos: a IA indexa o livro e lê a mecânica, a "
             "criação e as criaturas. Depois, este livro abre em segundos."
         )
     if pediu_leitura:
