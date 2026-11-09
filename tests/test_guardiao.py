@@ -38,3 +38,10 @@ def test_arquivos_derivados_so_os_liberados():
     assert verificar(["dados/publicos/avaliacoes/leitor_srd51.json"], PUBLICOS) == []
     assert verificar(["dados/publicos/modelos/modelo_misterioso.json"], PUBLICOS)
     assert verificar(["dados/publicos/avaliacoes/extracao_do_meu_livro.json"], PUBLICOS)
+
+
+def test_previas_abertas_sao_lista_fechada():
+    assert verificar(["dados/publicos/previas/fm_v2_5_2.json"], PUBLICOS) == []
+    assert verificar(["dados/publicos/previas/dnd5e_srd51.json"], PUBLICOS) == []
+    assert verificar(["dados/publicos/previas/outro_livro.json"], PUBLICOS)
+    assert verificar(["dados/publicos/fm/talentos.json"], PUBLICOS)

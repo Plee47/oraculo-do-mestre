@@ -1,0 +1,4194 @@
+{
+ "nome": "Dungeons & Dragons 5ª Edição (System Reference Document 5.1)",
+ "autores": "Wizards of the Coast",
+ "genero": "fantasia épica",
+ "ambientacao": "Um mundo de alta fantasia habitado por humanos, elfos, anões, dragões e outras criaturas míticas. Magia, deuses e conflitos entre reinos são parte cotidiana da vida dos aventureiros. As regras descrevem como explorar masmorras, cidades e vastas regiões selvagens.",
+ "resumo": "D&D 5e é um RPG de mesa onde jogadores criam personagens com atributos, habilidades e equipamentos. As ações são resolvidas com rolagens de d20 somadas a modificadores de habilidade e bônus de proficiência. O mestre define a dificuldade (DC) ou a Classe de Armadura (CA) que o jogador deve superar. O jogo enfatiza a narrativa colaborativa, permitindo que os personagens evoluam em nível, ganhem novos poderes e itens mágicos. O sistema usa dados variados para dano, mas a mecânica central permanece o d20 + modificadores. Diferencia-se por sua simplicidade de regras básicas e grande flexibilidade para personalização de mundos e histórias.",
+ "mecanica": {
+  "dado_base": "1d20",
+  "tipo": "soma_contra_alvo",
+  "resolucao": "Rola-se 1d20, soma-se o modificador de habilidade e, se houver, o bônus de proficiência; compara‑se o total ao alvo (CA ou DC).",
+  "criticos": "Resultado natural 20 é crítico (dano dobrado); resultado natural 1 é falha automática em ataques.",
+  "chance_acerto_estimada": 0.55,
+  "dano_basico": "1d8 + Força",
+  "dano_explicacao": "O dano de um ataque corpo a corpo simples é o dado da arma mais o modificador de Força (ou Destreza para armas finesse).",
+  "multiplicador_dano_medio": 1.0
+ },
+ "niveis": {
+  "usa_niveis": true,
+  "nivel_inicial": 1,
+  "nivel_maximo": 20,
+  "nome": "nível",
+  "variavel": "nivel"
+ },
+ "atributos": [
+  {
+   "id": "for",
+   "nome": "Força",
+   "sigla": "FOR",
+   "descricao": "Representa a potência física e a capacidade de carga.",
+   "minimo": null,
+   "maximo": 20,
+   "rolagem": "4d6kh3"
+  },
+  {
+   "id": "des",
+   "nome": "Destreza",
+   "sigla": "DES",
+   "descricao": "Reflete agilidade, reflexos e precisão.",
+   "minimo": null,
+   "maximo": 20,
+   "rolagem": "4d6kh3"
+  },
+  {
+   "id": "con",
+   "nome": "Constituição",
+   "sigla": "CON",
+   "descricao": "Indica resistência física e pontos de vida.",
+   "minimo": null,
+   "maximo": 20,
+   "rolagem": "4d6kh3"
+  },
+  {
+   "id": "int",
+   "nome": "Inteligência",
+   "sigla": "INT",
+   "descricao": "Mede aprendizado, memória e capacidade de raciocínio.",
+   "minimo": null,
+   "maximo": 20,
+   "rolagem": "4d6kh3"
+  },
+  {
+   "id": "sab",
+   "nome": "Sabedoria",
+   "sigla": "SAB",
+   "descricao": "Avalia percepção, intuição e força de vontade.",
+   "minimo": null,
+   "maximo": 20,
+   "rolagem": "4d6kh3"
+  },
+  {
+   "id": "car",
+   "nome": "Carisma",
+   "sigla": "CAR",
+   "descricao": "Representa presença, persuasão e liderança.",
+   "minimo": null,
+   "maximo": 20,
+   "rolagem": "4d6kh3"
+  }
+ ],
+ "geracao": {
+  "metodo": "rolagem",
+  "rolagem": "4d6kh3",
+  "pontos": null,
+  "valor_inicial": null,
+  "valores_fixos": [],
+  "explicacao": "Rola 4d6 e descarta o menor para cada atributo.",
+  "grupos": []
+ },
+ "derivados": [
+  {
+   "id": "vida_max",
+   "nome": "Pontos de Vida Máximos",
+   "formula": "8 + mod_con + (nivel-1)*(1d8 + mod_con)",
+   "tipo": "vida",
+   "explicacao": "Assume 8 + mod_con no 1º nível e 1d8 + mod_con por nível adicional."
+  },
+  {
+   "id": "ca",
+   "nome": "Classe de Armadura",
+   "formula": "10 + mod_des",
+   "tipo": "defesa",
+   "explicacao": "Sem armadura, a CA base é 10 + modificador de Destreza."
+  },
+  {
+   "id": "iniciativa",
+   "nome": "Iniciativa",
+   "formula": "mod_des",
+   "tipo": "iniciativa",
+   "explicacao": "Iniciativa usa o modificador de Destreza."
+  },
+  {
+   "id": "movimento",
+   "nome": "Velocidade",
+   "formula": "30",
+   "tipo": "movimento",
+   "explicacao": "Velocidade base padrão de 30 pés, pode variar por raça ou classe."
+  }
+ ],
+ "pericias": [
+  {
+   "nome": "Acrobacia",
+   "atributo": "des",
+   "descricao": "Manobras atléticas que exigem agilidade."
+  },
+  {
+   "nome": "Arcanismo",
+   "atributo": "int",
+   "descricao": "Conhecimento sobre magia e fenômenos sobrenaturais."
+  },
+  {
+   "nome": "Atletismo",
+   "atributo": "for",
+   "descricao": "Provas de força e resistência física."
+  },
+  {
+   "nome": "Enganação",
+   "atributo": "car",
+   "descricao": "Capacidade de mentir e disfarçar intenções."
+  },
+  {
+   "nome": "História",
+   "atributo": "int",
+   "descricao": "Lembrança de eventos, culturas e fatos passados."
+  },
+  {
+   "nome": "Intuição",
+   "atributo": "sab",
+   "descricao": "Percepção de motivos e verdades ocultas."
+  },
+  {
+   "nome": "Intimidação",
+   "atributo": "car",
+   "descricao": "Uso de presença ou ameaça para influenciar."
+  },
+  {
+   "nome": "Investigação",
+   "atributo": "int",
+   "descricao": "Busca de pistas e análise de informações."
+  },
+  {
+   "nome": "Medicina",
+   "atributo": "sab",
+   "descricao": "Diagnóstico e tratamento de ferimentos e doenças."
+  },
+  {
+   "nome": "Natureza",
+   "atributo": "sab",
+   "descricao": "Conhecimento sobre flora, fauna e ambientes naturais."
+  },
+  {
+   "nome": "Percepção",
+   "atributo": "sab",
+   "descricao": "Atenção a detalhes sensoriais ao redor."
+  },
+  {
+   "nome": "Persuasão",
+   "atributo": "car",
+   "descricao": "Habilidade de convencer e influenciar outros."
+  },
+  {
+   "nome": "Religião",
+   "atributo": "int",
+   "descricao": "Entendimento de deuses, rituais e doutrinas."
+  },
+  {
+   "nome": "Sobrevivência",
+   "atributo": "sab",
+   "descricao": "Capacidade de se virar em ambientes hostis."
+  },
+  {
+   "nome": "Furtividade",
+   "atributo": "des",
+   "descricao": "Mover-se silenciosamente e evitar ser detectado."
+  }
+ ],
+ "arquetipos": [
+  {
+   "nome": "Barbarian",
+   "descricao": "O Bárbaro é um combatente feroz que canaliza sua fúria primal em combate, ganhando resistência e dano extra enquanto está em fúria. Ele pode lutar sem armadura, usando sua força e constituição para melhorar sua Classe de Armadura e sua durabilidade.",
+   "papel": "tanque",
+   "atributos_chave": [
+    "for",
+    "con"
+   ],
+   "pericias": [
+    "Animal Handling",
+    "Athletics",
+    "Intimidation",
+    "Nature",
+    "Perception",
+    "Survival"
+   ],
+   "equipamento": [
+    "greataxe ou arma marcial corpo a corpo",
+    "duas machadinhas ou arma simples",
+    "pacote de explorador",
+    "quatro dardos"
+   ],
+   "habilidades": [
+    "Rage",
+    "Unarmored Defense",
+    "Reckless Attack",
+    "Danger Sense",
+    "Primal Path",
+    "Ability Score Improvement",
+    "Extra Attack",
+    "Fast Movement",
+    "Feral Instinct",
+    "Brutal Critical",
+    "Relentless Rage",
+    "Persistent Rage"
+   ],
+   "dano_tipico": null,
+   "formulas": {
+    "vida_max": "12 + mod_constituicao + (nivel-1)*(1d12 + mod_constituicao)",
+    "ca": "10 + mod_destreza + mod_constituicao"
+   }
+  },
+  {
+   "nome": "Bard",
+   "descricao": "Bardo é um artista carismático que combina música e magia para inspirar aliados, lançar feitiços e apoiar o grupo.",
+   "papel": "Suporte",
+   "atributos_chave": [
+    "car"
+   ],
+   "pericias": [
+    "Escolha de 3 perícias",
+    "Expertise (dobro da proficiência)",
+    "Jack of All Trades (metade da proficiência em testes não treinados)"
+   ],
+   "equipamento": [
+    "rapier ou longsword ou arma simples",
+    "pacote de diplomata ou pacote de artista",
+    "lute ou outro instrumento musical",
+    "armadura de couro",
+    "adaga"
+   ],
+   "habilidades": [
+    "Bardic Inspiration",
+    "Jack of All Trades",
+    "Song of Rest",
+    "Expertise",
+    "Ability Score Improvement",
+    "Font of Inspiration",
+    "Countercharm",
+    "Magical Secrets",
+    "Superior Inspiration",
+    "Cutting Words",
+    "Peerless Skill",
+    "Additional Magical Secrets"
+   ],
+   "dano_tipico": null,
+   "formulas": {
+    "vida_max": "8 + mod_constituicao + (nivel-1)*(5 + mod_constituicao)"
+   }
+  },
+  {
+   "nome": "Cleric",
+   "descricao": "Clérigo é um lançador de magias divinas que usa Sabedoria para curar, proteger e combater mortos‑vivos, podendo usar armaduras leves ou médias e escudos.",
+   "papel": "curandeiro",
+   "atributos_chave": [
+    "sab",
+    "con"
+   ],
+   "pericias": [
+    "History",
+    "Insight",
+    "Medicine",
+    "Persuasion",
+    "Religion"
+   ],
+   "equipamento": [
+    "maça ou martelo de guerra",
+    "cota de escamas, armadura de couro ou cota de malha",
+    "besta leve e 20 virotes ou qualquer arma simples",
+    "mochila de sacerdote ou mochila de explorador",
+    "escudo",
+    "símbolo sagrado"
+   ],
+   "habilidades": [
+    "Spellcasting",
+    "Divine Domain",
+    "Channel Divinity: Turn Undead",
+    "Ability Score Improvement",
+    "Destroy Undead",
+    "Divine Intervention",
+    "Disciple of Life",
+    "Preserve Life",
+    "Blessed Healer",
+    "Divine Strike",
+    "Supreme Healing",
+    "Channel Divinity: Additional Uses"
+   ],
+   "dano_tipico": null,
+   "formulas": {
+    "vida_max": "8 + mod_constituicao + (nivel-1)*(5 + mod_constituicao)"
+   }
+  },
+  {
+   "nome": "Druid",
+   "descricao": "Druidas são guardiões da natureza que canalizam a energia primal para lançar magias e transformar‑se em animais. Eles evitam armaduras e armas de metal, preferindo equipamentos simples e um foco druídico.",
+   "papel": "curandeiro",
+   "atributos_chave": [
+    "sab",
+    "con"
+   ],
+   "pericias": [
+    "Arcana",
+    "Animal Handling",
+    "Insight",
+    "Medicine",
+    "Nature",
+    "Perception",
+    "Religion",
+    "Survival"
+   ],
+   "equipamento": [
+    "escudo de madeira ou arma simples",
+    "cimitarra ou arma simples corpo a corpo",
+    "armadura de couro",
+    "pacote de explorador",
+    "foco druídico"
+   ],
+   "habilidades": [
+    "Druidic",
+    "Spellcasting",
+    "Wild Shape",
+    "Druid Circle",
+    "Ability Score Improvement",
+    "Natural Recovery",
+    "Circle Spells",
+    "Land's Stride",
+    "Nature's Ward",
+    "Nature's Sanctuary",
+    "Timeless Body",
+    "Beast Spells"
+   ],
+   "dano_tipico": null,
+   "formulas": {
+    "vida_max": "8 + mod_constituicao + (nivel-1)*(5 + mod_constituicao)",
+    "iniciativa": "mod_destreza"
+   }
+  },
+  {
+   "nome": "Fighter",
+   "descricao": "Classe focada em combate físico, com alta durabilidade e múltiplos ataques, capaz de usar qualquer armadura e arma.",
+   "papel": "tanque",
+   "atributos_chave": [
+    "for",
+    "con"
+   ],
+   "pericias": [
+    "Acrobacia",
+    "Manejo de Animais",
+    "Atletismo",
+    "História",
+    "Intuição",
+    "Intimidação",
+    "Percepção",
+    "Sobrevivência"
+   ],
+   "equipamento": [
+    "cota de malha ou armadura de couro, arco longo e 20 flechas",
+    "uma arma marcial e um escudo ou duas armas marciais",
+    "uma besta leve e 20 virotes ou duas machadinhas",
+    "mochila de aventureiro ou mochila de explorador"
+   ],
+   "habilidades": [
+    "Fighting Style",
+    "Second Wind",
+    "Action Surge",
+    "Martial Archetype",
+    "Ability Score Improvement",
+    "Extra Attack",
+    "Remarkable Athlete",
+    "Indomitable",
+    "Additional Fighting Style",
+    "Superior Critical",
+    "Survivor",
+    "Extra Attack (3)"
+   ],
+   "dano_tipico": null,
+   "formulas": {
+    "vida_max": "10 + mod_constituicao + (nivel-1)*(5 + mod_constituicao)"
+   }
+  },
+  {
+   "nome": "Monk",
+   "descricao": "Monge é um combatente ágil que usa artes marciais e energia interior (ki) para atacar, se defender e realizar feitos sobrenaturais. Ele luta sem armadura, usando ataques desarmados ou armas simples como a espada curta, e ganha velocidade e habilidades especiais conforme avança de nível.",
+   "papel": "DPS",
+   "atributos_chave": [
+    "des",
+    "sab"
+   ],
+   "pericias": [
+    "Acrobacia",
+    "Atletismo",
+    "História",
+    "Intuição",
+    "Religião",
+    "Furtividade"
+   ],
+   "equipamento": [
+    "espada curta ou arma simples",
+    "mochila de aventureiro ou de masmorreiro",
+    "10 dardos"
+   ],
+   "habilidades": [
+    "Defesa sem Armadura",
+    "Artes Marciais",
+    "Pontos de Ki",
+    "Flurry of Blows",
+    "Patient Defense",
+    "Step of the Wind",
+    "Movimento sem Armadura",
+    "Desviar Mísseis",
+    "Melhoria de Pontos de Habilidade",
+    "Queda Lenta",
+    "Ataque Extra",
+    "Golpe Atordoante"
+   ],
+   "dano_tipico": null,
+   "formulas": {
+    "vida_max": "8 + mod_constituicao + (nivel-1)*(1d8 + mod_constituicao)",
+    "ca": "10 + mod_destreza + mod_sabedoria"
+   }
+  },
+  {
+   "nome": "Ranger",
+   "descricao": "O Ranger é um combatente versátil que combina habilidades de caça, exploração e magia natural. Ele pode escolher inimigos favoritos, terrenos preferidos e estilos de luta, ganhando vantagens em rastreamento, sobrevivência e ataques à distância.",
+   "papel": "caçador",
+   "atributos_chave": [
+    "des",
+    "sab"
+   ],
+   "pericias": [
+    "Animal Handling",
+    "Athletics",
+    "Insight",
+    "Investigation",
+    "Nature",
+    "Perception",
+    "Stealth",
+    "Survival"
+   ],
+   "equipamento": [
+    "cota de escamas ou armadura de couro",
+    "duas espadas curtas ou duas armas simples corpo a corpo",
+    "mochila de aventureiro ou de desbravador",
+    "arco longo e 20 flechas"
+   ],
+   "habilidades": [
+    "Favored Enemy",
+    "Natural Explorer",
+    "Fighting Style",
+    "Spellcasting",
+    "Primeval Awareness",
+    "Ability Score Improvement",
+    "Extra Attack",
+    "Land's Stride",
+    "Hide in Plain Sight",
+    "Vanish",
+    "Feral Senses",
+    "Foe Slayer"
+   ],
+   "dano_tipico": null,
+   "formulas": {
+    "vida_max": "10 + mod_constituicao + (nivel-1)*(6 + mod_constituicao)"
+   }
+  },
+  {
+   "nome": "Rogue",
+   "descricao": "O ladino é especialista em furtividade, ataques precisos e habilidades de sobrevivência. Ele usa armaduras leves, armas de finesse e ferramentas de ladrão, e pode agir rapidamente em combate com ações bônus.",
+   "papel": "dano",
+   "atributos_chave": [
+    "des"
+   ],
+   "pericias": [
+    "Acrobacia",
+    "Atletismo",
+    "Enganação",
+    "Intuição",
+    "Intimidação",
+    "Investigação",
+    "Percepção",
+    "Performance",
+    "Persuasão",
+    "Prestidigitação",
+    "Furtividade",
+    "Ferramentas de ladrão"
+   ],
+   "equipamento": [
+    "rapier ou shortsword",
+    "shortbow e 20 flechas ou shortsword",
+    "Burglar's pack, Dungeoneer's pack ou Explorer's pack",
+    "armadura de couro",
+    "duas adagas",
+    "ferramentas de ladrão"
+   ],
+   "habilidades": [
+    "Especialização",
+    "Ataque Furtivo",
+    "Canto dos Ladrões",
+    "Ação Astuta",
+    "Arquétipo Ladino",
+    "Melhoria de Atributo",
+    "Esquiva Inesperada",
+    "Evasão",
+    "Talento Confiável",
+    "Sentido de Percepção",
+    "Mente Escorregadia",
+    "Escorregadio"
+   ],
+   "dano_tipico": null,
+   "formulas": {
+    "vida_max": "8 + mod_constituicao + (nivel-1)*(5 + mod_constituicao)"
+   }
+  },
+  {
+   "nome": "Sorcerer",
+   "descricao": "Mago nato que canaliza energia arcana interior, lançando feitiços rapidamente e manipulando-os com pontos de sorceria. Sua magia depende da força de vontade, representada pelo Carisma.",
+   "papel": "Dano",
+   "atributos_chave": [
+    "car",
+    "des"
+   ],
+   "pericias": [
+    "Arcana",
+    "Deception",
+    "Insight",
+    "Intimidation",
+    "Persuasion",
+    "Religion"
+   ],
+   "equipamento": [
+    "light crossbow e 20 virotes ou qualquer arma simples",
+    "component pouch ou arcane focus",
+    "dungeoneer's pack ou explorer's pack",
+    "dois daggers"
+   ],
+   "habilidades": [
+    "Spellcasting",
+    "Sorcerous Origin",
+    "Font of Magic",
+    "Metamagic",
+    "Ability Score Improvement",
+    "Draconic Resilience",
+    "Elemental Affinity",
+    "Dragon Wings",
+    "Draconic Presence",
+    "Sorcerous Restoration"
+   ],
+   "dano_tipico": null,
+   "formulas": {
+    "vida_max": "6 + mod_constituicao + (nivel-1)*(4 + mod_constituicao)"
+   }
+  },
+  {
+   "nome": "Wizard",
+   "descricao": "O mago é um estudioso da arte arcana que utiliza um grimório para preparar e lançar feitiços. Ele depende de Inteligência para sua magia e de Constituição para sobreviver.",
+   "papel": "conjurador",
+   "atributos_chave": [
+    "int",
+    "con"
+   ],
+   "pericias": [
+    "Arcana",
+    "History",
+    "Insight",
+    "Investigation",
+    "Medicine",
+    "Religion"
+   ],
+   "equipamento": [
+    "quarterstaff ou dagger",
+    "component pouch ou arcane focus",
+    "scholar's pack ou explorer's pack",
+    "spellbook"
+   ],
+   "habilidades": [
+    "Arcane Recovery",
+    "Arcane Tradition",
+    "Ability Score Improvement",
+    "Spell Mastery",
+    "Signature Spell"
+   ],
+   "dano_tipico": null,
+   "formulas": {
+    "vida_max": "6 + mod_constituicao + (nivel-1)*(1d6 + mod_constituicao)"
+   }
+  }
+ ],
+ "etapas": [
+  {
+   "id": "raca",
+   "nome": "Raça",
+   "instrucao": "Escolha a raça do personagem.",
+   "tipo": "escolha",
+   "principal": false,
+   "nivel_minimo": 1,
+   "depende_de": "",
+   "opcoes": [
+    {
+     "nome": "Dwarf",
+     "descricao": "Anões são criaturas resistentes e robustas, com visão no escuro e forte ligação ao trabalho em pedra. São conhecidos por sua lealdade, disciplina e habilidades de combate com armas simples.",
+     "papel": "tanque",
+     "atributos_chave": [
+      "con",
+      "sab"
+     ],
+     "pericias": [
+      "História (dobro de bônus em testes relacionados a pedra)",
+      "Ferramentas artesanais (escolha uma: ferramentas de ferreiro, suprimentos de cervejeiro ou ferramentas de pedreiro)"
+     ],
+     "equipamento": [],
+     "habilidades": [
+      "Resistência ao Veneno",
+      "Visão no Escuro",
+      "Treinamento de Combate Anão",
+      "Mestre das Pedras (Stonecunning)",
+      "Proficiência em Ferramentas",
+      "Dureza Anã (Hill Dwarf)",
+      "Sabedoria Anã (Hill Dwarf)"
+     ],
+     "dano_tipico": null,
+     "formulas": {
+      "movimento": "25"
+     },
+     "pai": "",
+     "pagina": 3,
+     "bonus_atributos": {
+      "con": 2,
+      "sab": 1
+     },
+     "habilidades_detalhe": [
+      {
+       "nome": "Resistência ao Veneno",
+       "resumo": "Vantagem em testes de resistência contra veneno e resistência a dano de veneno.",
+       "nivel": 1,
+       "pagina": 3
+      },
+      {
+       "nome": "Visão no Escuro",
+       "resumo": "Enxerga 60 pés em luz fraca como se fosse luz plena e na escuridão como se fosse luz fraca.",
+       "nivel": 1,
+       "pagina": 3
+      },
+      {
+       "nome": "Treinamento de Combate Anão",
+       "resumo": "Proficiência com machado de batalha, machado de mão, martelo leve e martelo de guerra.",
+       "nivel": 1,
+       "pagina": 3
+      },
+      {
+       "nome": "Mestre das Pedras (Stonecunning)",
+       "resumo": "Proficiência em História e adiciona o dobro do bônus de proficiência em testes relacionados a pedra.",
+       "nivel": 1,
+       "pagina": 3
+      },
+      {
+       "nome": "Proficiência em Ferramentas",
+       "resumo": "Escolha uma ferramenta artesanal (ferreiro, cervejeiro ou pedreiro) e ganha proficiência.",
+       "nivel": 1,
+       "pagina": 3
+      },
+      {
+       "nome": "Dureza Anã (Hill Dwarf)",
+       "resumo": "Aumenta o máximo de pontos de vida em 1 e ganha +1 ponto de vida por nível.",
+       "nivel": 1,
+       "pagina": 4
+      },
+      {
+       "nome": "Sabedoria Anã (Hill Dwarf)",
+       "resumo": "Aumenta a Sabedoria em 1.",
+       "nivel": 1,
+       "pagina": 4
+      }
+     ],
+     "poderes": [],
+     "poderes_detalhe": [],
+     "detalhada": true
+    },
+    {
+     "nome": "Hill Dwarf",
+     "descricao": "Anões das colinas são robustos e sábios, combinando a resistência típica dos anões com uma intuição aguçada. Ganham um ponto extra de sabedoria e mais pontos de vida a cada nível, tornando‑se excelentes defensores e conselheiros.",
+     "papel": "tanque",
+     "atributos_chave": [
+      "con",
+      "sab"
+     ],
+     "pericias": [
+      "História"
+     ],
+     "equipamento": [],
+     "habilidades": [
+      "Aumento de Constituição",
+      "Aumento de Sabedoria",
+      "Visão no Escuro",
+      "Resiliência Anã",
+      "Treinamento de Combate Anão",
+      "Proficiência em Ferramentas",
+      "Stonecunning",
+      "Dwarven Toughness"
+     ],
+     "dano_tipico": null,
+     "formulas": {
+      "vida_max": "1 + (nivel-1)*1",
+      "movimento": "25"
+     },
+     "pai": "Dwarf",
+     "pagina": 4,
+     "bonus_atributos": {
+      "con": 2,
+      "sab": 1
+     },
+     "habilidades_detalhe": [
+      {
+       "nome": "Aumento de Constituição",
+       "resumo": "Constituição aumenta em 2 pontos.",
+       "nivel": 1,
+       "pagina": 3
+      },
+      {
+       "nome": "Aumento de Sabedoria",
+       "resumo": "Sabedoria aumenta em 1 ponto.",
+       "nivel": 1,
+       "pagina": 4
+      },
+      {
+       "nome": "Visão no Escuro",
+       "resumo": "Enxerga 60 pés em luz fraca como se fosse luz plena e em escuridão como se fosse luz fraca.",
+       "nivel": 1,
+       "pagina": 3
+      },
+      {
+       "nome": "Resiliência Anã",
+       "resumo": "Vantagem em testes de resistência contra veneno e resistência a dano de veneno.",
+       "nivel": 1,
+       "pagina": 3
+      },
+      {
+       "nome": "Treinamento de Combate Anão",
+       "resumo": "Proficiência com machado de batalha, machado de mão, martelo leve e martelo de guerra.",
+       "nivel": 1,
+       "pagina": 3
+      },
+      {
+       "nome": "Proficiência em Ferramentas",
+       "resumo": "Escolha entre ferramentas de ferreiro, suprimentos de cervejeiro ou ferramentas de pedreiro.",
+       "nivel": 1,
+       "pagina": 3
+      },
+      {
+       "nome": "Stonecunning",
+       "resumo": "Proficiência em História e adiciona o dobro do bônus de proficiência em testes relacionados a pedra.",
+       "nivel": 1,
+       "pagina": 3
+      },
+      {
+       "nome": "Dwarven Toughness",
+       "resumo": "Aumenta o máximo de pontos de vida em 1 no 1º nível e +1 a cada nível subsequente.",
+       "nivel": 1,
+       "pagina": 4
+      }
+     ],
+     "poderes": [],
+     "poderes_detalhe": [],
+     "detalhada": true
+    },
+    {
+     "nome": "Elf",
+     "descricao": "Elfos são ágeis, têm visão no escuro, sentidos aguçados e valorizam a liberdade. Ganham +2 em Destreza, proficiência em Percepção e podem meditar por 4 horas ao invés de dormir.",
+     "papel": "agilidade",
+     "atributos_chave": [
+      "des"
+     ],
+     "pericias": [
+      "Percepção"
+     ],
+     "equipamento": [],
+     "habilidades": [
+      "Visão no Escuro",
+      "Sentidos Aguçados",
+      "Ancestralidade Feérica",
+      "Transe"
+     ],
+     "dano_tipico": null,
+     "formulas": {
+      "movimento": "30"
+     },
+     "pai": "",
+     "pagina": 4,
+     "bonus_atributos": {
+      "des": 2
+     },
+     "habilidades_detalhe": [
+      {
+       "nome": "Visão no Escuro",
+       "resumo": "Enxerga em luz fraca como se fosse luz forte até 60 pés e em escuridão como se fosse luz fraca.",
+       "nivel": 1,
+       "pagina": 4
+      },
+      {
+       "nome": "Sentidos Aguçados",
+       "resumo": "Proficiência na perícia Percepção.",
+       "nivel": 1,
+       "pagina": 4
+      },
+      {
+       "nome": "Ancestralidade Feérica",
+       "resumo": "Vantagem em testes de resistência contra ser encantado e imunidade a magias que causem sono.",
+       "nivel": 1,
+       "pagina": 4
+      },
+      {
+       "nome": "Transe",
+       "resumo": "Descansa 4 horas em meditação profunda e obtém os mesmos benefícios de 8 horas de sono.",
+       "nivel": 1,
+       "pagina": 4
+      }
+     ],
+     "poderes": [],
+     "poderes_detalhe": [],
+     "detalhada": true
+    },
+    {
+     "nome": "High Elf",
+     "descricao": "Elfos de alta linhagem são inteligentes e têm afinidade natural com a magia, combinando agilidade e conhecimento arcano.",
+     "papel": "caster",
+     "atributos_chave": [
+      "int",
+      "des"
+     ],
+     "pericias": [
+      "Percepção"
+     ],
+     "equipamento": [],
+     "habilidades": [
+      "Aumento de Pontuação de Habilidade",
+      "Treinamento com Armas Élficas",
+      "Truque",
+      "Língua Extra",
+      "Visão no Escuro",
+      "Ancestralidade Feérica",
+      "Transe",
+      "Sentidos Aguçados"
+     ],
+     "dano_tipico": null,
+     "formulas": {},
+     "pai": "Elf",
+     "pagina": 4,
+     "bonus_atributos": {
+      "int": 1
+     },
+     "habilidades_detalhe": [
+      {
+       "nome": "Aumento de Pontuação de Habilidade",
+       "resumo": "Inteligência aumenta em 1 ponto.",
+       "nivel": null,
+       "pagina": 4
+      },
+      {
+       "nome": "Treinamento com Armas Élficas",
+       "resumo": "Proficiência com espada longa, espada curta, arco curto e arco longo.",
+       "nivel": null,
+       "pagina": 4
+      },
+      {
+       "nome": "Truque",
+       "resumo": "Você conhece um truque da lista de magos; Inteligência é sua habilidade de conjuração para ele.",
+       "nivel": null,
+       "pagina": 4
+      },
+      {
+       "nome": "Língua Extra",
+       "resumo": "Você pode falar, ler e escrever uma língua adicional à sua escolha.",
+       "nivel": null,
+       "pagina": 4
+      },
+      {
+       "nome": "Visão no Escuro",
+       "resumo": "Veja em luz fraca até 60 pés como se fosse luz brilhante e na escuridão como se fosse luz fraca.",
+       "nivel": null,
+       "pagina": 4
+      },
+      {
+       "nome": "Ancestralidade Feérica",
+       "resumo": "Vantagem em testes de resistência contra ser encantado; magia não pode deixá-lo adormecido.",
+       "nivel": null,
+       "pagina": 4
+      },
+      {
+       "nome": "Transe",
+       "resumo": "Não precisa dormir; medita 4 horas para obter o mesmo benefício de 8 horas de sono.",
+       "nivel": null,
+       "pagina": 4
+      },
+      {
+       "nome": "Sentidos Aguçados",
+       "resumo": "Proficiência na perícia Percepção.",
+       "nivel": null,
+       "pagina": 4
+      }
+     ],
+     "poderes": [
+      "Truque (cantrip)"
+     ],
+     "poderes_detalhe": [
+      {
+       "nome": "Truque (cantrip)",
+       "resumo": "Um truque da lista de magos que pode ser usado à vontade, usando Inteligência como habilidade de conjuração.",
+       "nivel": null,
+       "pagina": 4
+      }
+     ],
+     "detalhada": true
+    },
+    {
+     "nome": "Halfling",
+     "descricao": "Halflings são pequenos, ágeis e resilientes, com velocidade base de 25 pés. Recebem +2 em Destreza, têm sorte ao refazer rolagens de 1 e coragem contra medo.",
+     "papel": "suporte",
+     "atributos_chave": [
+      "des"
+     ],
+     "pericias": [],
+     "equipamento": [],
+     "habilidades": [
+      "Lucky",
+      "Brave",
+      "Nimbleness"
+     ],
+     "dano_tipico": null,
+     "formulas": {
+      "movimento": "25"
+     },
+     "pai": "",
+     "pagina": 4,
+     "bonus_atributos": {
+      "des": 2
+     },
+     "habilidades_detalhe": [
+      {
+       "nome": "Lucky",
+       "resumo": "Ao rolar 1 em um ataque, teste ou salvamento, pode refazer o dado e usar o novo resultado.",
+       "nivel": null,
+       "pagina": 4
+      },
+      {
+       "nome": "Brave",
+       "resumo": "Concede vantagem em testes de resistência contra o efeito de estar amedrontado.",
+       "nivel": null,
+       "pagina": 4
+      },
+      {
+       "nome": "Nimbleness",
+       "resumo": "Permite mover-se através do espaço de criaturas de tamanho maior que o seu.",
+       "nivel": null,
+       "pagina": 4
+      }
+     ],
+     "poderes": [],
+     "poderes_detalhe": [],
+     "detalhada": true
+    }
+   ]
+  },
+  {
+   "id": "classe",
+   "nome": "Classe",
+   "instrucao": "Escolha a classe principal do personagem.",
+   "tipo": "escolha",
+   "principal": true,
+   "nivel_minimo": 1,
+   "depende_de": "",
+   "opcoes": [
+    {
+     "nome": "Barbarian",
+     "descricao": "O Bárbaro é um combatente feroz que canaliza sua fúria primal em combate, ganhando resistência e dano extra enquanto está em fúria. Ele pode lutar sem armadura, usando sua força e constituição para melhorar sua Classe de Armadura e sua durabilidade.",
+     "papel": "tanque",
+     "atributos_chave": [
+      "for",
+      "con"
+     ],
+     "pericias": [
+      "Animal Handling",
+      "Athletics",
+      "Intimidation",
+      "Nature",
+      "Perception",
+      "Survival"
+     ],
+     "equipamento": [
+      "greataxe ou arma marcial corpo a corpo",
+      "duas machadinhas ou arma simples",
+      "pacote de explorador",
+      "quatro dardos"
+     ],
+     "habilidades": [
+      "Rage",
+      "Unarmored Defense",
+      "Reckless Attack",
+      "Danger Sense",
+      "Primal Path",
+      "Ability Score Improvement",
+      "Extra Attack",
+      "Fast Movement",
+      "Feral Instinct",
+      "Brutal Critical",
+      "Relentless Rage",
+      "Persistent Rage"
+     ],
+     "dano_tipico": null,
+     "formulas": {
+      "vida_max": "12 + mod_constituicao + (nivel-1)*(1d12 + mod_constituicao)",
+      "ca": "10 + mod_destreza + mod_constituicao"
+     },
+     "pai": "",
+     "pagina": 8,
+     "bonus_atributos": {},
+     "habilidades_detalhe": [
+      {
+       "nome": "Rage",
+       "resumo": "Entra em fúria como ação bônus, concedendo vantagem em testes de Força, resistência a dano físico e bônus de dano que aumenta por nível.",
+       "nivel": 1,
+       "pagina": 8
+      },
+      {
+       "nome": "Unarmored Defense",
+       "resumo": "Quando não usa armadura, sua CA é 10 + modificador de Destreza + modificador de Constituição.",
+       "nivel": 1,
+       "pagina": 8
+      },
+      {
+       "nome": "Reckless Attack",
+       "resumo": "No primeiro ataque do turno, pode atacar com vantagem, mas ataques contra ele também têm vantagem até o próximo turno.",
+       "nivel": 2,
+       "pagina": 9
+      },
+      {
+       "nome": "Danger Sense",
+       "resumo": "Concede vantagem em testes de resistência de Destreza contra efeitos que pode ver, desde que não esteja cego, surdo ou incapacitado.",
+       "nivel": 2,
+       "pagina": 9
+      },
+      {
+       "nome": "Primal Path",
+       "resumo": "Escolhe um caminho (Berserker ou Totem Warrior) que concede recursos adicionais nos níveis 3, 6, 10 e 14.",
+       "nivel": 3,
+       "pagina": 9
+      },
+      {
+       "nome": "Ability Score Improvement",
+       "resumo": "A cada 4 níveis (4,8,12,16,19) pode aumentar um atributo em 2 ou dois atributos em 1, até 20.",
+       "nivel": 4,
+       "pagina": 9
+      },
+      {
+       "nome": "Extra Attack",
+       "resumo": "A partir do 5º nível, pode atacar duas vezes ao usar a ação de Ataque.",
+       "nivel": 5,
+       "pagina": 9
+      },
+      {
+       "nome": "Fast Movement",
+       "resumo": "A partir do 5º nível, sua velocidade aumenta em 10 pés enquanto não usa armadura pesada.",
+       "nivel": 5,
+       "pagina": 9
+      },
+      {
+       "nome": "Feral Instinct",
+       "resumo": "A partir do 7º nível, tem vantagem em rolagens de iniciativa e pode agir normalmente ao ser surpreendido se entrar em fúria primeiro.",
+       "nivel": 7,
+       "pagina": 9
+      },
+      {
+       "nome": "Brutal Critical",
+       "resumo": "A partir do 9º nível, rola um dado de dano extra em críticos; aumenta para dois dados no 13º e três no 17º.",
+       "nivel": 9,
+       "pagina": 9
+      },
+      {
+       "nome": "Relentless Rage",
+       "resumo": "A partir do 11º nível, ao cair a 0 PV enquanto está em fúria, pode fazer um teste de resistência de Constituição (CD 10) para ficar com 1 PV.",
+       "nivel": 11,
+       "pagina": 9
+      },
+      {
+       "nome": "Persistent Rage",
+       "resumo": "A partir do 15º nível, a fúria só termina se o bárbaro ficar inconsciente ou decidir encerrar.",
+       "nivel": 15,
+       "pagina": 9
+      }
+     ],
+     "poderes": [],
+     "poderes_detalhe": [],
+     "detalhada": true
+    },
+    {
+     "nome": "Bard",
+     "descricao": "Bardo é um artista carismático que combina música e magia para inspirar aliados, lançar feitiços e apoiar o grupo.",
+     "papel": "Suporte",
+     "atributos_chave": [
+      "car"
+     ],
+     "pericias": [
+      "Escolha de 3 perícias",
+      "Expertise (dobro da proficiência)",
+      "Jack of All Trades (metade da proficiência em testes não treinados)"
+     ],
+     "equipamento": [
+      "rapier ou longsword ou arma simples",
+      "pacote de diplomata ou pacote de artista",
+      "lute ou outro instrumento musical",
+      "armadura de couro",
+      "adaga"
+     ],
+     "habilidades": [
+      "Bardic Inspiration",
+      "Jack of All Trades",
+      "Song of Rest",
+      "Expertise",
+      "Ability Score Improvement",
+      "Font of Inspiration",
+      "Countercharm",
+      "Magical Secrets",
+      "Superior Inspiration",
+      "Cutting Words",
+      "Peerless Skill",
+      "Additional Magical Secrets"
+     ],
+     "dano_tipico": null,
+     "formulas": {
+      "vida_max": "8 + mod_constituicao + (nivel-1)*(5 + mod_constituicao)"
+     },
+     "pai": "",
+     "pagina": 11,
+     "bonus_atributos": {},
+     "habilidades_detalhe": [
+      {
+       "nome": "Bardic Inspiration",
+       "resumo": "Concede um dado de inspiração (d6) a um aliado que pode usar em testes, ataques ou salvamentos.",
+       "nivel": 1,
+       "pagina": 12
+      },
+      {
+       "nome": "Jack of All Trades",
+       "resumo": "Adiciona metade da proficiência (arredondado para baixo) a qualquer teste de habilidade que não inclua proficiência.",
+       "nivel": 2,
+       "pagina": 12
+      },
+      {
+       "nome": "Song of Rest",
+       "resumo": "Durante um descanso curto, aliados que gastam Dados de Vida recuperam 1d6 extra de PV (aumenta em níveis superiores).",
+       "nivel": 2,
+       "pagina": 12
+      },
+      {
+       "nome": "Expertise",
+       "resumo": "Dobra o bônus de proficiência em duas perícias escolhidas (outras duas no 10º nível).",
+       "nivel": 3,
+       "pagina": 13
+      },
+      {
+       "nome": "Ability Score Improvement",
+       "resumo": "A cada 4 níveis, pode aumentar um atributo em 2 ou dois atributos em 1.",
+       "nivel": 4,
+       "pagina": 13
+      },
+      {
+       "nome": "Font of Inspiration",
+       "resumo": "Recupera todos os usos de Bardic Inspiration após um descanso curto ou longo.",
+       "nivel": 5,
+       "pagina": 13
+      },
+      {
+       "nome": "Countercharm",
+       "resumo": "Concede vantagem em salvamentos contra medo e encantamento a aliados dentro de 30 pés por 1 turno.",
+       "nivel": 6,
+       "pagina": 13
+      },
+      {
+       "nome": "Magical Secrets",
+       "resumo": "Permite escolher duas magias de qualquer classe que podem ser usadas como magias de bardo.",
+       "nivel": 10,
+       "pagina": 13
+      },
+      {
+       "nome": "Superior Inspiration",
+       "resumo": "Ao rolar iniciativa sem usos de Bardic Inspiration, recupera um uso.",
+       "nivel": 20,
+       "pagina": 13
+      },
+      {
+       "nome": "Cutting Words",
+       "resumo": "Gasta um uso de Bardic Inspiration para reduzir o ataque, teste ou dano de uma criatura dentro de 60 pés.",
+       "nivel": 3,
+       "pagina": 13
+      },
+      {
+       "nome": "Peerless Skill",
+       "resumo": "Gasta um uso de Bardic Inspiration para adicionar o dado de inspiração a um teste de habilidade.",
+       "nivel": 14,
+       "pagina": 14
+      },
+      {
+       "nome": "Additional Magical Secrets",
+       "resumo": "Bardo da Faculdade de Lore aprende duas magias adicionais de qualquer classe no 6º nível (não contam no limite de magias conhecidas).",
+       "nivel": 6,
+       "pagina": 13
+      }
+     ],
+     "poderes": [
+      "Spellcasting (Bard)",
+      "Bardic Inspiration",
+      "Jack of All Trades",
+      "Song of Rest",
+      "Expertise",
+      "Countercharm",
+      "Magical Secrets",
+      "Superior Inspiration",
+      "Cutting Words",
+      "Peerless Skill",
+      "Additional Magical Secrets",
+      "Font of Inspiration"
+     ],
+     "poderes_detalhe": [
+      {
+       "nome": "Spellcasting (Bard)",
+       "resumo": "Permite lançar magias da lista de bardo usando Carisma como atributo de conjuração.",
+       "nivel": null,
+       "pagina": 12
+      },
+      {
+       "nome": "Bardic Inspiration",
+       "resumo": "Dá a aliados um dado de inspiração que pode ser usado em testes, ataques ou salvamentos.",
+       "nivel": null,
+       "pagina": 12
+      },
+      {
+       "nome": "Jack of All Trades",
+       "resumo": "Adiciona metade da proficiência a testes de habilidade não treinados.",
+       "nivel": null,
+       "pagina": 12
+      },
+      {
+       "nome": "Song of Rest",
+       "resumo": "Concede cura extra (1d6, 1d8, 1d10, 1d12) durante descansos curtos.",
+       "nivel": null,
+       "pagina": 12
+      },
+      {
+       "nome": "Expertise",
+       "resumo": "Dobra o bônus de proficiência em perícias escolhidas.",
+       "nivel": null,
+       "pagina": 13
+      },
+      {
+       "nome": "Countercharm",
+       "resumo": "Concede vantagem contra medo e encantamento a aliados próximos.",
+       "nivel": null,
+       "pagina": 13
+      },
+      {
+       "nome": "Magical Secrets",
+       "resumo": "Permite aprender duas magias de qualquer classe.",
+       "nivel": null,
+       "pagina": 13
+      },
+      {
+       "nome": "Superior Inspiration",
+       "resumo": "Recupera um uso de Bardic Inspiration ao iniciar iniciativa sem usos restantes.",
+       "nivel": null,
+       "pagina": 13
+      },
+      {
+       "nome": "Cutting Words",
+       "resumo": "Reduz rolagens de ataque, teste ou dano de inimigos usando um dado de inspiração.",
+       "nivel": null,
+       "pagina": 13
+      },
+      {
+       "nome": "Peerless Skill",
+       "resumo": "Adiciona um dado de inspiração a um teste de habilidade.",
+       "nivel": null,
+       "pagina": 14
+      },
+      {
+       "nome": "Additional Magical Secrets",
+       "resumo": "Bardo da Faculdade de Lore aprende duas magias adicionais de qualquer classe (não contam no limite).",
+       "nivel": null,
+       "pagina": 13
+      },
+      {
+       "nome": "Font of Inspiration",
+       "resumo": "Recupera todos os usos de Bardic Inspiration após descanso curto ou longo.",
+       "nivel": null,
+       "pagina": 13
+      }
+     ],
+     "detalhada": true
+    },
+    {
+     "nome": "Cleric",
+     "descricao": "Clérigo é um lançador de magias divinas que usa Sabedoria para curar, proteger e combater mortos‑vivos, podendo usar armaduras leves ou médias e escudos.",
+     "papel": "curandeiro",
+     "atributos_chave": [
+      "sab",
+      "con"
+     ],
+     "pericias": [
+      "History",
+      "Insight",
+      "Medicine",
+      "Persuasion",
+      "Religion"
+     ],
+     "equipamento": [
+      "maça ou martelo de guerra",
+      "cota de escamas, armadura de couro ou cota de malha",
+      "besta leve e 20 virotes ou qualquer arma simples",
+      "mochila de sacerdote ou mochila de explorador",
+      "escudo",
+      "símbolo sagrado"
+     ],
+     "habilidades": [
+      "Spellcasting",
+      "Divine Domain",
+      "Channel Divinity: Turn Undead",
+      "Ability Score Improvement",
+      "Destroy Undead",
+      "Divine Intervention",
+      "Disciple of Life",
+      "Preserve Life",
+      "Blessed Healer",
+      "Divine Strike",
+      "Supreme Healing",
+      "Channel Divinity: Additional Uses"
+     ],
+     "dano_tipico": null,
+     "formulas": {
+      "vida_max": "8 + mod_constituicao + (nivel-1)*(5 + mod_constituicao)"
+     },
+     "pai": "",
+     "pagina": 15,
+     "bonus_atributos": {},
+     "habilidades_detalhe": [
+      {
+       "nome": "Spellcasting",
+       "resumo": "Permite lançar magias de clérigo usando Sabedoria como atributo de conjuração.",
+       "nivel": 1,
+       "pagina": 15
+      },
+      {
+       "nome": "Divine Domain",
+       "resumo": "Escolha um domínio que concede magias e habilidades adicionais ao clérigo.",
+       "nivel": 1,
+       "pagina": 16
+      },
+      {
+       "nome": "Channel Divinity: Turn Undead",
+       "resumo": "Ação que faz mortos‑vivos fazerem teste de Sabedoria ou serem afastados por 1 minuto.",
+       "nivel": 2,
+       "pagina": 16
+      },
+      {
+       "nome": "Ability Score Improvement",
+       "resumo": "Aumenta um atributo em +2 ou dois atributos em +1 cada, nos níveis 4, 8, 12, 16 e 19.",
+       "nivel": 4,
+       "pagina": 17
+      },
+      {
+       "nome": "Destroy Undead",
+       "resumo": "Mata instantaneamente mortos‑vivos de CR baixo que falham no Turn Undead, conforme tabela de níveis.",
+       "nivel": 5,
+       "pagina": 17
+      },
+      {
+       "nome": "Divine Intervention",
+       "resumo": "Rola percentil; se o resultado for ≤ nível do clérigo, a divindade intervém com efeito semelhante a uma magia.",
+       "nivel": 10,
+       "pagina": 17
+      },
+      {
+       "nome": "Disciple of Life",
+       "resumo": "Magias de cura restauram HP adicionais iguais a 2 + nível da magia.",
+       "nivel": 1,
+       "pagina": 17
+      },
+      {
+       "nome": "Preserve Life",
+       "resumo": "Cura até 5 × nível do clérigo distribuídos entre criaturas dentro de 30 ft, sem exceder metade do HP máximo.",
+       "nivel": 2,
+       "pagina": 17
+      },
+      {
+       "nome": "Blessed Healer",
+       "resumo": "Ao curar outro, recupera HP iguais a 2 + nível da magia usada.",
+       "nivel": 6,
+       "pagina": 17
+      },
+      {
+       "nome": "Divine Strike",
+       "resumo": "Ataques com arma causam dano radiante extra 1d8 (2d8 a partir do 14º nível).",
+       "nivel": 8,
+       "pagina": 17
+      },
+      {
+       "nome": "Supreme Healing",
+       "resumo": "Ao curar com magia, usa o maior número possível em cada dado de cura.",
+       "nivel": 17,
+       "pagina": 18
+      },
+      {
+       "nome": "Channel Divinity: Additional Uses",
+       "resumo": "A partir do 6º nível pode usar Channel Divinity duas vezes entre descansos, e três vezes a partir do 18º.",
+       "nivel": 6,
+       "pagina": 16
+      }
+     ],
+     "poderes": [
+      "Guidance",
+      "Light",
+      "Sacred Flame",
+      "Cure Wounds",
+      "Bless",
+      "Turn Undead",
+      "Preserve Life",
+      "Divine Intervention",
+      "Disciple of Life",
+      "Divine Strike",
+      "Supreme Healing"
+     ],
+     "poderes_detalhe": [
+      {
+       "nome": "Guidance",
+       "resumo": "Cantrip que concede +1d4 ao teste de habilidade escolhido.",
+       "nivel": null,
+       "pagina": 106
+      },
+      {
+       "nome": "Light",
+       "resumo": "Cantrip que cria luz brilhante em um objeto.",
+       "nivel": null,
+       "pagina": 106
+      },
+      {
+       "nome": "Sacred Flame",
+       "resumo": "Cantrip que inflige 1d8 dano radiante a alvo que falha no teste de Destreza.",
+       "nivel": null,
+       "pagina": 106
+      },
+      {
+       "nome": "Cure Wounds",
+       "resumo": "Magia de 1º nível que restaura 1d8 + Sabedoria por nível da magia.",
+       "nivel": null,
+       "pagina": 106
+      },
+      {
+       "nome": "Bless",
+       "resumo": "Magia de 1º nível que concede +1d4 em ataques e testes de salvamento a até três aliados.",
+       "nivel": null,
+       "pagina": 106
+      },
+      {
+       "nome": "Turn Undead",
+       "resumo": "Efeito de Channel Divinity que afasta mortos‑vivos dentro de 30 ft.",
+       "nivel": null,
+       "pagina": 16
+      },
+      {
+       "nome": "Preserve Life",
+       "resumo": "Cura distribuída entre aliados dentro de 30 ft, total de 5 × nível do clérigo.",
+       "nivel": null,
+       "pagina": 17
+      },
+      {
+       "nome": "Divine Intervention",
+       "resumo": "Pedido de ajuda divina que pode gerar efeitos de magias ou intervenções específicas.",
+       "nivel": null,
+       "pagina": 17
+      },
+      {
+       "nome": "Disciple of Life",
+       "resumo": "Aumenta a cura de magias de 1º nível ou superior em 2 + nível da magia.",
+       "nivel": null,
+       "pagina": 17
+      },
+      {
+       "nome": "Divine Strike",
+       "resumo": "Adiciona dano radiante extra 1d8 (2d8 a 14º nível) a ataques de arma.",
+       "nivel": null,
+       "pagina": 17
+      },
+      {
+       "nome": "Supreme Healing",
+       "resumo": "Ao curar, usa o maior valor possível em cada dado de cura.",
+       "nivel": null,
+       "pagina": 18
+      }
+     ],
+     "detalhada": true
+    },
+    {
+     "nome": "Druid",
+     "descricao": "Druidas são guardiões da natureza que canalizam a energia primal para lançar magias e transformar‑se em animais. Eles evitam armaduras e armas de metal, preferindo equipamentos simples e um foco druídico.",
+     "papel": "curandeiro",
+     "atributos_chave": [
+      "sab",
+      "con"
+     ],
+     "pericias": [
+      "Arcana",
+      "Animal Handling",
+      "Insight",
+      "Medicine",
+      "Nature",
+      "Perception",
+      "Religion",
+      "Survival"
+     ],
+     "equipamento": [
+      "escudo de madeira ou arma simples",
+      "cimitarra ou arma simples corpo a corpo",
+      "armadura de couro",
+      "pacote de explorador",
+      "foco druídico"
+     ],
+     "habilidades": [
+      "Druidic",
+      "Spellcasting",
+      "Wild Shape",
+      "Druid Circle",
+      "Ability Score Improvement",
+      "Natural Recovery",
+      "Circle Spells",
+      "Land's Stride",
+      "Nature's Ward",
+      "Nature's Sanctuary",
+      "Timeless Body",
+      "Beast Spells"
+     ],
+     "dano_tipico": null,
+     "formulas": {
+      "vida_max": "8 + mod_constituicao + (nivel-1)*(5 + mod_constituicao)",
+      "iniciativa": "mod_destreza"
+     },
+     "pai": "",
+     "pagina": 19,
+     "bonus_atributos": {},
+     "habilidades_detalhe": [
+      {
+       "nome": "Druidic",
+       "resumo": "Você conhece a linguagem secreta dos druidas e pode deixar mensagens ocultas.",
+       "nivel": 1,
+       "pagina": 19
+      },
+      {
+       "nome": "Spellcasting",
+       "resumo": "Usa Sabedoria para lançar magias, definindo CD de resistência e ataque de magia.",
+       "nivel": 1,
+       "pagina": 20
+      },
+      {
+       "nome": "Wild Shape",
+       "resumo": "Permite transformar‑se em uma besta vista anteriormente, usando a ação e com número limitado de usos.",
+       "nivel": 2,
+       "pagina": 20
+      },
+      {
+       "nome": "Druid Circle",
+       "resumo": "Escolha um círculo (ex.: Círculo da Terra) que concede recursos adicionais nos níveis 2, 6, 10 e 14.",
+       "nivel": 2,
+       "pagina": 21
+      },
+      {
+       "nome": "Ability Score Improvement",
+       "resumo": "A cada 4 níveis (4, 8, 12, 16, 19) você pode aumentar um atributo em 2 ou dois atributos em 1.",
+       "nivel": 4,
+       "pagina": 21
+      },
+      {
+       "nome": "Natural Recovery",
+       "resumo": "Durante um descanso curto, recupera slots de magia cujo total de níveis não excede metade do seu nível de druida (arredondado para cima).",
+       "nivel": 2,
+       "pagina": 22
+      },
+      {
+       "nome": "Circle Spells",
+       "resumo": "Os feitiços do círculo são sempre preparados e não contam no limite diário.",
+       "nivel": 3,
+       "pagina": 22
+      },
+      {
+       "nome": "Land's Stride",
+       "resumo": "A partir do 6º nível, mover‑se por terreno difícil não gasta movimento extra e você tem vantagem contra magias de plantas.",
+       "nivel": 6,
+       "pagina": 22
+      },
+      {
+       "nome": "Nature's Ward",
+       "resumo": "No 10º nível, você não pode ser encantado ou amedrontado por elementais ou fey e ganha imunidade a veneno e doença.",
+       "nivel": 10,
+       "pagina": 22
+      },
+      {
+       "nome": "Nature's Sanctuary",
+       "resumo": "No 14º nível, criaturas naturais devem falhar em um teste de Sabedoria contra sua CD de magia ou mudar de alvo/errar o ataque.",
+       "nivel": 14,
+       "pagina": 22
+      },
+      {
+       "nome": "Timeless Body",
+       "resumo": "A partir do 18º nível, seu corpo envelhece 1 ano a cada 10 anos que passam.",
+       "nivel": 18,
+       "pagina": 22
+      },
+      {
+       "nome": "Beast Spells",
+       "resumo": "A partir do 18º nível, pode lançar magias enquanto está em forma de besta, usando componentes somáticos e verbais, mas não materiais.",
+       "nivel": 18,
+       "pagina": 22
+      }
+     ],
+     "poderes": [
+      "Druid Cantrip",
+      "Bonus Cantrip (Circle of the Land)"
+     ],
+     "poderes_detalhe": [
+      {
+       "nome": "Druid Cantrip",
+       "resumo": "Você conhece duas cantrips da lista de magias de druida e aprende mais conforme sobe de nível.",
+       "nivel": null,
+       "pagina": 20
+      },
+      {
+       "nome": "Bonus Cantrip (Circle of the Land)",
+       "resumo": "Ao escolher o Círculo da Terra no 2º nível, ganha um cantrip druida adicional de sua escolha.",
+       "nivel": null,
+       "pagina": 22
+      }
+     ],
+     "detalhada": true
+    },
+    {
+     "nome": "Fighter",
+     "descricao": "Classe focada em combate físico, com alta durabilidade e múltiplos ataques, capaz de usar qualquer armadura e arma.",
+     "papel": "tanque",
+     "atributos_chave": [
+      "for",
+      "con"
+     ],
+     "pericias": [
+      "Acrobacia",
+      "Manejo de Animais",
+      "Atletismo",
+      "História",
+      "Intuição",
+      "Intimidação",
+      "Percepção",
+      "Sobrevivência"
+     ],
+     "equipamento": [
+      "cota de malha ou armadura de couro, arco longo e 20 flechas",
+      "uma arma marcial e um escudo ou duas armas marciais",
+      "uma besta leve e 20 virotes ou duas machadinhas",
+      "mochila de aventureiro ou mochila de explorador"
+     ],
+     "habilidades": [
+      "Fighting Style",
+      "Second Wind",
+      "Action Surge",
+      "Martial Archetype",
+      "Ability Score Improvement",
+      "Extra Attack",
+      "Remarkable Athlete",
+      "Indomitable",
+      "Additional Fighting Style",
+      "Superior Critical",
+      "Survivor",
+      "Extra Attack (3)"
+     ],
+     "dano_tipico": null,
+     "formulas": {
+      "vida_max": "10 + mod_constituicao + (nivel-1)*(5 + mod_constituicao)"
+     },
+     "pai": "",
+     "pagina": 24,
+     "bonus_atributos": {},
+     "habilidades_detalhe": [
+      {
+       "nome": "Fighting Style",
+       "resumo": "Escolhe um estilo de luta que concede bônus específico.",
+       "nivel": 1,
+       "pagina": 24
+      },
+      {
+       "nome": "Second Wind",
+       "resumo": "Recupera 1d10 + nível de lutador em PV como ação bônus.",
+       "nivel": 1,
+       "pagina": 24
+      },
+      {
+       "nome": "Action Surge",
+       "resumo": "Permite uma ação extra no seu turno.",
+       "nivel": 2,
+       "pagina": 25
+      },
+      {
+       "nome": "Martial Archetype",
+       "resumo": "Escolhe um arquétipo marcial que concede recursos adicionais.",
+       "nivel": 3,
+       "pagina": 24
+      },
+      {
+       "nome": "Ability Score Improvement",
+       "resumo": "Aumenta atributos (+2 em um ou +1 em dois).",
+       "nivel": 4,
+       "pagina": 24
+      },
+      {
+       "nome": "Extra Attack",
+       "resumo": "Permite atacar duas vezes ao usar a ação de Ataque.",
+       "nivel": 5,
+       "pagina": 25
+      },
+      {
+       "nome": "Remarkable Athlete",
+       "resumo": "Adiciona metade do bônus de proficiência a testes de Força, Destreza ou Constituição que não usem proficiência.",
+       "nivel": 7,
+       "pagina": 25
+      },
+      {
+       "nome": "Indomitable",
+       "resumo": "Permite refazer um teste de resistência falho.",
+       "nivel": 9,
+       "pagina": 25
+      },
+      {
+       "nome": "Additional Fighting Style",
+       "resumo": "Permite escolher um segundo estilo de luta.",
+       "nivel": 10,
+       "pagina": 25
+      },
+      {
+       "nome": "Superior Critical",
+       "resumo": "Críticos ocorrem em 18‑20.",
+       "nivel": 15,
+       "pagina": 25
+      },
+      {
+       "nome": "Survivor",
+       "resumo": "Recupera 5 + mod_constituicao PV no início do turno se estiver com metade ou menos dos PV.",
+       "nivel": 18,
+       "pagina": 25
+      },
+      {
+       "nome": "Extra Attack (3)",
+       "resumo": "Aumenta o número de ataques para três.",
+       "nivel": 11,
+       "pagina": 25
+      }
+     ],
+     "poderes": [],
+     "poderes_detalhe": [],
+     "detalhada": true
+    },
+    {
+     "nome": "Monk",
+     "descricao": "Monge é um combatente ágil que usa artes marciais e energia interior (ki) para atacar, se defender e realizar feitos sobrenaturais. Ele luta sem armadura, usando ataques desarmados ou armas simples como a espada curta, e ganha velocidade e habilidades especiais conforme avança de nível.",
+     "papel": "DPS",
+     "atributos_chave": [
+      "des",
+      "sab"
+     ],
+     "pericias": [
+      "Acrobacia",
+      "Atletismo",
+      "História",
+      "Intuição",
+      "Religião",
+      "Furtividade"
+     ],
+     "equipamento": [
+      "espada curta ou arma simples",
+      "mochila de aventureiro ou de masmorreiro",
+      "10 dardos"
+     ],
+     "habilidades": [
+      "Defesa sem Armadura",
+      "Artes Marciais",
+      "Pontos de Ki",
+      "Flurry of Blows",
+      "Patient Defense",
+      "Step of the Wind",
+      "Movimento sem Armadura",
+      "Desviar Mísseis",
+      "Melhoria de Pontos de Habilidade",
+      "Queda Lenta",
+      "Ataque Extra",
+      "Golpe Atordoante"
+     ],
+     "dano_tipico": null,
+     "formulas": {
+      "vida_max": "8 + mod_constituicao + (nivel-1)*(1d8 + mod_constituicao)",
+      "ca": "10 + mod_destreza + mod_sabedoria"
+     },
+     "pai": "",
+     "pagina": 26,
+     "bonus_atributos": {},
+     "habilidades_detalhe": [
+      {
+       "nome": "Defesa sem Armadura",
+       "resumo": "CA = 10 + mod_destreza + mod_sabedoria quando não usa armadura nem escudo.",
+       "nivel": 1,
+       "pagina": 26
+      },
+      {
+       "nome": "Artes Marciais",
+       "resumo": "Permite usar Destreza para ataques e dano, e substitui dano por um dado que aumenta com o nível.",
+       "nivel": 1,
+       "pagina": 26
+      },
+      {
+       "nome": "Pontos de Ki",
+       "resumo": "Número de pontos de ki igual ao nível de monge + modificador de Sabedoria.",
+       "nivel": 2,
+       "pagina": 27
+      },
+      {
+       "nome": "Flurry of Blows",
+       "resumo": "Gasta 1 ponto de ki para fazer dois ataques desarmados como ação bônus.",
+       "nivel": 2,
+       "pagina": 27
+      },
+      {
+       "nome": "Patient Defense",
+       "resumo": "Gasta 1 ponto de ki para usar a ação Dodge como ação bônus.",
+       "nivel": 2,
+       "pagina": 27
+      },
+      {
+       "nome": "Step of the Wind",
+       "resumo": "Gasta 1 ponto de ki para usar Disengage ou Dash como ação bônus e dobra a distância de salto.",
+       "nivel": 2,
+       "pagina": 27
+      },
+      {
+       "nome": "Movimento sem Armadura",
+       "resumo": "Aumenta a velocidade em 10 pés enquanto não usa armadura ou escudo; o bônus cresce em níveis posteriores.",
+       "nivel": 2,
+       "pagina": 27
+      },
+      {
+       "nome": "Desviar Mísseis",
+       "resumo": "Usa reação para reduzir dano de ataque à distância em 1d10 + mod_destreza + nível de monge.",
+       "nivel": 3,
+       "pagina": 27
+      },
+      {
+       "nome": "Melhoria de Pontos de Habilidade",
+       "resumo": "A cada 4 níveis (4,8,12,16,19) pode aumentar um atributo em 2 ou dois atributos em 1.",
+       "nivel": 4,
+       "pagina": 27
+      },
+      {
+       "nome": "Queda Lenta",
+       "resumo": "Usa reação ao cair para reduzir dano em 5 vezes o nível de monge.",
+       "nivel": 4,
+       "pagina": 27
+      },
+      {
+       "nome": "Ataque Extra",
+       "resumo": "A partir do 5º nível pode atacar duas vezes ao usar a ação Ataque.",
+       "nivel": 5,
+       "pagina": 27
+      },
+      {
+       "nome": "Golpe Atordoante",
+       "resumo": "Gasta 1 ponto de ki ao acertar um ataque corpo a corpo; alvo faz salvamento de Constituição ou fica atordoado até o fim do próximo turno.",
+       "nivel": 5,
+       "pagina": 28
+      }
+     ],
+     "poderes": [
+      "Flurry of Blows",
+      "Patient Defense",
+      "Step of the Wind",
+      "Ki-Empowered Strikes",
+      "Evasion",
+      "Stillness of Mind",
+      "Purity of Body",
+      "Tongue of the Sun and Moon",
+      "Diamond Soul",
+      "Timeless Body",
+      "Empty Body",
+      "Perfect Self",
+      "Open Hand Technique",
+      "Wholeness of Body",
+      "Quivering Palm"
+     ],
+     "poderes_detalhe": [
+      {
+       "nome": "Flurry of Blows",
+       "resumo": "Permite fazer dois ataques desarmados como ação bônus gastando 1 ponto de ki.",
+       "nivel": null,
+       "pagina": 27
+      },
+      {
+       "nome": "Patient Defense",
+       "resumo": "Permite usar a ação Dodge como ação bônus gastando 1 ponto de ki.",
+       "nivel": null,
+       "pagina": 27
+      },
+      {
+       "nome": "Step of the Wind",
+       "resumo": "Permite usar Disengage ou Dash como ação bônus e dobra a distância de salto gastando 1 ponto de ki.",
+       "nivel": null,
+       "pagina": 27
+      },
+      {
+       "nome": "Ki-Empowered Strikes",
+       "resumo": "A partir do 6º nível, ataques desarmados são considerados mágicos.",
+       "nivel": null,
+       "pagina": 28
+      },
+      {
+       "nome": "Evasion",
+       "resumo": "Ao falhar em um teste de Destreza para reduzir dano pela metade, o monge não recebe dano; se passar, recebe metade.",
+       "nivel": null,
+       "pagina": 28
+      },
+      {
+       "nome": "Stillness of Mind",
+       "resumo": "Usa ação para encerrar efeito de encantamento ou medo que cause charme ou medo.",
+       "nivel": null,
+       "pagina": 28
+      },
+      {
+       "nome": "Purity of Body",
+       "resumo": "Imune a doenças e venenos a partir do 10º nível.",
+       "nivel": null,
+       "pagina": 28
+      },
+      {
+       "nome": "Tongue of the Sun and Moon",
+       "resumo": "Entende todas as línguas faladas e pode ser compreendido por qualquer criatura que entenda alguma língua.",
+       "nivel": null,
+       "pagina": 28
+      },
+      {
+       "nome": "Diamond Soul",
+       "resumo": "Ganha proficiência em todos os testes de resistência e pode refazer um teste falho gastando 1 ponto de ki.",
+       "nivel": null,
+       "pagina": 28
+      },
+      {
+       "nome": "Timeless Body",
+       "resumo": "Não envelhece magicamente e não precisa de comida ou água a partir do 15º nível.",
+       "nivel": null,
+       "pagina": 28
+      },
+      {
+       "nome": "Empty Body",
+       "resumo": "Gasta 4 pontos de ki para ficar invisível por 1 minuto e resistir a todo dano exceto força.",
+       "nivel": null,
+       "pagina": 28
+      },
+      {
+       "nome": "Perfect Self",
+       "resumo": "Quando rola iniciativa sem pontos de ki, recupera 4 pontos de ki.",
+       "nivel": null,
+       "pagina": 28
+      },
+      {
+       "nome": "Open Hand Technique",
+       "resumo": "Ao usar Flurry of Blows, pode aplicar efeitos como derrubar, empurrar ou impedir reações do alvo.",
+       "nivel": null,
+       "pagina": 28
+      },
+      {
+       "nome": "Wholeness of Body",
+       "resumo": "Gasta ação para recuperar 3 vezes o nível de monge em pontos de vida, uma vez por descanso longo.",
+       "nivel": null,
+       "pagina": 29
+      },
+      {
+       "nome": "Quivering Palm",
+       "resumo": "Gasta 3 pontos de ki ao acertar um ataque desarmado; pode causar morte instantânea ou dano necrotico massivo.",
+       "nivel": null,
+       "pagina": 29
+      }
+     ],
+     "detalhada": true
+    },
+    {
+     "nome": "Ranger",
+     "descricao": "O Ranger é um combatente versátil que combina habilidades de caça, exploração e magia natural. Ele pode escolher inimigos favoritos, terrenos preferidos e estilos de luta, ganhando vantagens em rastreamento, sobrevivência e ataques à distância.",
+     "papel": "caçador",
+     "atributos_chave": [
+      "des",
+      "sab"
+     ],
+     "pericias": [
+      "Animal Handling",
+      "Athletics",
+      "Insight",
+      "Investigation",
+      "Nature",
+      "Perception",
+      "Stealth",
+      "Survival"
+     ],
+     "equipamento": [
+      "cota de escamas ou armadura de couro",
+      "duas espadas curtas ou duas armas simples corpo a corpo",
+      "mochila de aventureiro ou de desbravador",
+      "arco longo e 20 flechas"
+     ],
+     "habilidades": [
+      "Favored Enemy",
+      "Natural Explorer",
+      "Fighting Style",
+      "Spellcasting",
+      "Primeval Awareness",
+      "Ability Score Improvement",
+      "Extra Attack",
+      "Land's Stride",
+      "Hide in Plain Sight",
+      "Vanish",
+      "Feral Senses",
+      "Foe Slayer"
+     ],
+     "dano_tipico": null,
+     "formulas": {
+      "vida_max": "10 + mod_constituicao + (nivel-1)*(6 + mod_constituicao)"
+     },
+     "pai": "",
+     "pagina": 35,
+     "bonus_atributos": {},
+     "habilidades_detalhe": [
+      {
+       "nome": "Favored Enemy",
+       "resumo": "Concede vantagem em testes de Sobrevivência para rastrear e em Inteligência para lembrar informações sobre um tipo de inimigo escolhido.",
+       "nivel": 1,
+       "pagina": 35
+      },
+      {
+       "nome": "Natural Explorer",
+       "resumo": "Escolhe um tipo de terreno que concede benefícios de viagem, forrageamento e rastreamento, além de dobrar o bônus de proficiência em testes relacionados.",
+       "nivel": 1,
+       "pagina": 36
+      },
+      {
+       "nome": "Fighting Style",
+       "resumo": "Permite escolher um estilo de combate (Arco, Defesa, Duelo ou Luta com duas armas) que concede bônus específicos a ataques ou à CA.",
+       "nivel": 2,
+       "pagina": 36
+      },
+      {
+       "nome": "Spellcasting",
+       "resumo": "Permite aprender e lançar magias de natureza, usando Sabedoria como atributo de conjuração.",
+       "nivel": 2,
+       "pagina": 36
+      },
+      {
+       "nome": "Primeval Awareness",
+       "resumo": "Gasta um slot de magia para, por 1 minuto por nível do slot, perceber a presença de criaturas específicas dentro de 1 milha (ou 6 milhas em terreno favorito).",
+       "nivel": 3,
+       "pagina": 37
+      },
+      {
+       "nome": "Ability Score Improvement",
+       "resumo": "A cada 4 níveis (4, 8, 12, 16, 19) pode aumentar um atributo em 2 ou dois atributos em 1, até no máximo 20.",
+       "nivel": 4,
+       "pagina": 37
+      },
+      {
+       "nome": "Extra Attack",
+       "resumo": "A partir do 5º nível, pode atacar duas vezes ao usar a ação Ataque no seu turno.",
+       "nivel": 5,
+       "pagina": 37
+      },
+      {
+       "nome": "Land's Stride",
+       "resumo": "A partir do 8º nível, terreno difícil não gasta movimento extra e pode atravessar plantas perigosas sem dano.",
+       "nivel": 8,
+       "pagina": 37
+      },
+      {
+       "nome": "Hide in Plain Sight",
+       "resumo": "A partir do 10º nível, pode se camuflar usando materiais naturais e ganhar +10 em testes de Furtividade enquanto permanecer imóvel.",
+       "nivel": 10,
+       "pagina": 37
+      },
+      {
+       "nome": "Vanish",
+       "resumo": "A partir do 14º nível, pode usar a ação Esconder como ação bônus e não pode ser rastreado por meios não mágicos.",
+       "nivel": 14,
+       "pagina": 37
+      },
+      {
+       "nome": "Feral Senses",
+       "resumo": "A partir do 18º nível, ataques contra criaturas invisíveis não têm desvantagem e percebe a localização de criaturas invisíveis a até 30 pés.",
+       "nivel": 18,
+       "pagina": 37
+      },
+      {
+       "nome": "Foe Slayer",
+       "resumo": "A partir do 20º nível, pode adicionar seu modificador de Sabedoria a um ataque ou dano contra um inimigo favorito uma vez por turno.",
+       "nivel": 20,
+       "pagina": 37
+      }
+     ],
+     "poderes": [
+      "Spellcasting",
+      "Primeval Awareness"
+     ],
+     "poderes_detalhe": [
+      {
+       "nome": "Spellcasting",
+       "resumo": "Permite ao ranger aprender e lançar magias da lista de ranger, usando Sabedoria para CD de resistência e ataque.",
+       "nivel": null,
+       "pagina": 36
+      },
+      {
+       "nome": "Primeval Awareness",
+       "resumo": "Gasta um slot de magia para detectar a presença de criaturas específicas ao redor por até 1 minuto por nível do slot.",
+       "nivel": null,
+       "pagina": 37
+      }
+     ],
+     "detalhada": true
+    },
+    {
+     "nome": "Rogue",
+     "descricao": "O ladino é especialista em furtividade, ataques precisos e habilidades de sobrevivência. Ele usa armaduras leves, armas de finesse e ferramentas de ladrão, e pode agir rapidamente em combate com ações bônus.",
+     "papel": "dano",
+     "atributos_chave": [
+      "des"
+     ],
+     "pericias": [
+      "Acrobacia",
+      "Atletismo",
+      "Enganação",
+      "Intuição",
+      "Intimidação",
+      "Investigação",
+      "Percepção",
+      "Performance",
+      "Persuasão",
+      "Prestidigitação",
+      "Furtividade",
+      "Ferramentas de ladrão"
+     ],
+     "equipamento": [
+      "rapier ou shortsword",
+      "shortbow e 20 flechas ou shortsword",
+      "Burglar's pack, Dungeoneer's pack ou Explorer's pack",
+      "armadura de couro",
+      "duas adagas",
+      "ferramentas de ladrão"
+     ],
+     "habilidades": [
+      "Especialização",
+      "Ataque Furtivo",
+      "Canto dos Ladrões",
+      "Ação Astuta",
+      "Arquétipo Ladino",
+      "Melhoria de Atributo",
+      "Esquiva Inesperada",
+      "Evasão",
+      "Talento Confiável",
+      "Sentido de Percepção",
+      "Mente Escorregadia",
+      "Escorregadio"
+     ],
+     "dano_tipico": null,
+     "formulas": {
+      "vida_max": "8 + mod_constituicao + (nivel-1)*(5 + mod_constituicao)"
+     },
+     "pai": "",
+     "pagina": 39,
+     "bonus_atributos": {},
+     "habilidades_detalhe": [
+      {
+       "nome": "Especialização",
+       "resumo": "Dobra o bônus de proficiência em duas perícias ou ferramentas escolhidas.",
+       "nivel": 1,
+       "pagina": 39
+      },
+      {
+       "nome": "Ataque Furtivo",
+       "resumo": "Uma vez por turno, causa dano extra de 1d6 (aumenta a cada 2 níveis).",
+       "nivel": 1,
+       "pagina": 39
+      },
+      {
+       "nome": "Canto dos Ladrões",
+       "resumo": "Permite comunicar mensagens secretas em linguagem codificada.",
+       "nivel": 1,
+       "pagina": 39
+      },
+      {
+       "nome": "Ação Astuta",
+       "resumo": "Ação bônus para Disparar, Desengajar ou Esconder.",
+       "nivel": 2,
+       "pagina": 40
+      },
+      {
+       "nome": "Arquétipo Ladino",
+       "resumo": "Escolha de um arquétipo que concede habilidades adicionais.",
+       "nivel": 3,
+       "pagina": 40
+      },
+      {
+       "nome": "Melhoria de Atributo",
+       "resumo": "Aumenta um ou dois atributos conforme a tabela de níveis.",
+       "nivel": 4,
+       "pagina": 40
+      },
+      {
+       "nome": "Esquiva Inesperada",
+       "resumo": "Reação para reduzir à metade o dano de um ataque que você vê.",
+       "nivel": 5,
+       "pagina": 40
+      },
+      {
+       "nome": "Evasão",
+       "resumo": "Transforma testes de resistência de Destreza que causam metade de dano em nenhum dano se bem-sucedido.",
+       "nivel": 7,
+       "pagina": 40
+      },
+      {
+       "nome": "Talento Confiável",
+       "resumo": "Trata rolagens de 9 ou menos em testes de habilidade como 10.",
+       "nivel": 11,
+       "pagina": 40
+      },
+      {
+       "nome": "Sentido de Percepção",
+       "resumo": "Detecta criaturas invisíveis ou ocultas a até 10 pés se puder ouvir.",
+       "nivel": 14,
+       "pagina": 40
+      },
+      {
+       "nome": "Mente Escorregadia",
+       "resumo": "Ganha proficiência em testes de resistência de Sabedoria.",
+       "nivel": 15,
+       "pagina": 40
+      },
+      {
+       "nome": "Escorregadio",
+       "resumo": "Nenhum ataque tem vantagem contra você enquanto não estiver incapacitado.",
+       "nivel": 18,
+       "pagina": 40
+      }
+     ],
+     "poderes": [
+      "Mãos Rápidas",
+      "Trabalho em Altura",
+      "Furtividade Suprema",
+      "Usar Dispositivo Mágico",
+      "Reflexos do Ladrão"
+     ],
+     "poderes_detalhe": [
+      {
+       "nome": "Mãos Rápidas",
+       "resumo": "Usa a ação bônus de Ação Astuta para fazer um teste de Prestidigitação, desarmar armadilha ou usar o objeto.",
+       "nivel": null,
+       "pagina": 41
+      },
+      {
+       "nome": "Trabalho em Altura",
+       "resumo": "Escalada não gasta movimento extra; salto em corrida aumenta a distância em seu modificador de Destreza.",
+       "nivel": null,
+       "pagina": 41
+      },
+      {
+       "nome": "Furtividade Suprema",
+       "resumo": "Vantagem em teste de Furtividade se mover no máximo metade da velocidade no mesmo turno.",
+       "nivel": null,
+       "pagina": 41
+      },
+      {
+       "nome": "Usar Dispositivo Mágico",
+       "resumo": "Ignora requisitos de classe, raça e nível para usar itens mágicos.",
+       "nivel": null,
+       "pagina": 41
+      },
+      {
+       "nome": "Reflexos do Ladrão",
+       "resumo": "No 17º nível, pode agir duas vezes no primeiro turno de combate, com iniciativa reduzida em 10 na segunda.",
+       "nivel": null,
+       "pagina": 41
+      }
+     ],
+     "detalhada": true
+    },
+    {
+     "nome": "Sorcerer",
+     "descricao": "Mago nato que canaliza energia arcana interior, lançando feitiços rapidamente e manipulando-os com pontos de sorceria. Sua magia depende da força de vontade, representada pelo Carisma.",
+     "papel": "Dano",
+     "atributos_chave": [
+      "car",
+      "des"
+     ],
+     "pericias": [
+      "Arcana",
+      "Deception",
+      "Insight",
+      "Intimidation",
+      "Persuasion",
+      "Religion"
+     ],
+     "equipamento": [
+      "light crossbow e 20 virotes ou qualquer arma simples",
+      "component pouch ou arcane focus",
+      "dungeoneer's pack ou explorer's pack",
+      "dois daggers"
+     ],
+     "habilidades": [
+      "Spellcasting",
+      "Sorcerous Origin",
+      "Font of Magic",
+      "Metamagic",
+      "Ability Score Improvement",
+      "Draconic Resilience",
+      "Elemental Affinity",
+      "Dragon Wings",
+      "Draconic Presence",
+      "Sorcerous Restoration"
+     ],
+     "dano_tipico": null,
+     "formulas": {
+      "vida_max": "6 + mod_constituicao + (nivel-1)*(4 + mod_constituicao)"
+     },
+     "pai": "",
+     "pagina": 42,
+     "bonus_atributos": {},
+     "habilidades_detalhe": [
+      {
+       "nome": "Spellcasting",
+       "resumo": "Você pode lançar feitiços usando Carisma como atributo de conjuração.",
+       "nivel": 1,
+       "pagina": 43
+      },
+      {
+       "nome": "Sorcerous Origin",
+       "resumo": "Escolha a origem da sua magia inata, concedendo recursos adicionais nos níveis 1, 6, 14 e 18.",
+       "nivel": 1,
+       "pagina": 43
+      },
+      {
+       "nome": "Font of Magic",
+       "resumo": "Ganha pontos de sorceria que podem ser convertidos em slots de magia ou vice‑versa.",
+       "nivel": 2,
+       "pagina": 43
+      },
+      {
+       "nome": "Metamagic",
+       "resumo": "Permite modificar feitiços gastando pontos de sorceria; duas opções iniciais, mais nas 10ª e 17ª.",
+       "nivel": 3,
+       "pagina": 44
+      },
+      {
+       "nome": "Ability Score Improvement",
+       "resumo": "A cada 4 níveis (4,8,12,16,19) você pode aumentar atributos.",
+       "nivel": 4,
+       "pagina": 44
+      },
+      {
+       "nome": "Draconic Resilience",
+       "resumo": "Quando não usa armadura, sua CA passa a ser 13 + mod_destreza.",
+       "nivel": 1,
+       "pagina": 45
+      },
+      {
+       "nome": "Elemental Affinity",
+       "resumo": "Ao lançar dano do tipo dracônico, adiciona mod_carisma a um dado de dano e pode ganhar resistência ao tipo.",
+       "nivel": 6,
+       "pagina": 45
+      },
+      {
+       "nome": "Dragon Wings",
+       "resumo": "Ganha asas que concedem velocidade de voo igual à sua velocidade de movimento.",
+       "nivel": 14,
+       "pagina": 45
+      },
+      {
+       "nome": "Draconic Presence",
+       "resumo": "Gasta 5 pontos de sorceria para criar aura que causa medo ou admiração em criaturas a 60 pés.",
+       "nivel": 18,
+       "pagina": 45
+      },
+      {
+       "nome": "Sorcerous Restoration",
+       "resumo": "No 20º nível, recupera 4 pontos de sorceria após um descanso curto.",
+       "nivel": 20,
+       "pagina": 44
+      }
+     ],
+     "poderes": [
+      "Acid Splash",
+      "Fire Bolt",
+      "Magic Missile",
+      "Shield",
+      "Burning Hands",
+      "Charm Person",
+      "Detect Magic",
+      "Invisibility",
+      "Fireball",
+      "Lightning Bolt",
+      "Fly",
+      "Haste",
+      "Polymorph",
+      "Wish"
+     ],
+     "poderes_detalhe": [
+      {
+       "nome": "Acid Splash",
+       "resumo": "Um pequeno jato de ácido que causa 1d6 de dano a até duas criaturas próximas.",
+       "nivel": null,
+       "pagina": 109
+      },
+      {
+       "nome": "Fire Bolt",
+       "resumo": "Dispara uma bola de fogo que causa 1d10 de dano de fogo a alcance.",
+       "nivel": null,
+       "pagina": 109
+      },
+      {
+       "nome": "Magic Missile",
+       "resumo": "Cria dardos de energia que automaticamente acertam, causando 1d4+1 de dano cada.",
+       "nivel": null,
+       "pagina": 109
+      },
+      {
+       "nome": "Shield",
+       "resumo": "Concede +5 na CA até o início do próximo turno.",
+       "nivel": null,
+       "pagina": 109
+      },
+      {
+       "nome": "Burning Hands",
+       "resumo": "Cone de chamas que causa 3d6 de dano de fogo (DEX save para metade).",
+       "nivel": null,
+       "pagina": 109
+      },
+      {
+       "nome": "Charm Person",
+       "resumo": "Tenta encantar uma criatura humanoide por 1 hora (CHA save).",
+       "nivel": null,
+       "pagina": 109
+      },
+      {
+       "nome": "Detect Magic",
+       "resumo": "Permite perceber a presença de magia em um raio de 30 pés por até 10 minutos.",
+       "nivel": null,
+       "pagina": 109
+      },
+      {
+       "nome": "Invisibility",
+       "resumo": "Torna a criatura alvo invisível por até 1 hora (concentração).",
+       "nivel": null,
+       "pagina": 110
+      },
+      {
+       "nome": "Fireball",
+       "resumo": "Explosão de fogo em área de 20 pés de raio, 8d6 de dano (DEX save para metade).",
+       "nivel": null,
+       "pagina": 110
+      },
+      {
+       "nome": "Lightning Bolt",
+       "resumo": "Raios de energia em linha de 100 pés, 8d6 de dano (DEX save para metade).",
+       "nivel": null,
+       "pagina": 110
+      },
+      {
+       "nome": "Fly",
+       "resumo": "Concede voo com velocidade de 60 pés por até 10 minutos (concentração).",
+       "nivel": null,
+       "pagina": 110
+      },
+      {
+       "nome": "Haste",
+       "resumo": "Aumenta a velocidade, concede ação extra e +2 na CA por 1 minuto (concentração).",
+       "nivel": null,
+       "pagina": 110
+      },
+      {
+       "nome": "Polymorph",
+       "resumo": "Transforma uma criatura em uma besta de CR 1/4, mantendo suas estatísticas.",
+       "nivel": null,
+       "pagina": 110
+      },
+      {
+       "nome": "Wish",
+       "resumo": "Concede a capacidade de desejar efeitos poderosos, limitado a 8ª‑nível de magia.",
+       "nivel": null,
+       "pagina": 110
+      }
+     ],
+     "detalhada": true
+    },
+    {
+     "nome": "Wizard",
+     "descricao": "O mago é um estudioso da arte arcana que utiliza um grimório para preparar e lançar feitiços. Ele depende de Inteligência para sua magia e de Constituição para sobreviver.",
+     "papel": "conjurador",
+     "atributos_chave": [
+      "int",
+      "con"
+     ],
+     "pericias": [
+      "Arcana",
+      "History",
+      "Insight",
+      "Investigation",
+      "Medicine",
+      "Religion"
+     ],
+     "equipamento": [
+      "quarterstaff ou dagger",
+      "component pouch ou arcane focus",
+      "scholar's pack ou explorer's pack",
+      "spellbook"
+     ],
+     "habilidades": [
+      "Arcane Recovery",
+      "Arcane Tradition",
+      "Ability Score Improvement",
+      "Spell Mastery",
+      "Signature Spell"
+     ],
+     "dano_tipico": null,
+     "formulas": {
+      "vida_max": "6 + mod_constituicao + (nivel-1)*(1d6 + mod_constituicao)"
+     },
+     "pai": "",
+     "pagina": 52,
+     "bonus_atributos": {},
+     "habilidades_detalhe": [
+      {
+       "nome": "Arcane Recovery",
+       "resumo": "Recupera slots de magia gastados após um descanso curto, até metade do nível de mago (arredondado para cima).",
+       "nivel": 1,
+       "pagina": 52
+      },
+      {
+       "nome": "Arcane Tradition",
+       "resumo": "Escolha uma escola de magia que concede recursos adicionais nos níveis 2, 6, 10 e 14.",
+       "nivel": 2,
+       "pagina": 53
+      },
+      {
+       "nome": "Ability Score Improvement",
+       "resumo": "Aumenta um atributo em 2 ou dois atributos em 1 nos níveis 4, 8, 12, 16 e 19.",
+       "nivel": 4,
+       "pagina": 53
+      },
+      {
+       "nome": "Spell Mastery",
+       "resumo": "Permite lançar um feitiço de 1º e um de 2º nível à vontade, sem gastar slot.",
+       "nivel": 18,
+       "pagina": 53
+      },
+      {
+       "nome": "Signature Spell",
+       "resumo": "Escolhe dois feitiços de 3º nível que podem ser lançados uma vez por descanso sem gastar slot.",
+       "nivel": 20,
+       "pagina": 54
+      }
+     ],
+     "poderes": [
+      "Cantrips",
+      "Spellcasting",
+      "Ritual Casting",
+      "Arcane Recovery",
+      "Arcane Tradition Features"
+     ],
+     "poderes_detalhe": [
+      {
+       "nome": "Cantrips",
+       "resumo": "Três truques de magia conhecidos no 1º nível, aumentam conforme o mago sobe de nível.",
+       "nivel": null,
+       "pagina": 52
+      },
+      {
+       "nome": "Spellcasting",
+       "resumo": "Usa Inteligência para determinar CD de resistência e bônus de ataque de feitiços.",
+       "nivel": null,
+       "pagina": 53
+      },
+      {
+       "nome": "Ritual Casting",
+       "resumo": "Permite lançar feitiços com a tag ritual sem precisar prepará‑los, usando um grimório.",
+       "nivel": null,
+       "pagina": 53
+      },
+      {
+       "nome": "Arcane Recovery",
+       "resumo": "Recupera slots de magia gastados após um descanso curto, conforme descrito na habilidade.",
+       "nivel": null,
+       "pagina": 53
+      },
+      {
+       "nome": "Arcane Tradition Features",
+       "resumo": "Recursos específicos da escola de magia escolhida, como Evocation Savant ou Overchannel.",
+       "nivel": null,
+       "pagina": 54
+      }
+     ],
+     "detalhada": true
+    }
+   ]
+  },
+  {
+   "id": "primal_path",
+   "nome": "Caminho Primitivo (Barbarian)",
+   "instrucao": "Escolha o caminho que define a natureza da sua fúria.",
+   "tipo": "escolha",
+   "principal": false,
+   "nivel_minimo": 3,
+   "depende_de": "",
+   "opcoes": [
+    {
+     "nome": "Path of the Berserker",
+     "descricao": "O Caminho do Berserker transforma a fúria do bárbaro em violência desenfreada. Ao entrar em fúria, o personagem pode entrar em frenesi, ganhando um ataque extra como ação bônus, mas sofre um nível de exaustão ao terminar a fúria. Conforme avança, ganha resistência a encantamentos, intimidação aprimorada e a capacidade de retaliar quando atingido.",
+     "papel": "DPS",
+     "atributos_chave": [
+      "for",
+      "con",
+      "des"
+     ],
+     "pericias": [],
+     "equipamento": [],
+     "habilidades": [
+      "Frenesi",
+      "Mente Imune",
+      "Presença Intimidadora",
+      "Retaliação"
+     ],
+     "dano_tipico": "1d12 + mod_forca",
+     "formulas": {
+      "vida_max": "12 + mod_constituicao + (nivel-1)*(1d12 + mod_constituicao)",
+      "ca": "10 + mod_destreza + mod_constituicao",
+      "iniciativa": "mod_destreza"
+     },
+     "pai": "Barbarian",
+     "pagina": 9,
+     "bonus_atributos": {},
+     "habilidades_detalhe": [
+      {
+       "nome": "Frenesi",
+       "resumo": "Durante a fúria, pode fazer um ataque corpo‑a‑corpo extra como ação bônus a cada turno, mas ao terminar a fúria sofre um nível de exaustão.",
+       "nivel": 3,
+       "pagina": 9
+      },
+      {
+       "nome": "Mente Imune",
+       "resumo": "A partir do 6º nível, não pode ser encantado ou amedrontado enquanto está em fúria; efeitos existentes são suspensos.",
+       "nivel": 6,
+       "pagina": 10
+      },
+      {
+       "nome": "Presença Intimidadora",
+       "resumo": "No 10º nível, usa a ação para assustar uma criatura a 30 pés; a criatura deve falhar em um teste de Sabedoria ou ficará amedrontada até o fim do próximo turno.",
+       "nivel": 10,
+       "pagina": 10
+      },
+      {
+       "nome": "Retaliação",
+       "resumo": "No 14º nível, ao receber dano de uma criatura a 1,5 m, pode usar a reação para fazer um ataque corpo‑a‑corpo contra ela.",
+       "nivel": 14,
+       "pagina": 10
+      }
+     ],
+     "poderes": [],
+     "poderes_detalhe": [],
+     "detalhada": true
+    },
+    {
+     "nome": "Path of the Totem Warrior",
+     "descricao": "Um caminho que liga o bárbaro ao espírito animal, concedendo habilidades temáticas nos níveis 3, 6, 10 e 14 e reforçando seu papel de combatente resiliente.",
+     "papel": "tanque",
+     "atributos_chave": [
+      "for",
+      "con"
+     ],
+     "pericias": [],
+     "equipamento": [],
+     "habilidades": [],
+     "dano_tipico": null,
+     "formulas": {
+      "vida_max": "12 + mod_constituicao + (nivel-1)*(1d12 + mod_constituicao)",
+      "ca": "10 + mod_destreza + mod_constituicao"
+     },
+     "pai": "Barbarian",
+     "pagina": 9,
+     "bonus_atributos": {},
+     "habilidades_detalhe": [],
+     "poderes": [],
+     "poderes_detalhe": [],
+     "detalhada": true
+    }
+   ]
+  },
+  {
+   "id": "ranger_archetype",
+   "nome": "Arquétipo de Ranger",
+   "instrucao": "Escolha o arquétipo que define seu estilo de caça.",
+   "tipo": "escolha",
+   "principal": false,
+   "nivel_minimo": 3,
+   "depende_de": "",
+   "opcoes": [
+    {
+     "nome": "Hunter",
+     "descricao": "O arquétipo Caçador (Hunter) foca em técnicas de combate especializadas contra ameaças específicas, oferecendo opções que aumentam o dano, a defesa e a mobilidade. A cada nível chave (3, 7, 11 e 15) o caçador escolhe entre diferentes habilidades que se adaptam ao estilo de luta do personagem.",
+     "papel": "Dano",
+     "atributos_chave": [
+      "des",
+      "sab"
+     ],
+     "pericias": [],
+     "equipamento": [],
+     "habilidades": [
+      "Colossus Slayer",
+      "Giant Killer",
+      "Horde Breaker",
+      "Escape the Horde",
+      "Multiattack Defense",
+      "Steel Will",
+      "Volley",
+      "Whirlwind Attack",
+      "Evasion",
+      "Stand Against the Tide",
+      "Uncanny Dodge"
+     ],
+     "dano_tipico": null,
+     "formulas": {},
+     "pai": "Ranger",
+     "pagina": 37,
+     "bonus_atributos": {},
+     "habilidades_detalhe": [
+      {
+       "nome": "Colossus Slayer",
+       "resumo": "Ao acertar um ataque, causa 1d8 de dano extra se o alvo não estiver com HP máximo (uma vez por turno).",
+       "nivel": 3,
+       "pagina": 38
+      },
+      {
+       "nome": "Giant Killer",
+       "resumo": "Quando uma criatura Grande ou maior ataca ou erra você, pode usar sua reação para atacar imediatamente após o ataque.",
+       "nivel": 3,
+       "pagina": 38
+      },
+      {
+       "nome": "Horde Breaker",
+       "resumo": "Uma vez por turno, ao fazer um ataque com arma, pode fazer outro ataque com a mesma arma contra outra criatura adjacente ao alvo original.",
+       "nivel": 3,
+       "pagina": 38
+      },
+      {
+       "nome": "Escape the Horde",
+       "resumo": "Ataques de oportunidade contra você são feitos com desvantagem.",
+       "nivel": 7,
+       "pagina": 38
+      },
+      {
+       "nome": "Multiattack Defense",
+       "resumo": "Quando um inimigo lhe acerta, ganha +4 de CA contra os ataques subsequentes desse inimigo até o fim do turno.",
+       "nivel": 7,
+       "pagina": 38
+      },
+      {
+       "nome": "Steel Will",
+       "resumo": "Você tem vantagem em testes de resistência contra ser amedrontado.",
+       "nivel": 7,
+       "pagina": 38
+      },
+      {
+       "nome": "Volley",
+       "resumo": "Usa sua ação para fazer um ataque à distância contra qualquer número de criaturas dentro de 10 pés de um ponto que você pode ver.",
+       "nivel": 11,
+       "pagina": 38
+      },
+      {
+       "nome": "Whirlwind Attack",
+       "resumo": "Usa sua ação para fazer um ataque corpo a corpo contra qualquer número de criaturas dentro de 5 pés de você.",
+       "nivel": 11,
+       "pagina": 38
+      },
+      {
+       "nome": "Evasion",
+       "resumo": "Em efeitos que permitem teste de Destreza para metade do dano, você não recebe dano se passar, e recebe metade se falhar.",
+       "nivel": 15,
+       "pagina": 38
+      },
+      {
+       "nome": "Stand Against the Tide",
+       "resumo": "Quando um inimigo erra um ataque corpo a corpo contra você, pode usar sua reação para forçar esse inimigo a atacar outra criatura.",
+       "nivel": 15,
+       "pagina": 38
+      },
+      {
+       "nome": "Uncanny Dodge",
+       "resumo": "Quando um atacante que você pode ver acerta você, pode usar sua reação para reduzir o dano do ataque à metade.",
+       "nivel": 15,
+       "pagina": 38
+      }
+     ],
+     "poderes": [],
+     "poderes_detalhe": [],
+     "detalhada": true
+    }
+   ]
+  },
+  {
+   "id": "rogue_archetype",
+   "nome": "Arquétipo de Rogue",
+   "instrucao": "Escolha o arquétipo que define seu foco de habilidades furtivas.",
+   "tipo": "escolha",
+   "principal": false,
+   "nivel_minimo": 3,
+   "depende_de": "",
+   "opcoes": [
+    {
+     "nome": "Thief",
+     "descricao": "O arquétipo Ladrão aprimora a agilidade, furtividade e habilidades de exploração do ladino, permitindo ações rápidas como desarmar armadilhas, escalar e usar dispositivos mágicos sem restrições. Ele concede recursos que aumentam a mobilidade e a capacidade de agir duas vezes no primeiro turno de combate.",
+     "papel": "Explorador",
+     "atributos_chave": [
+      "des"
+     ],
+     "pericias": [
+      "Acrobacia",
+      "Furtividade",
+      "Prestidigitação"
+     ],
+     "equipamento": [],
+     "habilidades": [
+      "Mãos Rápidas",
+      "Trabalho em Altura",
+      "Furtividade Suprema",
+      "Uso de Dispositivo Mágico",
+      "Reflexos do Ladrão"
+     ],
+     "dano_tipico": null,
+     "formulas": {},
+     "pai": "Rogue",
+     "pagina": 40,
+     "bonus_atributos": {},
+     "habilidades_detalhe": [
+      {
+       "nome": "Mãos Rápidas",
+       "resumo": "Usa a ação bônus de Cunning Action para fazer um teste de Prestidigitação, desarmar armadilha, abrir fechadura ou usar a ação Usar um Objeto.",
+       "nivel": 3,
+       "pagina": 40
+      },
+      {
+       "nome": "Trabalho em Altura",
+       "resumo": "Escalar não gasta movimento extra e aumenta a distância de salto em corrida pelo modificador de Destreza.",
+       "nivel": 3,
+       "pagina": 41
+      },
+      {
+       "nome": "Furtividade Suprema",
+       "resumo": "Ganha vantagem em testes de Furtividade se mover no máximo metade da velocidade no mesmo turno.",
+       "nivel": 9,
+       "pagina": 41
+      },
+      {
+       "nome": "Uso de Dispositivo Mágico",
+       "resumo": "Ignora todos os requisitos de classe, raça e nível ao usar itens mágicos.",
+       "nivel": 13,
+       "pagina": 41
+      },
+      {
+       "nome": "Reflexos do Ladrão",
+       "resumo": "No primeiro turno de combate pode agir duas vezes: primeira no início da iniciativa e segunda com iniciativa reduzida em 10.",
+       "nivel": 17,
+       "pagina": 41
+      }
+     ],
+     "poderes": [],
+     "poderes_detalhe": [],
+     "detalhada": true
+    }
+   ]
+  },
+  {
+   "id": "fighting_style",
+   "nome": "Estilo de Luta (Fighter)",
+   "instrucao": "Escolha um estilo de luta que concede bônus específicos.",
+   "tipo": "escolha",
+   "principal": false,
+   "nivel_minimo": 2,
+   "depende_de": "",
+   "opcoes": [
+    {
+     "nome": "Archery",
+     "descricao": "O estilo Archery concede +2 nas rolagens de ataque com armas à distância, aumentando a precisão ao usar arcos ou bestas. É ideal para personagens que focam em combate a longa distância.",
+     "papel": "Atirador",
+     "atributos_chave": [
+      "des"
+     ],
+     "pericias": [],
+     "equipamento": [],
+     "habilidades": [],
+     "dano_tipico": null,
+     "formulas": {},
+     "pai": "Fighter",
+     "pagina": 24,
+     "bonus_atributos": {},
+     "habilidades_detalhe": [],
+     "poderes": [],
+     "poderes_detalhe": [],
+     "detalhada": true
+    },
+    {
+     "nome": "Defense",
+     "descricao": "A opção Defesa aumenta a sua Classe de Armadura em +1 enquanto estiver usando armadura. É um bônus simples que melhora sua capacidade de evitar golpes.",
+     "papel": "Tanque",
+     "atributos_chave": [
+      "des"
+     ],
+     "pericias": [],
+     "equipamento": [],
+     "habilidades": [
+      "Defesa"
+     ],
+     "dano_tipico": null,
+     "formulas": {},
+     "pai": "Fighter",
+     "pagina": 24,
+     "bonus_atributos": {},
+     "habilidades_detalhe": [
+      {
+       "nome": "Defesa",
+       "resumo": "Concede +1 de bônus na Classe de Armadura enquanto estiver usando armadura.",
+       "nivel": 1,
+       "pagina": 24
+      }
+     ],
+     "poderes": [],
+     "poderes_detalhe": [],
+     "detalhada": true
+    },
+    {
+     "nome": "Dueling",
+     "descricao": "Concede +2 de dano ao usar uma arma corpo‑a‑corpo empunhada em uma única mão, sem outra arma.",
+     "papel": "Dano",
+     "atributos_chave": [
+      "for",
+      "des"
+     ],
+     "pericias": [],
+     "equipamento": [],
+     "habilidades": [],
+     "dano_tipico": null,
+     "formulas": {},
+     "pai": "Fighter",
+     "pagina": 24,
+     "bonus_atributos": {},
+     "habilidades_detalhe": [],
+     "poderes": [],
+     "poderes_detalhe": [],
+     "detalhada": true
+    },
+    {
+     "nome": "Great Weapon Fighting",
+     "descricao": "O estilo de luta Great Weapon Fighting permite que, ao usar uma arma corpo‑a‑corpo de duas mãos, você refaça qualquer dado de dano que resulte em 1 ou 2, usando o novo valor. Essa regra aumenta a consistência do dano de armas pesadas.",
+     "papel": "Dano",
+     "atributos_chave": [
+      "for"
+     ],
+     "pericias": [],
+     "equipamento": [],
+     "habilidades": [
+      "Great Weapon Fighting"
+     ],
+     "dano_tipico": null,
+     "formulas": {},
+     "pai": "Fighter",
+     "pagina": 24,
+     "bonus_atributos": {},
+     "habilidades_detalhe": [
+      {
+       "nome": "Great Weapon Fighting",
+       "resumo": "Ao rolar 1 ou 2 no dado de dano de uma arma de duas mãos, você pode refazer o dado e deve usar o novo resultado.",
+       "nivel": 1,
+       "pagina": 24
+      }
+     ],
+     "poderes": [],
+     "poderes_detalhe": [],
+     "detalhada": true
+    },
+    {
+     "nome": "Protection",
+     "descricao": "Ao ver um inimigo atacar um aliado que esteja a até 5 pés de você, você pode usar sua reação para impor desvantagem no ataque. É necessário estar empunhando um escudo.",
+     "papel": "proteção",
+     "atributos_chave": [],
+     "pericias": [],
+     "equipamento": [],
+     "habilidades": [
+      "Protection"
+     ],
+     "dano_tipico": null,
+     "formulas": {},
+     "pai": "Fighter",
+     "pagina": 24,
+     "bonus_atributos": {},
+     "habilidades_detalhe": [
+      {
+       "nome": "Protection",
+       "resumo": "Reação para impor desvantagem no ataque de um inimigo que ataca um aliado adjacente, exigindo escudo.",
+       "nivel": 1,
+       "pagina": 24
+      }
+     ],
+     "poderes": [],
+     "poderes_detalhe": [],
+     "detalhada": true
+    },
+    {
+     "nome": "Two-Weapon Fighting",
+     "descricao": "Permite que, ao lutar com duas armas, você adicione seu modificador de atributo ao dano do segundo ataque.",
+     "papel": "Dano",
+     "atributos_chave": [
+      "for",
+      "des"
+     ],
+     "pericias": [],
+     "equipamento": [],
+     "habilidades": [
+      "Two-Weapon Fighting"
+     ],
+     "dano_tipico": null,
+     "formulas": {},
+     "pai": "Fighter",
+     "pagina": 24,
+     "bonus_atributos": {},
+     "habilidades_detalhe": [
+      {
+       "nome": "Two-Weapon Fighting",
+       "resumo": "Ao lutar com duas armas, adiciona seu modificador de atributo ao dano do segundo ataque.",
+       "nivel": 1,
+       "pagina": 24
+      }
+     ],
+     "poderes": [],
+     "poderes_detalhe": [],
+     "detalhada": true
+    }
+   ]
+  },
+  {
+   "id": "favored_enemy",
+   "nome": "Inimigo Favorito (Ranger)",
+   "instrucao": "Escolha um tipo de criatura contra a qual você tem vantagem em rastrear e lembrar informações.",
+   "tipo": "escolha",
+   "principal": false,
+   "nivel_minimo": 1,
+   "depende_de": "",
+   "opcoes": [
+    {
+     "nome": "Aberrations",
+     "descricao": "Ao escolher Aberrações como Inimigo Favorito, o ranger ganha vantagem em testes de Sabedoria (Sobrevivência) para rastrear essas criaturas e em testes de Inteligência para lembrar informações sobre elas, além de aprender uma língua que elas falam.",
+     "papel": "rastreio",
+     "atributos_chave": [
+      "sab",
+      "int"
+     ],
+     "pericias": [
+      "Sobrevivência",
+      "Inteligência"
+     ],
+     "equipamento": [],
+     "habilidades": [
+      "Inimigo Favorito (Aberrações)"
+     ],
+     "dano_tipico": null,
+     "formulas": {},
+     "pai": "Ranger",
+     "pagina": 35,
+     "bonus_atributos": {},
+     "habilidades_detalhe": [
+      {
+       "nome": "Inimigo Favorito (Aberrações)",
+       "resumo": "Concede vantagem em testes de Sabedoria (Sobrevivência) para rastrear e em testes de Inteligência para lembrar informações sobre aberrations, e permite aprender uma língua desses inimigos.",
+       "nivel": 1,
+       "pagina": 35
+      }
+     ],
+     "poderes": [],
+     "poderes_detalhe": [],
+     "detalhada": true
+    },
+    {
+     "nome": "Beasts",
+     "descricao": "Ao escolher \"Beasts\" como Inimigo Favorito, o ranger ganha vantagem em testes de Sabedoria (Sobrevivência) para rastrear essas criaturas e em testes de Inteligência para lembrar informações sobre elas. Também aprende uma língua falada por bestas, se houver.",
+     "papel": "rastreio",
+     "atributos_chave": [
+      "sab",
+      "int"
+     ],
+     "pericias": [
+      "Sobrevivência",
+      "Investigação"
+     ],
+     "equipamento": [],
+     "habilidades": [
+      "Inimigo Favorito (Beasts)"
+     ],
+     "dano_tipico": null,
+     "formulas": {},
+     "pai": "Ranger",
+     "pagina": 35,
+     "bonus_atributos": {},
+     "habilidades_detalhe": [
+      {
+       "nome": "Inimigo Favorito (Beasts)",
+       "resumo": "Concede vantagem em testes de Sobrevivência para rastrear bestas e em testes de Inteligência para lembrar informações sobre elas; aprende uma língua das bestas.",
+       "nivel": 1,
+       "pagina": 35
+      }
+     ],
+     "poderes": [],
+     "poderes_detalhe": [],
+     "detalhada": true
+    },
+    {
+     "nome": "Celestials",
+     "descricao": "Ao escolher celestiais como Inimigo Favorito, o ranger ganha vantagem nos testes de Sabedoria (Sobrevivência) para rastrear esses seres e nos testes de Inteligência para lembrar informações sobre eles, além de aprender uma língua que eles falam.",
+     "papel": "rastreio",
+     "atributos_chave": [
+      "sab",
+      "int"
+     ],
+     "pericias": [
+      "Sobrevivência",
+      "Investigação"
+     ],
+     "equipamento": [],
+     "habilidades": [
+      "Inimigo Favorito (Celestiais)"
+     ],
+     "dano_tipico": null,
+     "formulas": {},
+     "pai": "Ranger",
+     "pagina": 35,
+     "bonus_atributos": {},
+     "habilidades_detalhe": [
+      {
+       "nome": "Inimigo Favorito (Celestiais)",
+       "resumo": "Concede vantagem em testes de Sabedoria (Sobrevivência) para rastrear celestiais e em testes de Inteligência para lembrar informações, e permite aprender uma língua dos celestiais.",
+       "nivel": 1,
+       "pagina": 35
+      }
+     ],
+     "poderes": [],
+     "poderes_detalhe": [],
+     "detalhada": true
+    },
+    {
+     "nome": "Dragons",
+     "descricao": "Escolhe dragões como inimigo favorito, concedendo vantagem em testes de Sobrevivência para rastrear e em testes de Inteligência para lembrar informações, além de aprender uma língua dracônica.",
+     "papel": "caçador",
+     "atributos_chave": [
+      "sab",
+      "int"
+     ],
+     "pericias": [
+      "Survival",
+      "Intelligence"
+     ],
+     "equipamento": [],
+     "habilidades": [
+      "Inimigo Favorito (Dragões)"
+     ],
+     "dano_tipico": null,
+     "formulas": {},
+     "pai": "Ranger",
+     "pagina": 35,
+     "bonus_atributos": {},
+     "habilidades_detalhe": [
+      {
+       "nome": "Inimigo Favorito (Dragões)",
+       "resumo": "Vantagem em testes de Sabedoria (Survival) para rastrear dragões e em testes de Inteligência para lembrar informações; aprende uma língua dracônica.",
+       "nivel": 1,
+       "pagina": 35
+      }
+     ],
+     "poderes": [],
+     "poderes_detalhe": [],
+     "detalhada": true
+    },
+    {
+     "nome": "Undead",
+     "descricao": "Ao escolher morto-vivo como Inimigo Favorito, o ranger ganha vantagem em testes de Sabedoria (Sobrevivência) para rastrear esses inimigos e em testes de Inteligência para lembrar informações sobre eles, além de aprender uma língua que eles falam. Ele também pode usar a habilidade de Consciência Primitiva para detectar a presença de mortos‑vivos nas proximidades e, no nível 20, acrescenta seu modificador de Sabedoria ao ataque ou dano contra eles.",
+     "papel": "caçador",
+     "atributos_chave": [
+      "sab",
+      "int"
+     ],
+     "pericias": [
+      "Sobrevivência",
+      "Investigação"
+     ],
+     "equipamento": [],
+     "habilidades": [
+      "Inimigo Favorito (Morto‑vivo)",
+      "Consciência Primitiva",
+      "Caçador de Inimigos (Foe Slayer)"
+     ],
+     "dano_tipico": null,
+     "formulas": {},
+     "pai": "Ranger",
+     "pagina": 35,
+     "bonus_atributos": {},
+     "habilidades_detalhe": [
+      {
+       "nome": "Inimigo Favorito (Morto‑vivo)",
+       "resumo": "Concede vantagem em testes de Sabedoria (Sobrevivência) e Inteligência contra mortos‑vivos e permite aprender uma língua deles.",
+       "nivel": 1,
+       "pagina": 35
+      },
+      {
+       "nome": "Consciência Primitiva",
+       "resumo": "Permite gastar uma ação e um slot de magia para sentir se há mortos‑vivos dentro de 1 milha (ou 6 milhas em terreno favorecido).",
+       "nivel": 3,
+       "pagina": 37
+      },
+      {
+       "nome": "Caçador de Inimigos (Foe Slayer)",
+       "resumo": "Adiciona o modificador de Sabedoria ao ataque ou dano contra um inimigo favorito, incluindo mortos‑vivos, uma vez por turno.",
+       "nivel": 20,
+       "pagina": 37
+      }
+     ],
+     "poderes": [],
+     "poderes_detalhe": [],
+     "detalhada": true
+    }
+   ]
+  },
+  {
+   "id": "natural_explorer",
+   "nome": "Explorador Natural (Ranger)",
+   "instrucao": "Escolha um tipo de terreno que você conhece profundamente.",
+   "tipo": "escolha",
+   "principal": false,
+   "nivel_minimo": 1,
+   "depende_de": "",
+   "opcoes": [
+    {
+     "nome": "Arctic",
+     "descricao": "Explorador Natural (Arctic) representa o ranger que conhece profundamente regiões árticas, facilitando viagens, forrageamento e rastreamento nesses ambientes.",
+     "papel": "Explorador",
+     "atributos_chave": [
+      "sab",
+      "des"
+     ],
+     "pericias": [
+      "Sobrevivência",
+      "Percepção",
+      "Investigação"
+     ],
+     "equipamento": [],
+     "habilidades": [
+      "Explorador Natural (Ártico)"
+     ],
+     "dano_tipico": null,
+     "formulas": {},
+     "pai": "Ranger",
+     "pagina": 36,
+     "bonus_atributos": {},
+     "habilidades_detalhe": [
+      {
+       "nome": "Explorador Natural (Ártico)",
+       "resumo": "Ao viajar em terreno ártico, terreno difícil não reduz a velocidade, o grupo não se perde, você pode forragear o dobro e obtém informações detalhadas ao rastrear criaturas.",
+       "nivel": 1,
+       "pagina": 36
+      }
+     ],
+     "poderes": [],
+     "poderes_detalhe": [],
+     "detalhada": true
+    },
+    {
+     "nome": "Coast",
+     "descricao": "Coast é um dos tipos de terreno que o ranger pode escolher como seu terreno favorecido. Enquanto estiver na costa, ele ignora terreno difícil, não se perde, pode forragear o dobro e mantém alerta durante outras atividades, além de obter informações detalhadas ao rastrear criaturas.",
+     "papel": "explorador",
+     "atributos_chave": [
+      "int",
+      "sab"
+     ],
+     "pericias": [],
+     "equipamento": [],
+     "habilidades": [
+      "Natural Explorer (Coast)"
+     ],
+     "dano_tipico": null,
+     "formulas": {},
+     "pai": "Ranger",
+     "pagina": 36,
+     "bonus_atributos": {},
+     "habilidades_detalhe": [
+      {
+       "nome": "Natural Explorer (Coast)",
+       "resumo": "Concede benefícios de viagem, forrageio, rastreamento e alerta ao se mover na costa.",
+       "nivel": 1,
+       "pagina": 36
+      }
+     ],
+     "poderes": [],
+     "poderes_detalhe": [],
+     "detalhada": true
+    },
+    {
+     "nome": "Desert",
+     "descricao": "Ao escolher deserto como terreno favorecido, você obtém benefícios ao viajar nele, como terreno difícil não reduz a velocidade, o grupo não se perde, você permanece alerta a perigos, pode se mover furtivamente sozinho, encontra o dobro de comida ao forragear e recebe detalhes ao rastrear criaturas.",
+     "papel": "Explorador",
+     "atributos_chave": [
+      "int",
+      "sab"
+     ],
+     "pericias": [],
+     "equipamento": [],
+     "habilidades": [
+      "Natural Explorer (Desert)"
+     ],
+     "dano_tipico": null,
+     "formulas": {},
+     "pai": "Ranger",
+     "pagina": 36,
+     "bonus_atributos": {},
+     "habilidades_detalhe": [
+      {
+       "nome": "Natural Explorer (Desert)",
+       "resumo": "Concede benefícios ao viajar no deserto, como ignorar terreno difícil, não se perder, dobrar comida ao forragear e melhorar rastreamento.",
+       "nivel": 1,
+       "pagina": 36
+      }
+     ],
+     "poderes": [],
+     "poderes_detalhe": [],
+     "detalhada": true
+    },
+    {
+     "nome": "Forest",
+     "descricao": "Natural Explorer (Floresta) permite que o ranger se mova e sobreviva com excelência em ambientes florestais, ignorando terreno difícil, evitando se perder, forrageando o dobro e obtendo informações detalhadas ao rastrear criaturas.",
+     "papel": "Explorador",
+     "atributos_chave": [
+      "int",
+      "sab"
+     ],
+     "pericias": [
+      "Sobrevivência",
+      "Percepção",
+      "Natureza"
+     ],
+     "equipamento": [],
+     "habilidades": [
+      "Natural Explorer (Floresta)"
+     ],
+     "dano_tipico": null,
+     "formulas": {},
+     "pai": "Ranger",
+     "pagina": 36,
+     "bonus_atributos": {},
+     "habilidades_detalhe": [
+      {
+       "nome": "Natural Explorer (Floresta)",
+       "resumo": "Concede benefícios de viagem, forrageamento e rastreamento em florestas, dobrando o bônus de proficiência em testes de Inteligência ou Sabedoria relacionados ao terreno.",
+       "nivel": 1,
+       "pagina": 36
+      }
+     ],
+     "poderes": [],
+     "poderes_detalhe": [],
+     "detalhada": true
+    },
+    {
+     "nome": "Grassland",
+     "descricao": "O Explorador Natural (Grassland) representa o domínio do ranger sobre áreas de gramíneas. Enquanto viaja nesse terreno, ele ignora terrenos difíceis, não se perde, pode se mover furtivamente em ritmo normal, encontra o dobro de comida ao forragear e obtém detalhes ao rastrear criaturas.",
+     "papel": "Explorador",
+     "atributos_chave": [
+      "sab",
+      "int"
+     ],
+     "pericias": [],
+     "equipamento": [],
+     "habilidades": [
+      "Explorador Natural (Grassland)"
+     ],
+     "dano_tipico": null,
+     "formulas": {},
+     "pai": "Ranger",
+     "pagina": 36,
+     "bonus_atributos": {},
+     "habilidades_detalhe": [
+      {
+       "nome": "Explorador Natural (Grassland)",
+       "resumo": "Em gramíneas, terreno difícil não reduz a velocidade, o grupo não se perde, você pode se mover furtivamente a passo normal, acha o dobro de comida ao forragear e obtém informações detalhadas ao rastrear criaturas.",
+       "nivel": 1,
+       "pagina": 36
+      }
+     ],
+     "poderes": [],
+     "poderes_detalhe": [],
+     "detalhada": true
+    },
+    {
+     "nome": "Mountain",
+     "descricao": "Especialista em terreno montanhoso, permitindo que o grupo viaje sem penalidades, não se perca, encontre o dobro de comida ao forragear e obtenha informações detalhadas ao rastrear, além de dobrar o bônus de proficiência em testes de Inteligência ou Sabedoria relacionados ao terreno.",
+     "papel": "explorador",
+     "atributos_chave": [
+      "int",
+      "sab"
+     ],
+     "pericias": [
+      "Survival",
+      "Perception",
+      "Investigation"
+     ],
+     "equipamento": [],
+     "habilidades": [
+      "Natural Explorer (Montanha)"
+     ],
+     "dano_tipico": null,
+     "formulas": {},
+     "pai": "Ranger",
+     "pagina": 36,
+     "bonus_atributos": {},
+     "habilidades_detalhe": [
+      {
+       "nome": "Natural Explorer (Montanha)",
+       "resumo": "Concede benefícios de viagem em montanhas e dobra o bônus de proficiência em testes de Inteligência ou Sabedoria relacionados ao terreno.",
+       "nivel": 1,
+       "pagina": 36
+      }
+     ],
+     "poderes": [],
+     "poderes_detalhe": [],
+     "detalhada": true
+    },
+    {
+     "nome": "Swamp",
+     "descricao": "Ao escolher Swamp como seu terreno favorecido, o ranger torna‑se especialista em áreas pantanosas. Ele ignora terreno difícil, não se perde, pode se mover furtivamente sozinho em ritmo normal e obtém o dobro de alimento ao forragear. Além disso, ao rastrear criaturas no pântano, aprende detalhes como número, tamanho e tempo de passagem.",
+     "papel": "Guia",
+     "atributos_chave": [
+      "sab",
+      "int"
+     ],
+     "pericias": [],
+     "equipamento": [],
+     "habilidades": [
+      "Natural Explorer (Swamp)"
+     ],
+     "dano_tipico": null,
+     "formulas": {},
+     "pai": "Ranger",
+     "pagina": 36,
+     "bonus_atributos": {},
+     "habilidades_detalhe": [
+      {
+       "nome": "Natural Explorer (Swamp)",
+       "resumo": "Concede benefícios de viagem e sobrevivência em pântanos, como ignorar terreno difícil, não se perder, forragear o dobro e rastrear criaturas com detalhes.",
+       "nivel": 1,
+       "pagina": 36
+      }
+     ],
+     "poderes": [],
+     "poderes_detalhe": [],
+     "detalhada": true
+    }
+   ]
+  },
+  {
+   "id": "barbarian_equipment",
+   "nome": "Equipamento Inicial (Barbarian)",
+   "instrucao": "Escolha o equipamento inicial entre as opções fornecidas.",
+   "tipo": "equipamento",
+   "principal": false,
+   "nivel_minimo": 1,
+   "depende_de": "",
+   "opcoes": [
+    {
+     "nome": "Greataxe",
+     "descricao": "Um greataxe é uma arma marcial corpo‑a‑corpo de duas mãos que causa dano cortante. É a primeira escolha de arma para um bárbaro que opta por ela no equipamento inicial.",
+     "papel": "Dano",
+     "atributos_chave": [
+      "for"
+     ],
+     "pericias": [],
+     "equipamento": [
+      "greataxe"
+     ],
+     "habilidades": [],
+     "dano_tipico": "3d12+6",
+     "formulas": {},
+     "pai": "Barbarian",
+     "pagina": 8,
+     "bonus_atributos": {},
+     "habilidades_detalhe": [],
+     "poderes": [],
+     "poderes_detalhe": [],
+     "detalhada": true
+    },
+    {
+     "nome": "Any martial melee weapon",
+     "descricao": "Ao escolher o equipamento inicial, o bárbaro pode optar por qualquer arma marcial corpo‑a‑corpo ao invés da greataxe padrão. Essa escolha oferece flexibilidade para adaptar o estilo de combate ao personagem, podendo usar armas que causem diferentes tipos de dano ou que se adequem a outras características.",
+     "papel": "Dano",
+     "atributos_chave": [
+      "for"
+     ],
+     "pericias": [],
+     "equipamento": [
+      "any martial melee weapon"
+     ],
+     "habilidades": [],
+     "dano_tipico": null,
+     "formulas": {},
+     "pai": "Barbarian",
+     "pagina": 8,
+     "bonus_atributos": {},
+     "habilidades_detalhe": [],
+     "poderes": [],
+     "poderes_detalhe": [],
+     "detalhada": true
+    },
+    {
+     "nome": "Two handaxes",
+     "descricao": "Ao escolher a opção de equipamento inicial \"Two handaxes\", o bárbaro começa a aventura com dois machados de mão, armas simples de corpo a corpo que podem ser arremessadas. Elas permitem ataques rápidos tanto em combate próximo quanto à distância curta.",
+     "papel": "Dano",
+     "atributos_chave": [
+      "for"
+     ],
+     "pericias": [],
+     "equipamento": [
+      "2 machados de mão"
+     ],
+     "habilidades": [],
+     "dano_tipico": null,
+     "formulas": {},
+     "pai": "Barbarian",
+     "pagina": 8,
+     "bonus_atributos": {},
+     "habilidades_detalhe": [],
+     "poderes": [],
+     "poderes_detalhe": [],
+     "detalhada": true
+    },
+    {
+     "nome": "Any simple weapon",
+     "descricao": "Permite iniciar com qualquer arma simples ao invés de duas machadinhas, usando a proficiência de bárbaro em armas simples.",
+     "papel": "Dano",
+     "atributos_chave": [
+      "for"
+     ],
+     "pericias": [],
+     "equipamento": [
+      "any simple weapon"
+     ],
+     "habilidades": [],
+     "dano_tipico": null,
+     "formulas": {},
+     "pai": "Barbarian",
+     "pagina": 8,
+     "bonus_atributos": {},
+     "habilidades_detalhe": [],
+     "poderes": [],
+     "poderes_detalhe": [],
+     "detalhada": true
+    }
+   ]
+  }
+ ],
+ "ficha": [
+  {
+   "titulo": "Características Raciais",
+   "tipo": "texto",
+   "itens": [
+    "Stonecunning"
+   ],
+   "pagina": 3
+  },
+  {
+   "titulo": "Antecedente",
+   "tipo": "texto",
+   "itens": [
+    "Ideal"
+   ],
+   "pagina": 60
+  }
+ ],
+ "nome_arquetipo": "Classe",
+ "criaturas": [
+  {
+   "nome": "Planetar",
+   "descricao": "Celestial guerreiro de grande poder com armas angélicas que infligem dano radiante extra.",
+   "ameaca": "16",
+   "atributos": {
+    "str": 24,
+    "dex": 20,
+    "con": 24,
+    "int": 19,
+    "wis": 22,
+    "cha": 25
+   },
+   "vida": 200,
+   "defesa": 19,
+   "ataques": [
+    {
+     "nome": "Mace",
+     "dano": "1d6+4+4d8",
+     "descricao": ""
+    }
+   ],
+   "habilidades": [
+    "Angelic Weapons (ataques mágicos)",
+    "Magic Resistance (vantagem em testes de resistência contra magia)",
+    "Innate Spellcasting (Carisma DC 20)"
+   ],
+   "pagina": 262
+  },
+  {
+   "nome": "Solar",
+   "descricao": "Entidade celestial de altíssimo nível que empunha uma espada gigante e um arco mortal.",
+   "ameaca": "21",
+   "atributos": {
+    "str": 26,
+    "dex": 22,
+    "con": 26,
+    "int": 25,
+    "wis": 25,
+    "cha": 30
+   },
+   "vida": 243,
+   "defesa": 21,
+   "ataques": [
+    {
+     "nome": "Greatsword",
+     "dano": "4d6+7+5d8",
+     "descricao": ""
+    }
+   ],
+   "habilidades": [
+    "Angelic Weapons (ataques mágicos)",
+    "Magic Resistance (vantagem em testes de resistência contra magia)",
+    "Divine Awareness (sabe quando alguém mente)"
+   ],
+   "pagina": 263
+  },
+  {
+   "nome": "Couatl",
+   "descricao": "Serpente alada celestial que pode mudar de forma e lançar magias de cura.",
+   "ameaca": "4",
+   "atributos": {
+    "str": 16,
+    "dex": 20,
+    "con": 17,
+    "int": 18,
+    "wis": 20,
+    "cha": 18
+   },
+   "vida": 97,
+   "defesa": 19,
+   "ataques": [
+    {
+     "nome": "Bite",
+     "dano": "1d6+5",
+     "descricao": ""
+    }
+   ],
+   "habilidades": [
+    "Innate Spellcasting (Carisma DC 14)",
+    "Shielded Mind (imune a scrying e leitura de emoções)",
+    "Change Shape (polimorfia em humanoide ou besta)"
+   ],
+   "pagina": 269
+  },
+  {
+   "nome": "Balor",
+   "descricao": "Demônio colossal que empunha uma espada flamejante e um chicote elétrico.",
+   "ameaca": "19",
+   "atributos": {
+    "str": 26,
+    "dex": 15,
+    "con": 22,
+    "int": 20,
+    "wis": 16,
+    "cha": 22
+   },
+   "vida": 262,
+   "defesa": 19,
+   "ataques": [
+    {
+     "nome": "Longsword",
+     "dano": "3d8+8+3d8",
+     "descricao": ""
+    }
+   ],
+   "habilidades": [
+    "Fire Aura (10 dmg a cada criatura adjacente)",
+    "Magic Resistance (vantagem em testes contra magia)",
+    "Death Throes (explosão ao morrer)"
+   ],
+   "pagina": 270
+  },
+  {
+   "nome": "Darkmantle",
+   "descricao": "Monstruosidade que se camufla como estalactite e pode prender a vítima ao seu corpo.",
+   "ameaca": "1/2",
+   "atributos": {
+    "str": 6,
+    "dex": 12,
+    "con": 12,
+    "int": 2,
+    "wis": 13,
+    "cha": 5
+   },
+   "vida": 22,
+   "defesa": 11,
+   "ataques": [
+    {
+     "nome": "Crush",
+     "dano": "1d6+3",
+     "descricao": ""
+    }
+   ],
+   "habilidades": [
+    "Echolocation (não usa cegueira enquanto surdo)",
+    "False Appearance (parece uma formação de caverna)",
+    "Darkness Aura (cria escuridão mágica 15 ft, 1/dia)"
+   ],
+   "pagina": 269
+  },
+  {
+   "nome": "Rust Monster",
+   "descricao": "Monstro que corrói armas de metal ao contato, enfraquecendo-as progressivamente.",
+   "ameaca": "1/2",
+   "atributos": {
+    "str": 13,
+    "dex": 12,
+    "con": 13,
+    "int": 2,
+    "wis": 13,
+    "cha": 6
+   },
+   "vida": 27,
+   "defesa": 14,
+   "ataques": [
+    {
+     "nome": "Bite",
+     "dano": "1d8+1",
+     "descricao": ""
+    }
+   ],
+   "habilidades": [
+    "Iron Scent (detecta metal ferroso a 30 ft)",
+    "Rust Metal (corroe armas de metal que o atingem)",
+    "Antimagic Susceptibility (incapacitado em campo antimagia)"
+   ],
+   "pagina": 343
+  },
+  {
+   "nome": "Sahuagin",
+   "descricao": "Humanoide aquático agressivo que ataca em grupo e pode comandar tubarões.",
+   "ameaca": "1/2",
+   "atributos": {
+    "str": 13,
+    "dex": 11,
+    "con": 12,
+    "int": 12,
+    "wis": 13,
+    "cha": 9
+   },
+   "vida": 22,
+   "defesa": 12,
+   "ataques": [
+    {
+     "nome": "Bite",
+     "dano": "1d4+1",
+     "descricao": ""
+    }
+   ],
+   "habilidades": [
+    "Blood Frenzy (vantagem contra criaturas feridas)",
+    "Limited Amphibiousness (precisa estar submerso a cada 4h)",
+    "Shark Telepathy (comanda tubarões a 120 ft)"
+   ],
+   "pagina": 344
+  },
+  {
+   "nome": "Salamander",
+   "descricao": "Elemental de fogo que incendeia quem o atinge e empunha armas flamejantes.",
+   "ameaca": "5",
+   "atributos": {
+    "str": 18,
+    "dex": 14,
+    "con": 15,
+    "int": 11,
+    "wis": 10,
+    "cha": 12
+   },
+   "vida": 90,
+   "defesa": 15,
+   "ataques": [
+    {
+     "nome": "Spear",
+     "dano": "2d6+4+1d6",
+     "descricao": ""
+    }
+   ],
+   "habilidades": [
+    "Heated Body (dano de fogo a quem o atinge)",
+    "Heated Weapons (arma inflige +1d6 fogo)",
+    "Damage Resistances (bludgeoning, piercing, slashing de ataques não mágicos)"
+   ],
+   "pagina": 344
+  },
+  {
+   "nome": "Plesiosaurus",
+   "descricao": "Grande réptil aquático que pode prender a respiração por longos períodos.",
+   "ameaca": "2",
+   "atributos": {
+    "str": 18,
+    "dex": 15,
+    "con": 16,
+    "int": 2,
+    "wis": 12,
+    "cha": 5
+   },
+   "vida": 68,
+   "defesa": 13,
+   "ataques": [
+    {
+     "nome": "Bite",
+     "dano": "3d6+4",
+     "descricao": ""
+    }
+   ],
+   "habilidades": [
+    "Hold Breath (pode prender a respiração por 1 hora)",
+    "Swim (40 ft)",
+    "Keen Perception (+3)"
+   ],
+   "pagina": 279
+  },
+  {
+   "nome": "Triceratops",
+   "descricao": "Grande herbívoro com chifres poderosos que pode arremessar ataques de carga.",
+   "ameaca": "5",
+   "atributos": {
+    "str": 22,
+    "dex": 9,
+    "con": 17,
+    "int": 2,
+    "wis": 11,
+    "cha": 5
+   },
+   "vida": 95,
+   "defesa": 13,
+   "ataques": [
+    {
+     "nome": "Gore",
+     "dano": "4d8+6",
+     "descricao": ""
+    }
+   ],
+   "habilidades": [
+    "Trampling Charge (causa queda ao acertar após carga)",
+    "Charge (movimento de 20 ft antes do ataque)",
+    "Keen Perception (+3)"
+   ],
+   "pagina": 279
+  },
+  {
+   "nome": "Giant Ape",
+   "descricao": "Macaco gigantesco que usa força bruta para esmagar adversários.",
+   "ameaca": "7",
+   "atributos": {
+    "str": 23,
+    "dex": 14,
+    "con": 18,
+    "int": 7,
+    "wis": 12,
+    "cha": 7
+   },
+   "vida": 157,
+   "defesa": 12,
+   "ataques": [
+    {
+     "nome": "Fist",
+     "dano": "3d10+6",
+     "descricao": ""
+    }
+   ],
+   "habilidades": [
+    "Pack Tactics (vantagem se aliado próximo)",
+    "Keen Smell (vantagem em testes de percepção olfativa)",
+    "Climb (40 ft)"
+   ],
+   "pagina": 373
+  },
+  {
+   "nome": "Tyrannosaurus Rex",
+   "descricao": "Predador colossal que pode morder e usar cauda para atacar diferentes alvos.",
+   "ameaca": "8",
+   "atributos": {
+    "str": 25,
+    "dex": 10,
+    "con": 19,
+    "int": 2,
+    "wis": 12,
+    "cha": 9
+   },
+   "vida": 136,
+   "defesa": 13,
+   "ataques": [
+    {
+     "nome": "Bite",
+     "dano": "4d12+7",
+     "descricao": ""
+    }
+   ],
+   "habilidades": [
+    "Multiattack (mordida + cauda)",
+    "Charge (não pode atacar o mesmo alvo com ambos)",
+    "Keen Smell (vantagem em percepção olfativa)"
+   ],
+   "pagina": 279
+  },
+  {
+   "nome": "Unicorn",
+   "descricao": "Cavalo celestial que cura e protege aliados com magia pura.",
+   "ameaca": "5",
+   "atributos": {
+    "str": 18,
+    "dex": 14,
+    "con": 15,
+    "int": 11,
+    "wis": 17,
+    "cha": 16
+   },
+   "vida": 67,
+   "defesa": 12,
+   "ataques": [
+    {
+     "nome": "Horn",
+     "dano": "1d8+4",
+     "descricao": ""
+    }
+   ],
+   "habilidades": [
+    "Healing Touch (recupera 2d8+2 PV)",
+    "Magic Resistance (vantagem contra magias)",
+    "Teleport (até 1 milha, 1/dia)"
+   ],
+   "pagina": 352
+  },
+  {
+   "nome": "Kraken",
+   "descricao": "Monstruosidade marinha gigantesca com tentáculos que podem engolir navios.",
+   "ameaca": "23",
+   "atributos": {
+    "str": 30,
+    "dex": 11,
+    "con": 25,
+    "int": 22,
+    "wis": 18,
+    "cha": 20
+   },
+   "vida": 472,
+   "defesa": 18,
+   "ataques": [
+    {
+     "nome": "Bite",
+     "dano": "3d8+10",
+     "descricao": ""
+    }
+   ],
+   "habilidades": [
+    "Amphibious (respira ar e água)",
+    "Freedom of Movement (ignora terreno difícil e restrições)",
+    "Lightning Storm (cria 3 raios, 4d10 dano elétrico)"
+   ],
+   "pagina": 324
+  }
+ ],
+ "regras_encontro": "Os encontros são balanceados usando o Challenge Rating (CR) dos monstros comparado ao nível médio do grupo de quatro aventureiros; CR igual ao nível do grupo indica um desafio adequado.",
+ "modificador": "piso((valor-10)/2)",
+ "paginas_fonte": {
+  "visao": [
+   1,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   14,
+   15,
+   76,
+   77,
+   78,
+   83,
+   84,
+   220,
+   221,
+   250,
+   251,
+   258,
+   259,
+   395
+  ],
+  "criacao": [
+   3,
+   4,
+   9,
+   10,
+   18,
+   25,
+   26,
+   41,
+   46,
+   56,
+   57,
+   58,
+   60,
+   61,
+   395,
+   396,
+   398,
+   399,
+   401,
+   402
+  ],
+  "estrutura": [
+   3,
+   4,
+   8,
+   9,
+   10,
+   11,
+   15,
+   19,
+   24,
+   25,
+   26,
+   35,
+   36,
+   37,
+   38,
+   39,
+   40,
+   41,
+   42,
+   52,
+   57,
+   58,
+   59,
+   69,
+   398,
+   399,
+   401,
+   402
+  ],
+  "criaturas": [
+   262,
+   263,
+   269,
+   270,
+   278,
+   279,
+   324,
+   325,
+   343,
+   344,
+   351,
+   352,
+   366,
+   367,
+   368,
+   371,
+   372,
+   373,
+   374,
+   387,
+   388
+  ]
+ },
+ "avisos": [
+  "As fórmulas do livro usam modificador de atributo, mas a leitura não trouxe a regra: usei o padrão d20, piso((valor−10)/2). Confira no resumo.",
+  "Campo Aumento de Pontuação de Habilidade descartado: o nome não aparece no texto do livro.",
+  "Campo Idade descartado: o nome não aparece no texto do livro.",
+  "Campo Alinhamento descartado: o nome não aparece no texto do livro.",
+  "Campo Tamanho descartado: o nome não aparece no texto do livro.",
+  "Campo Velocidade Base descartado: o nome não aparece no texto do livro.",
+  "Campo Idiomas descartado: o nome não aparece no texto do livro.",
+  "Campo Subraça descartado: o nome não aparece no texto do livro.",
+  "Campo Visão no Escuro descartado: o nome não aparece no texto do livro.",
+  "Campo Resistência Anã descartado: o nome não aparece no texto do livro.",
+  "Campo Treinamento de Combate Anão descartado: o nome não aparece no texto do livro.",
+  "Campo Proficiência em Ferramentas descartado: o nome não aparece no texto do livro.",
+  "Campo Fúria (Rage) descartado: o nome não aparece no texto do livro.",
+  "Campo Ataque Imprudente (Reckless Attack) descartado: o nome não aparece no texto do livro.",
+  "Campo Sentido de Perigo (Danger Sense) descartado: o nome não aparece no texto do livro.",
+  "Campo Caminho Primitivo (Primal Path) descartado: o nome não aparece no texto do livro.",
+  "Campo Melhoria de Pontuação de Habilidade (Ability Score Improvement) descartado: o nome não aparece no texto do livro.",
+  "Campo Ataque Extra (Extra Attack) descartado: o nome não aparece no texto do livro.",
+  "Campo Movimento Rápido (Fast Movement) descartado: o nome não aparece no texto do livro.",
+  "Campo Instinto Feral (Feral Instinct) descartado: o nome não aparece no texto do livro.",
+  "Campo Crítico Brutal (Brutal Critical) descartado: o nome não aparece no texto do livro.",
+  "Campo Fúria Implacável (Relentless Rage) descartado: o nome não aparece no texto do livro.",
+  "Campo Fúria Persistente (Persistent Rage) descartado: o nome não aparece no texto do livro.",
+  "Campo Força Indomável (Indomitable Might) descartado: o nome não aparece no texto do livro.",
+  "Campo Campeão Primitivo (Primal Champion) descartado: o nome não aparece no texto do livro.",
+  "Campo Frenesi (Frenzy) descartado: o nome não aparece no texto do livro.",
+  "Campo Surto de Ação (Action Surge) descartado: o nome não aparece no texto do livro.",
+  "Campo Arquetipo Marcial (Martial Archetype) descartado: o nome não aparece no texto do livro.",
+  "Campo Crítico Aprimorado (Improved Critical) descartado: o nome não aparece no texto do livro.",
+  "Campo Atleta Notável (Remarkable Athlete) descartado: o nome não aparece no texto do livro.",
+  "Campo Estilo de Luta Adicional (Additional Fighting Style) descartado: o nome não aparece no texto do livro.",
+  "Campo Crítico Superior (Superior Critical) descartado: o nome não aparece no texto do livro.",
+  "Campo Sobrevivente (Survivor) descartado: o nome não aparece no texto do livro.",
+  "Campo Defesa sem Armadura (Unarmored Defense) descartado: o nome não aparece no texto do livro.",
+  "Campo Artes Marciais (Martial Arts) descartado: o nome não aparece no texto do livro.",
+  "Campo Pontos de Ki (Ki Points) descartado: o nome não aparece no texto do livro.",
+  "Campo Movimento sem Armadura (Unarmored Movement) descartado: o nome não aparece no texto do livro.",
+  "Campo Tradição Monástica (Monastic Tradition) descartado: o nome não aparece no texto do livro.",
+  "Campo Patrono de Outro Mundo (Otherworldly Patron) descartado: o nome não aparece no texto do livro.",
+  "Campo Magia de Pacto (Pact Magic) descartado: o nome não aparece no texto do livro.",
+  "Campo Invocações (Invocations) descartado: o nome não aparece no texto do livro.",
+  "Campo Arcanum Místico (Mystic Arcanum) descartado: o nome não aparece no texto do livro.",
+  "Campo Mestre Eldritch (Eldritch Master) descartado: o nome não aparece no texto do livro.",
+  "Campo Dados de Vida (Hit Dice) descartado: o nome não aparece no texto do livro.",
+  "Campo Total de Dados de Vida descartado: o nome não aparece no texto do livro.",
+  "Campo Experiência descartado: o nome não aparece no texto do livro.",
+  "Campo Nível descartado: o nome não aparece no texto do livro.",
+  "Campo Bônus de Proficiência descartado: o nome não aparece no texto do livro.",
+  "Campo Armadura descartado: o nome não aparece no texto do livro.",
+  "Campo Armas descartado: o nome não aparece no texto do livro.",
+  "Campo Ferramentas descartado: o nome não aparece no texto do livro.",
+  "Campo Itens Diversos descartado: o nome não aparece no texto do livro.",
+  "Campo Proficiências de Habilidades descartado: o nome não aparece no texto do livro.",
+  "Campo Proficiências de Ferramentas descartado: o nome não aparece no texto do livro.",
+  "Campo Idiomas Adicionais descartado: o nome não aparece no texto do livro.",
+  "Campo Equipamento de Antecedente descartado: o nome não aparece no texto do livro.",
+  "Campo Traços de Personalidade descartado: o nome não aparece no texto do livro.",
+  "Campo Vínculo descartado: o nome não aparece no texto do livro.",
+  "Campo Falha descartado: o nome não aparece no texto do livro.",
+  "Campo Cantrips Conhecidos descartado: o nome não aparece no texto do livro.",
+  "Campo Magias Conhecidas descartado: o nome não aparece no texto do livro.",
+  "Campo Slots de Magia descartado: o nome não aparece no texto do livro.",
+  "Campo Truques Preparados descartado: o nome não aparece no texto do livro.",
+  "Campo Magias Preparadas descartado: o nome não aparece no texto do livro.",
+  "Campo Classes Multiclasse descartado: o nome não aparece no texto do livro.",
+  "Campo Pré-requisitos de Pontuação de Habilidade descartado: o nome não aparece no texto do livro.",
+  "Campo Proficiências Ganhadas descartado: o nome não aparece no texto do livro.",
+  "Dwarf: fórmula de pontos_de_vida_maximos não aproveitada (hp_base + nivel).",
+  "Monk: fórmula de Velocidade não aproveitada (30 + (nivel>=2 ? 10 : 0) + (nivel>=6 ? 5 : 0) + (nivel>=10 ? 5 : 0) + (nivel>=14 ? 5 : 0) + (nivel>=18 ? 5 : 0)).",
+  "Dano de Monk não entendido (martial_arts_die + mod_destreza).",
+  "Dano de Rogue não entendido ((floor((nivel+1)/2))d6).",
+  "Path of the Berserker: fórmula de velocidade não aproveitada (30 + (nivel>=5)*10).",
+  "Path of the Totem Warrior: fórmula de velocidade não aproveitada (30 + (nivel>=5 ? 10 : 0)).",
+  "Dano de Hunter não entendido (dano_arma + 1d8).",
+  "Defense: fórmula de classe_de_armadura não aproveitada (ac_base + 1).",
+  "Dano de Dueling não entendido (dano = dano_da_arma + mod_forca + 2 (ou mod_destreza + 2, conforme o atributo usado))."
+ ]
+}

@@ -29,6 +29,11 @@ ARQUIVOS_DERIVADOS_PUBLICOS = {
     "dados/publicos/avaliacoes/leitor_generico_srd51.json",
 }
 PASTAS_DERIVADAS = ("dados/publicos/modelos/", "dados/publicos/avaliacoes/")
+# Leituras completas abertas no site (ADR 0011). Lista fechada: nada mais de F&M é liberado.
+PREVIAS_PUBLICAS = {
+    "dados/publicos/previas/dnd5e_srd51.json",
+    "dados/publicos/previas/fm_v2_5_2.json",
+}
 
 
 def sistemas_publicos() -> set[str]:
@@ -46,6 +51,8 @@ def verificar(arquivos: list[str], publicos: set[str] | None = None) -> list[str
             violacoes.append(f"{texto}: arquivos de livro não podem ser versionados")
         if "privado" in p.parts:
             violacoes.append(f"{texto}: conteúdo de pasta privada")
+        if texto in PREVIAS_PUBLICAS:
+            continue
         if texto.startswith(PASTAS_DERIVADAS):
             if texto not in ARQUIVOS_DERIVADOS_PUBLICOS:
                 violacoes.append(f"{texto}: arquivo não liberado em ARQUIVOS_DERIVADOS_PUBLICOS")
