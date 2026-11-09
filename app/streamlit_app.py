@@ -100,6 +100,12 @@ AVALIACAO_GENERICA = (
 AVALIACAO_LEITOR = (
     Path(__file__).parents[1] / "dados" / "publicos" / "avaliacoes" / "leitor_srd51.json"
 )
+PASTA_PREVIAS = Path(__file__).parents[1] / "dados" / "publicos" / "previas"
+# Leituras completas feitas pela IA, abertas a quem visita (ADR 0011).
+PREVIAS = {
+    "dnd5e_srd51.json": "D&D 5e (SRD 5.1)",
+    "fm_v2_5_2.json": "Feiticeiros & Maldições",
+}
 INICIO = "Início"
 RESUMO = "Resumo do sistema"
 GERADOR = "Gerador de fichas"
@@ -300,6 +306,18 @@ def _envio_do_livro() -> None:
                 icon=":material/play_arrow:",
                 on_click=_usar_livro,
                 args=(sid, f"Demonstração de {nome_sistema}", None, True),
+                width="stretch",
+            )
+        st.markdown(
+            "**Ou veja uma leitura completa feita pela IA**, com todas as opções lidas a fundo."
+        )
+        for arquivo, nome_previa in PREVIAS.items():
+            st.button(
+                f"Leitura de {nome_previa}",
+                key=f"previa_{arquivo}",
+                icon=":material/auto_stories:",
+                on_click=_usar_previa,
+                args=(arquivo, nome_previa),
                 width="stretch",
             )
         return
@@ -1261,6 +1279,16 @@ def nome_do_sistema(livro: dict) -> str:
     if livro["sistema"] == SISTEMA_LIDO:
         return livro["lido"]["nome"]
     return SISTEMAS_SUPORTADOS[livro["sistema"]]
+
+
+@st.cache_data
+def _previa(arquivo: str) -> str:
+    return (PASTA_PREVIAS / arquivo).read_text(encoding="utf-8")
+
+
+def _usar_previa(arquivo: str, nome: str) -> None:
+    s = normalizar(SistemaLido.model_validate_json(_previa(arquivo)))
+    _usar_sistema_lido(s, f"Prévia: {nome}", None)
 
 
 def _usar_sistema_lido(s: SistemaLido, nome_arquivo: str, nota: float | None) -> None:
@@ -2370,7 +2398,8 @@ def pagina_conteudo() -> None:
     st.title("Conteúdo e licenças")
     st.markdown(
         """
-Este site e o repositório publicam **apenas conteúdo com licença aberta**.
+Este site e o repositório publicam conteúdo com licença aberta e, como exceção registrada na
+ADR 0011, a prévia da leitura de Feiticeiros & Maldições.
 
 **Livros que você envia:** o PDF é lido na memória do servidor e não é salvo. Para montar o
 sistema, trechos selecionados vão ao LLM do Databricks (Foundation Model APIs). O que é extraído
@@ -2383,8 +2412,9 @@ licenciado sob [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/legalcode
 
 As mecânicas de **Feiticeiros & Maldições** (Livro de Regras v2.5) são de Setsugiri, Parker
 e equipe, num projeto de fãs gratuito inspirado em *Jujutsu Kaisen*, de Gege Akutami. O livro
-permite usar o sistema como base com crédito aos autores. Aqui aparecem só fórmulas
-resumidas, sem texto do livro.
+permite usar o sistema como base com crédito aos autores. Aqui aparecem fórmulas resumidas à
+mão e a prévia da leitura feita pela IA: regras e resumos curtos, sem o texto nem o PDF do livro.
+Se os autores pedirem, a prévia sai do site.
 """
     )
 

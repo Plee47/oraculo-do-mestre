@@ -1,6 +1,6 @@
 # 0006 · Feiticeiros & Maldições: só mecânicas resumidas, sem extração por ora
 
-**Status:** aceita · 2026-11-06
+**Status:** aceita · 2026-11-06 · alterada pela [0011](0011-previas-de-leitura-abertas.md)
 
 ## Contexto
 

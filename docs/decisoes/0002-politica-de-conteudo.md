@@ -1,6 +1,6 @@
 # 0002 · Política de conteúdo (direitos autorais)
 
-**Status:** aceita · 2026-11-05
+**Status:** aceita · 2026-11-05 · alterada pela [0011](0011-previas-de-leitura-abertas.md)
 
 ## Contexto
 

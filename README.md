@@ -41,7 +41,7 @@ de dados, machine learning, LLMs avaliados e uma interface pronta para uso.
 | **LLM em produção, com validação** | Leitura de qualquer livro em três partes paralelas, saída validada item a item, fórmulas calculadas por um avaliador seguro (sem `eval`) e correções determinísticas para os erros recorrentes do modelo |
 | **Análise de dados aplicada** | Tabelas gold que viram regras: ex. 48% dos monstros de CR 11–16 resistem a dano físico não mágico, e isso muda o peso das dicas |
 | **MLOps e engenharia de software** | Databricks Asset Bundles (dev/prod), GitHub Actions, 576 testes com pytest, pre-commit, ADRs e Conventional Commits |
-| **Governança de dados** | Política de conteúdo automatizada: o "guardião" bloqueia no CI qualquer livro ou dado sem licença aberta; livros privados nunca saem do workspace |
+| **Governança de dados** | Política de conteúdo automatizada: o "guardião" bloqueia no CI qualquer livro ou dado sem licença aberta, exceto uma lista fechada de prévias decididas em ADR; livros privados nunca saem do workspace |
 
 ## Resultados
 
