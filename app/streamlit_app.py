@@ -378,6 +378,8 @@ def pagina_inicio() -> None:
         if livro:
             if livro["demo"]:
                 origem = "modo demonstração"
+            elif livro.get("previa"):
+                origem = "prévia da leitura"
             elif livro["nota"] is None:  # sistema salvo: o porteiro não leu o livro nesta visita
                 origem = "sistema salvo"
             else:
@@ -1288,15 +1290,18 @@ def _previa(arquivo: str) -> str:
 
 def _usar_previa(arquivo: str, nome: str) -> None:
     s = normalizar(SistemaLido.model_validate_json(_previa(arquivo)))
-    _usar_sistema_lido(s, f"Prévia: {nome}", None)
+    _usar_sistema_lido(s, f"Prévia: {nome}", None, previa=True)
 
 
-def _usar_sistema_lido(s: SistemaLido, nome_arquivo: str, nota: float | None) -> None:
+def _usar_sistema_lido(
+    s: SistemaLido, nome_arquivo: str, nota: float | None, previa: bool = False
+) -> None:
     st.session_state.livro = {
         "sistema": SISTEMA_LIDO,
         "nome": nome_arquivo,
         "nota": nota,
         "demo": False,
+        "previa": previa,
         "lido": json.loads(s.model_dump_json()),
     }
     st.session_state["_pagina_pendente"] = RESUMO  # o menu pode já estar desenhado
@@ -1386,10 +1391,16 @@ def _resumo_lido() -> None:
     linha = " · ".join(x for x in (s.genero, s.autores) if x)
     if linha:
         st.caption(linha)
-    st.caption(
-        "Resumo escrito pela IA a partir do livro que você enviou (nada foi salvo). Confira e, "
-        "se algo estiver errado, corrija em **Corrigir a leitura** no fim da página."
-    )
+    if livro_atual().get("previa"):
+        st.caption(
+            "Prévia: leitura completa feita pela IA a partir do livro, com todas as opções lidas "
+            "a fundo. Para ler outro livro, use **Trocar de livro**."
+        )
+    else:
+        st.caption(
+            "Resumo escrito pela IA a partir do livro que você enviou (nada foi salvo). Confira e, "
+            "se algo estiver errado, corrija em **Corrigir a leitura** no fim da página."
+        )
     if s.resumo:
         st.markdown(s.resumo)
     if s.ambientacao:
