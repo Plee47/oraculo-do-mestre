@@ -565,3 +565,15 @@ def test_inicio_nao_quebra_com_sistema_salvo_sem_nota():
     at = at.run()
     assert not at.exception
     assert any("sistema salvo" in s.value for s in at.success)
+
+
+def test_previa_nao_diz_que_o_visitante_enviou_o_livro():
+    at = abrir()
+    at.button(key="previa_fm_v2_5_2.json").click().run()
+    assert not at.exception
+    assert at.session_state.livro["previa"] is True
+    legendas = " ".join(c.value for c in at.caption)
+    assert "Prévia: leitura completa" in legendas
+    assert "que você enviou" not in legendas
+    at = ir(at, "Início")
+    assert any("prévia da leitura" in s.value for s in at.success)
