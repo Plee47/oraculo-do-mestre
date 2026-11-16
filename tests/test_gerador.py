@@ -11,6 +11,7 @@ from oraculo.sistemas.dnd5e.gerador import (
     PAPEIS,
     aplicar_asis,
     calcular_ca,
+    cotas_por_circulo,
     gerar_ficha,
 )
 from oraculo.sistemas.dnd5e.tabelas import (
@@ -144,3 +145,42 @@ def test_subclasse_do_srd_entra_no_nivel_certo(cat):
     assert f.escolhas["subclasse"] == "Champion"
     assert any("Champion" in e for e in f.explicacoes)
     assert gerar_ficha(cat, 1, classe="clerigo", seed=1).escolhas["subclasse"] == "Life Domain"
+
+
+@pytest.mark.parametrize("classe", ["bardo", "mago", "clerigo", "feiticeiro", "bruxo"])
+@pytest.mark.parametrize("nivel", [5, 11, 17, 20])
+def test_conjurador_de_nivel_alto_tem_magias_dos_circulos_baixos(cat, classe, nivel):
+    ficha = gerar_ficha(cat, nivel, classe=classe, seed=3)
+    magias = {m.id: m for m in cat.magias}
+    circulos = {magias[m].circulo for m in ficha.poderes if magias[m].circulo > 0}
+    if ficha.poderes and len(circulos) > 1:
+        assert 1 in circulos, f"{classe} {nivel}: {sorted(circulos)}"
+
+
+def test_bardo_17_espalha_as_magias_por_todos_os_circulos(cat):
+    ficha = gerar_ficha(cat, 17, classe="bardo", seed=1)
+    magias = {m.id: m for m in cat.magias}
+    nivel = cat.classe("bard").nivel(17)
+    circulos = {magias[m].circulo for m in ficha.poderes if magias[m].circulo > 0}
+    assert circulos == set(range(1, nivel.circulo_maximo + 1))
+    conhecidas = [m for m in ficha.poderes if magias[m].circulo > 0]
+    assert len(conhecidas) == nivel.magias_conhecidas
+
+
+def test_cotas_seguem_os_espacos():
+    assert cotas_por_circulo([4, 3, 3, 3, 2, 1, 1, 1, 1], 20) == {
+        1: 5,
+        2: 3,
+        3: 3,
+        4: 3,
+        5: 2,
+        6: 1,
+        7: 1,
+        8: 1,
+        9: 1,
+    }
+    # Poucas vagas: uma por círculo, das que têm mais espaços.
+    assert cotas_por_circulo([4, 3, 3, 0, 0, 0, 0, 0, 0], 3) == {1: 1, 2: 1, 3: 1}
+    assert sum(cotas_por_circulo([4, 3, 3, 3, 2, 1, 1, 1, 1], 20).values()) == 20
+    assert cotas_por_circulo([4, 2, 0, 0, 0, 0, 0, 0, 0], 1) == {1: 1}
+    assert cotas_por_circulo([0] * 9, 5) == {}
