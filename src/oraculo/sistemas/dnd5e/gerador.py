@@ -180,6 +180,34 @@ def _pontuar_magia(m: Magia, papel: str) -> float:
     return pontos
 
 
+def cotas_por_circulo(espacos: list[int], n: int) -> dict[int, int]:
+    """Quantas magias de cada círculo, na proporção dos espaços de magia do nível.
+
+    Sem isso, a pontuação (que cresce com o círculo) enchia a lista só de magias altas, e um
+    conjurador de nível alto ficava sem nenhuma magia de 1º a 4º círculo. Cada círculo com
+    espaços recebe pelo menos uma magia enquanto houver vagas.
+    """
+    circulos = [i + 1 for i, e in enumerate(espacos) if e > 0]
+    if n <= 0 or not circulos:
+        return {}
+    total = sum(espacos[c - 1] for c in circulos)
+    partes = {c: n * espacos[c - 1] / total for c in circulos}
+    cotas = {c: int(partes[c]) for c in circulos}
+    sobra = n - sum(cotas.values())
+    # Maior resto primeiro; no empate, o círculo mais baixo (tem mais espaços para usar).
+    for c in sorted(circulos, key=lambda c: (-(partes[c] - cotas[c]), c))[:sobra]:
+        cotas[c] += 1
+    # Pelo menos uma por círculo, enquanto houver vagas: tira do círculo com mais magias.
+    for c in circulos:
+        if cotas[c] == 0:
+            doador = max(circulos, key=lambda d: (cotas[d], -d))
+            if cotas[doador] <= 1:
+                break
+            cotas[doador] -= 1
+            cotas[c] = 1
+    return {c: k for c, k in cotas.items() if k}
+
+
 def escolher_magias(
     cat: Catalogo, srd: ClasseSRD, papel: str, nivel: int, mod_conjuracao: int, rng
 ) -> tuple[list[Magia], list[Magia], int]:
@@ -204,15 +232,26 @@ def escolher_magias(
     disponiveis = [m for m in cat.magias_da_classe(srd.id, circulo) if m.circulo >= 1]
     escolhidas: list[Magia] = []
     concentracoes = 0
-    while len(escolhidas) < n and disponiveis:
+
+    def pegar(candidatas: list[Magia]) -> None:
+        nonlocal concentracoes
         # Evita encher a lista de magias de concentração (só uma fica ativa por vez).
         melhor = max(
-            disponiveis,
+            candidatas,
             key=lambda m: _pontuar_magia(m, papel) - (concentracoes * 0.8 if m.concentracao else 0),
         )
         escolhidas.append(melhor)
         disponiveis.remove(melhor)
         concentracoes += melhor.concentracao
+
+    for c, cota in sorted(cotas_por_circulo(info.espacos, n).items()):
+        for _ in range(cota):
+            do_circulo = [m for m in disponiveis if m.circulo == c]
+            if not do_circulo:
+                break
+            pegar(do_circulo)
+    while len(escolhidas) < n and disponiveis:  # algum círculo sem magias suficientes
+        pegar(disponiveis)
     escolhidas.sort(key=lambda m: (m.circulo, m.nome))
     return truques, escolhidas, circulo
 
