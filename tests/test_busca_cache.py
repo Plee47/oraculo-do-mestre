@@ -273,3 +273,18 @@ def test_sem_embeddings_a_leitura_segue_com_bm25():
 
     leitura = ler_sistema(_paginas(), SemEmbeddings(), estrategia="hibrida")
     assert leitura.sistema.nome == "Teste"
+
+
+def test_recusa_mostra_o_motivo_do_databricks(monkeypatch):
+    import io
+    import urllib.error
+
+    corpo = b'{"error_code":"BAD_REQUEST","message":"max_tokens is too large"}'
+
+    def recusa(pedido, timeout):
+        raise urllib.error.HTTPError(pedido.full_url, 400, "Bad Request", {}, io.BytesIO(corpo))
+
+    monkeypatch.setattr("urllib.request.urlopen", recusa)
+    c = ClienteDatabricks("https://x", "t")
+    with pytest.raises(ErroLLM, match="HTTP 400: max_tokens is too large"):
+        c.completar("s", "u")

@@ -1192,3 +1192,38 @@ def test_ficha_lida_que_falha_nao_derruba_a_leitura():
     _ler_ficha(s, ["A ficha do jogo tem muita coisa para anotar."], _LLMFicha("não é json"), {})
     assert s.ficha == []
     assert any("ficha de personagem" in a for a in s.avisos)
+
+
+class LLMPequenoRecusa(LLMNarrativa):
+    def __init__(self, erro):
+        super().__init__()
+        self.erro = erro
+        self.chamadas = []
+
+    def completar(self, sistema, usuario, max_tokens=6000, pequeno=False):
+        self.chamadas.append(pequeno)
+        if pequeno:
+            raise self.erro
+        return super().completar(sistema, usuario, max_tokens, pequeno)
+
+
+def test_narrativa_tenta_o_modelo_grande_se_o_pequeno_recusar():
+    from oraculo.leitor.llm import ErroLLM
+
+    s = sistema(FANTASIA)
+    f = gerar_ficha(s, seed=1)
+    llm = LLMPequenoRecusa(ErroLLM("o LLM recusou o pedido (HTTP 400: bad request)"))
+    n = sugerir_narrativa(contexto_lido(s, f), f, llm)
+    assert llm.chamadas == [True, False]
+    assert n.aparencia == "Alta, com cicatrizes."
+
+
+def test_narrativa_sem_cota_nao_insiste_no_modelo_grande():
+    from oraculo.leitor.llm import ErroLLM
+
+    s = sistema(FANTASIA)
+    f = gerar_ficha(s, seed=1)
+    llm = LLMPequenoRecusa(ErroLLM("o limite de uso do LLM do Databricks foi atingido"))
+    with pytest.raises(ErroLLM):
+        sugerir_narrativa(contexto_lido(s, f), f, llm)
+    assert llm.chamadas == [True]

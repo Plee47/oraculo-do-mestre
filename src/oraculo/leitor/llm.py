@@ -97,7 +97,7 @@ class ClienteDatabricks:
                 if e.code in (401, 403):
                     raise ErroLLM("credencial do Databricks recusada (token inválido?)") from e
                 if e.code not in (429, 500, 502, 503, 504):
-                    raise ErroLLM(f"o LLM recusou o pedido ({ultimo})") from e
+                    raise ErroLLM(f"o LLM recusou o pedido ({ultimo}{_motivo(motivo)})") from e
             except (urllib.error.URLError, TimeoutError) as e:
                 ultimo = str(getattr(e, "reason", e))
             if tentativa < self.tentativas - 1:
@@ -135,6 +135,16 @@ class ClienteDatabricks:
             except (KeyError, TypeError) as e:
                 raise ErroLLM("resposta de embeddings inesperada") from e
         return vetores
+
+
+def _motivo(corpo: str) -> str:
+    """A mensagem que o Databricks manda junto com a recusa, curta, para aparecer no site."""
+    try:
+        texto = json.loads(corpo).get("message", "")
+    except (ValueError, AttributeError):
+        texto = corpo
+    texto = " ".join(str(texto).split())
+    return f": {texto[:160]}" if texto else ""
 
 
 def _valor(fontes: list[Mapping], chave: str) -> str:
